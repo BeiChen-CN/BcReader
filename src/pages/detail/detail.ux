@@ -55,7 +55,7 @@
 			</text>
 		</div>
 
-        <img show="{{showSetting}}" src="/common/images/bookmark.png" @click="addBookmark" style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;"/>
+        <img show="{{showSetting}}" src="/common/images/bookmark.png" @click="addBookmark" @longpress="gotoBookmarks" style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;"/>
 	</div>
   </template>
 
@@ -469,23 +469,25 @@
 		  success: function(data){
 
 			if(data){ that.savedPersent = JSON.parse(data); }
-			that.savedPersent[that.name] = {
-			  s: that.currentFileOffset,
-			  p: that.persent,
-			  o: that.currentScrollTop
-			};
+            if (!that.savedPersent[that.name]) {
+                that.savedPersent[that.name] = {};
+            }
+			that.savedPersent[that.name].s = that.currentFileOffset;
+			that.savedPersent[that.name].p = that.persent;
+			that.savedPersent[that.name].o = that.currentScrollTop;
+
 			storage.set({
 			  key: SAVED_KEY,
 			  value: JSON.stringify(that.savedPersent)
 			});
 		  },
 		  fail: function(){
-
-			that.savedPersent[that.name] = {
-			  s: that.currentFileOffset,
-			  p: that.persent,
-			  o: that.currentScrollTop
-			};
+            if (!that.savedPersent[that.name]) {
+                that.savedPersent[that.name] = {};
+            }
+			that.savedPersent[that.name].s = that.currentFileOffset;
+			that.savedPersent[that.name].p = that.persent;
+			that.savedPersent[that.name].o = that.currentScrollTop;
 			storage.set({
 			  key: SAVED_KEY,
 			  value: JSON.stringify(that.savedPersent)
@@ -604,11 +606,70 @@
 		});
 	},
 	addBookmark() {
-		prompt.showToast({
-			message: '书签功能暂未开放',
-			duration: 2000
+		const that = this;
+		const newBookmark = {
+			s: that.currentFileOffset,
+			p: that.persent,
+			o: that.currentScrollTop,
+			time: new Date().getTime()
+		};
+
+		storage.get({
+			key: SAVED_KEY,
+			success: function(data) {
+				let savedData = data ? JSON.parse(data) : {};
+				if (!savedData[that.name]) {
+					savedData[that.name] = {};
+				}
+				if (!savedData[that.name].bookmarks) {
+					savedData[that.name].bookmarks = [];
+				}
+
+				const exists = savedData[that.name].bookmarks.some(bm => bm.s === newBookmark.s && bm.o === newBookmark.o);
+				if (exists) {
+					prompt.showToast({ message: '书签已存在', duration: 2000 });
+					return;
+				}
+
+				savedData[that.name].bookmarks.push(newBookmark);
+				savedData[that.name].bookmarks.sort((a, b) => a.s - b.s || a.o - b.o);
+
+				storage.set({
+					key: SAVED_KEY,
+					value: JSON.stringify(savedData),
+					success: function() {
+						prompt.showToast({ message: '添加书签成功', duration: 2000 });
+					},
+					fail: function() {
+						prompt.showToast({ message: '添加书签失败', duration: 2000 });
+					}
+				});
+			},
+			fail: function() {
+				let savedData = {};
+				savedData[that.name] = {
+					bookmarks: [newBookmark]
+				};
+				storage.set({
+					key: SAVED_KEY,
+					value: JSON.stringify(savedData),
+					success: function() {
+						prompt.showToast({ message: '添加书签成功', duration: 2000 });
+					},
+					fail: function() {
+						prompt.showToast({ message: '添加书签失败', duration: 2000 });
+					}
+				});
+			}
 		});
-	}
+	},
+    gotoBookmarks() {
+        this.saveData();
+        router.push({
+            uri: '/pages/bookmarks',
+            params: { cPath: this.cPath, name: this.name, size: allSize }
+        });
+    }
 	}
   </script>
 

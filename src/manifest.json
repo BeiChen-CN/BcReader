@@ -87,6 +87,9 @@
       },
       "pages/swipe": {
         "component": "swipe"
+      },
+      "pages/bookmarks": {
+        "component": "bookmarks"
       }
     }
   },
