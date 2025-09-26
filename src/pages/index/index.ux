@@ -8,7 +8,7 @@
 
 	  <list class="list">
 		  <list-item for="{{fileList}}" class="item" @click="selectFile($item)" type="nook">
-			  <text class="itemtext">{{$item.name}}</text>
+			  <marquee class="itemtext">{{$item.name}}</marquee>
         <div class="itemtext" style="justify-content: space-between;width: 100%; ">
             <text class="itemtext2" style="flex:1">已阅读</text>
             <text class="itemtext2">{{$item.percent}}%</text>
@@ -100,6 +100,20 @@ export default {
   },
   onShow() {
     this.loadFileList();
+    this.checkFirstLaunch();
+  },
+  checkFirstLaunch() {
+    storage.get({
+        key: 'EBOOK_FIRST_LAUNCH_TIP_SHOWN',
+        success: function(data) {
+            if (data !== 'true') {
+                router.push({ uri: '/pages/firstlaunchtip' });
+            }
+        },
+        fail: function() {
+            router.push({ uri: '/pages/firstlaunchtip' });
+        }
+    });
   },
   loadFileList() {
     const that = this;

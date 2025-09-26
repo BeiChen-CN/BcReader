@@ -92,14 +92,13 @@
   import file from '@system.file'
   
   
-  var confirm = true;
-  
   export default {
 	  // ÷﹢‐+-＋－×÷％
 	// 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
 	private: {
 	  nowTime: "00:00",
-	  timer: null
+	  timer: null,
+	  clearConfirm: true
 	},
 	protected: {
 	  cPath: '',
@@ -133,31 +132,37 @@
   
 	},
 	onShow(){
-  
+		this.clearConfirm = true;
 	},
 	clearBooks(){
-	  if(confirm){
-		  confirm = false;
+	  if(this.clearConfirm){
+		  this.clearConfirm = false;
 		  prompt.showToast({
 			  message: '再次点击确认该操作',
 			  duration: 1000
 		  })
+		  setTimeout(() => {
+			this.clearConfirm = true;
+		  }, 2000);
 		  return;
 	  }
+
 	  file.rmdir({
 		  uri: 'internal://files/books/',
 		  recursive: true,
-		  success: function(data) {
+		  success: (data) => {
 			  prompt.showToast({
 				  message: '清空成功',
 				  duration: 1000
 			  })
+			  this.clearConfirm = true;
 		  },
-		  fail: function(data, code) {
+		  fail: (data, code) => {
 			  prompt.showToast({
 				  message: `清空失败 ${code}`,
 				  duration: 1000
 			  })
+			  this.clearConfirm = true;
 		  }
 	  })
 	},
@@ -262,4 +267,3 @@
 	  justify-content: space-between;
   }
   </style>
-  

@@ -93,6 +93,12 @@
       },
       "pages/pageSizeSetting": {
         "component": "pageSizeSetting"
+      },
+      "pages/bookinfo": {
+        "component": "bookinfo"
+      },
+      "pages/firstlaunchtip": {
+        "component": "firstlaunchtip"
       }
     }
   },

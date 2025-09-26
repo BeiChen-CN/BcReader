@@ -138,7 +138,7 @@
       if (this.size === 0 || !bookmark) return '未知页码';
       const totalPages = Math.ceil(this.size / (txtSizePage * 2));
       const currentPage = Math.floor(bookmark.s / (txtSizePage * 2)) + 1;
-      return `第 ${currentPage} / ${totalPages} 页`;
+      return `第 ${currentPage} 页`;
     },
     formatTime(timestamp) {
       if (!timestamp) return '';

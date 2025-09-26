@@ -1,0 +1,144 @@
+<template>
+	<div class="page">
+		<list class="list">
+			<list-item class="item" type="info">
+				<text class="item-title">文件名</text>
+				<text class="item-value">{{fileName}}</text>
+			</list-item>
+			<list-item class="item" type="info">
+				<text class="item-title">文件大小</text>
+				<text class="item-value">{{fileSize}}</text>
+			</list-item>
+			<list-item class="item" type="info">
+				<text class="item-title">修改日期</text>
+				<text class="item-value">{{modifiedTime}}</text>
+			</list-item>
+		</list>
+
+		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
+		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+		<text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+			{{nowTime}}
+		</text>
+		<text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+			书籍详情
+		</text>
+	</div>
+</template>
+
+<script>
+import router from '@system.router'
+import file from '@system.file'
+import prompt from '@system.prompt'
+
+export default {
+	private: {
+		fileName: '加载中...',
+		fileSize: '加载中...',
+		modifiedTime: '加载中...',
+		nowTime: "00:00",
+		timer: null
+	},
+	protected: {
+		cPath: '',
+		name: ''
+	},
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		hours = hours < 10 ? '0' + hours : hours;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		this.nowTime = `${hours}:${minutes}`;
+	},
+	onInit() {
+		this.updateTime();
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 1000);
+		this.loadFileInfo();
+	},
+	onDestroy() {
+		clearInterval(this.timer);
+	},
+	loadFileInfo() {
+		const that = this;
+		this.fileName = this.name + '.txt';
+
+		file.get({
+			uri: this.cPath,
+			success: function(data) {
+				that.fileSize = that.formatFileSize(data.length);
+				that.modifiedTime = that.formatTime(data.lastModifiedTime);
+			},
+			fail: function(data, code) {
+				prompt.showToast({ message: `加载失败: ${code}` });
+				that.fileSize = '加载失败';
+				that.modifiedTime = '加载失败';
+			}
+		});
+	},
+	formatFileSize(bytes) {
+		if (bytes === 0) return '0 Bytes';
+		const k = 1024;
+		const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+	},
+	formatTime(timestamp) {
+		if (!timestamp) return '未知';
+		const date = new Date(timestamp);
+		const year = date.getFullYear();
+		const month = ('0' + (date.getMonth() + 1)).slice(-2);
+		const day = ('0' + date.getDate()).slice(-2);
+		const hours = ('0' + date.getHours()).slice(-2);
+		const minutes = ('0' + date.getMinutes()).slice(-2);
+		return `${year}-${month}-${day} ${hours}:${minutes}`;
+	},
+	back() {
+		router.back();
+	}
+}
+</script>
+
+<style>
+.page {
+	width: 336px;
+	height: 480px;
+	background-color: #000000;
+}
+.list {
+	width: 336px;
+	height: 480px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	padding: 86px 6px;
+}
+.item {
+	width: 100%;
+	height: 112px;
+	padding: 14px 20px;
+	margin-bottom: 8px;
+	background-color: #262626;
+	border-radius: 36px;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: space-around;
+}
+.item-title {
+	font-size: 28px;
+	line-height: 37px;
+	font-weight: bold;
+	color: rgba(255,255,255,0.6);
+}
+.item-value {
+	font-size: 32px;
+	line-height: 40px;
+	width: 100%;
+	font-weight: bold;
+	color: white;
+	text-overflow: ellipsis;
+	lines: 1;
+}
+</style>
