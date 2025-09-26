@@ -241,14 +241,6 @@
 				if(enable)this.auto = speed;
 		  }
 		})
-		setTimeout(() => {
-			that.$element("scrollId").scrollTo({
-				top: that.savedScrollOffset,
-				left: 0,
-				behavior: 'instant'
-			});
-			console.log("恢复进度："+that.savedScrollOffset);
-		}, 200);
 	  },
 	  onScroll(e){
 		const that = this;
@@ -265,14 +257,18 @@
 			if(that.savedPersent[that.name] && (that.savedPersent[that.name].s || that.savedPersent[that.name].s === 0)){
 			  that.currentFileOffset = that.savedPersent[that.name].s;
 			  that.persent = that.savedPersent[that.name].p || 0;
-			  that.savedScrollOffset = that.savedPersent[that.name].o;
+			  that.savedScrollOffset = that.savedPersent[that.name].o || 0;
 			} else {
 			  that.currentFileOffset = 0;
+			  that.persent = 0;
+			  that.savedScrollOffset = 0;
 			}
 			that.readFile();
 		  },
 		  fail: function(){
 			that.currentFileOffset = 0;
+			that.persent = 0;
+			that.savedScrollOffset = 0;
 			that.readFile();
 		  }
 		});
@@ -310,14 +306,35 @@
 		var that = this;
 		let lastSeg = that.page1;
 		let newOffset = lastSeg.offset + lastSeg.length;
-		if(newOffset >= allSize) return;
+	
+		const restoreScroll = () => {
+			// 使用 setTimeout 等待UI渲染完成
+			setTimeout(() => {
+			that.$element("scrollId").scrollTo({
+				top: that.savedScrollOffset,
+				left: 0,
+				behavior: 'instant'
+			});
+			console.log("恢复进度："+that.savedScrollOffset);
+			}, 200);
+		};
+	
+		if(newOffset >= allSize) {
+			that.page2 = null; // 确保 page2 为空
+			restoreScroll();
+			return;
+		}
+	
 		that.readFileText(newOffset, function(str, bytesRead){
-		  if(str){
+			if(str){
 			that.page2 = { text: str, offset: newOffset, length: bytesRead };
 			// 更新保存信息（顶部段代表当前进度）
 			that.currentFileOffset = that.page1.offset;
 			that.persent = parseInt(that.currentFileOffset * 100 / allSize);
-		  }
+			} else {
+			that.page2 = null;
+			}
+			restoreScroll();
 		});
 	  },
 	  //【读取文件文本】回调返回文本内容和实际读取的字节数
