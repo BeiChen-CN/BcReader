@@ -21,10 +21,13 @@
 		  </text>
 
 		  <!-- 循环显示双页文本 -->
-		  <text for="{{segments}}"
-			id="{{'segment-' + $idx}}"
+		  <text id="segment-0"
 			style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">
-			{{$item.text}}
+			{{page1.text}}
+		  </text>
+		  <text id="segment-1"
+			style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">
+			{{page2.text}}
 		  </text>
 
 		  <!-- 下方加载提示 -->
@@ -81,8 +84,8 @@
 		showSetting: true,
 		loadingNext: false,   // 防止重复加载下一页
 		loadingPrev: false,   // 防止重复加载上一页
-		// 双页模式：segments 数组最多存放两个页面内容
-		segments: [],
+		page1: null,
+		page2: null,
 		debugOutput: "初始化中...",
 		currentFileOffset: 0, // 当前顶部页面在文件中的起始偏移（字节）
 		opacity: 100,
@@ -251,16 +254,6 @@
 		const that = this;
 		
 		that.currentScrollTop = e.scrollY;
-		// that.$element("segment-0").getBoundingClientRect({
-		// 	success: function(rect){
-		// 		let removedHeight = rect.height;
-		// 		if (that.currentScrollTop > removedHeight) {
-		// 			that.currentScrollTop = that.currentScrollTop - removedHeight;
-		// 		}
-		// 	},
-		// 	fail: function(){}
-		// });
-		// console.log("=-=-=-=-=="+that.currentScrollTop);
 	  },
 	  //【读取进度】从全局存储中恢复当前书籍的记录（格式 {"book1":{"p":..., "s":..., "o":0}, ...}）
 	  initReadFile(){
@@ -307,7 +300,7 @@
 	  loadInitialSegments(){
 		var that = this;
 		this.readFileText(this.currentFileOffset, function(str, bytesRead){
-		  that.segments = [{ text: str, offset: that.currentFileOffset, length: bytesRead }];
+		  that.page1 = { text: str, offset: that.currentFileOffset, length: bytesRead };
 		  // 加载第二页
 		  that.loadNextSegmentNoScroll();
 		});
@@ -315,16 +308,15 @@
 	  // 不做翻页调整，仅追加一页（用于初始加载）
 	  loadNextSegmentNoScroll(){
 		var that = this;
-		let lastSeg = that.segments[that.segments.length - 1];
+		let lastSeg = that.page1;
 		let newOffset = lastSeg.offset + lastSeg.length;
 		if(newOffset >= allSize) return;
 		that.readFileText(newOffset, function(str, bytesRead){
 		  if(str){
-			that.segments.push({ text: str, offset: newOffset, length: bytesRead });
+			that.page2 = { text: str, offset: newOffset, length: bytesRead };
 			// 更新保存信息（顶部段代表当前进度）
-			that.currentFileOffset = that.segments[0].offset;
+			that.currentFileOffset = that.page1.offset;
 			that.persent = parseInt(that.currentFileOffset * 100 / allSize);
-			// that.saveData();
 		  }
 		});
 	  },
@@ -361,7 +353,6 @@
 		});
 	  },
 	  //【向下翻页】（scrollbottom 触发）
-	  // 追加下一页内容；若双页数量超过 2，则移除顶部页面，并调用 scrollBy 向上偏移被移除页面高度
 	  onScrollBottom(event){
 		if(!this.loadingNext){
 		  this.loadingNext = true;
@@ -370,7 +361,11 @@
 	  },
 	  loadNextSegment(){
 		var that = this;
-		let lastSeg = that.segments[that.segments.length - 1];
+		if (!that.page2) {
+			that.loadingNext = false;
+			return;
+		}
+		let lastSeg = that.page2;
 		let newOffset = lastSeg.offset + lastSeg.length;
 		if(newOffset >= allSize){
 		  this.loadingNext = false;
@@ -379,31 +374,30 @@
   		  this.readFileText(newOffset, function (str, bytesRead) {
 		  that.loadingNext = false;
 		  if(str){
-			that.segments.push({ text: str, offset: newOffset, length: bytesRead });
-			// 若超过两页，移除顶部页面
-  			  if (that.segments.length > 2) {
-				that.segments.shift();
-			  that.$element("segment-0").getBoundingClientRect({
+			const nextPageData = { text: str, offset: newOffset, length: bytesRead };
+			that.$element("segment-0").getBoundingClientRect({
 				success: function(rect){
 				  let removedHeight = rect.height;
-				  // 调用 scrollBy 向上偏移 removedHeight，确保当前阅读部分保持位置不变
+
+				  that.page1 = that.page2;
+				  that.page2 = nextPageData;
+
 				  that.$element("scrollId").scrollBy({
 					top: -removedHeight,
 					left: 0,
 					behavior: 'instant'
 				  });
+
+				  that.currentFileOffset = that.page1.offset;
+				  that.persent = parseInt(that.currentFileOffset * 100 / allSize);
+				  that.saveData();
 				},
 				fail: function(){}
-			  });
-			}
-			that.currentFileOffset = that.segments[0].offset;
-			that.persent = parseInt(that.currentFileOffset * 100 / allSize);
-			that.saveData();
+			});
 		  }
 		});
 	  },
 	  //【向上翻页】（scrolltop 触发）
-	  // 预先加载上一页内容，并插入到数组头部；如果超过两页，则移除底部页面，并调用 scrollBy 向下偏移新插入页面高度
 	  onScrollTop(event){
 		if(!this.loadingPrev && this.currentFileOffset > 0){
 		  this.loadingPrev = true;
@@ -412,21 +406,24 @@
 	  },
 	  loadPrevSegment(){
 		var that = this;
-		let firstSeg = that.segments[0];
+		let firstSeg = that.page1;
 		let newOffset = firstSeg.offset - txtSizePage * 2;
 		if(newOffset < 0) newOffset = 0;
 		if(firstSeg.offset <= 0){
 		  this.loadingPrev = false;
 		  return;
 		}
-  		  this.readFileText(newOffset, function (str, bytesRead) {
+  		this.readFileText(newOffset, function (str, bytesRead) {
 		  that.loadingPrev = false;
 		  if(str){
-			that.segments.unshift({ text: str, offset: newOffset, length: bytesRead });
+			const prevPageData = { text: str, offset: newOffset, length: bytesRead };
+
+			that.page2 = that.page1;
+			that.page1 = prevPageData;
+
 			that.$element("segment-0").getBoundingClientRect({
 			  success: function(rect){
 				let insertedHeight = rect.height;
-				// 向下滚动 insertedHeight，保持当前内容位置不变
 				that.$element("scrollId").scrollBy({
 				  top: insertedHeight,
 				  left: 0,
@@ -435,11 +432,8 @@
 			  },
 			  fail: function(){}
 			});
-			// 若超过两页，移除底部页面
-			if(that.segments.length > 2){
-			  that.segments.pop();
-			}
-			that.currentFileOffset = that.segments[0].offset;
+
+			that.currentFileOffset = that.page1.offset;
 			that.persent = parseInt(that.currentFileOffset * 100 / allSize);
 			that.saveData();
 		  }
