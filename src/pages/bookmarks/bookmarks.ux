@@ -31,7 +31,7 @@
   import prompt from '@system.prompt'
   
   const SAVED_KEY = "EBOOK_SAVED";
-  const txtSizePage = 500;
+  let txtSizePage = 500;
   
   export default {
     private: {
@@ -61,6 +61,14 @@
     },
     onShow() {
       this.loadBookmarks();
+      storage.get({
+          key: 'EBOOK_TXTSZPAGE',
+          success: function(data) {
+              if (data) {
+                  txtSizePage = parseInt(data);
+              }
+          }
+      });
     },
     onDestroy() {
       clearInterval(this.timer);
@@ -204,4 +212,3 @@
     lines: 1;
   }
   </style>
-  

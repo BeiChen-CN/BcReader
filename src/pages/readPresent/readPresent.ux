@@ -1,248 +1,249 @@
-<import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
-  <div class="page" style="flex-direction: column;">
-	<div class="item">
-
-		<text style="font-size: 24px;font-weight:bold;color: rgba(255, 255, 255, 0.6);width: 100%;text-align: center;">
-			跳转至
-		</text>
-
-		<text style="font-size: 36px;font-weight:bold;color: white;width: 100%;text-align: center;">
-			{{percent}}%
-		</text>
-
+	<div class="page" style="flex-direction: column;">
+	  <div class="item">
+		  <text style="font-size: 36px;font-weight:bold;color: white;width: 100%;text-align: center;">
+			  {{inputPage}}
+		  </text>
+		  <text style="font-size: 24px;font-weight:bold;color: rgba(255, 255, 255, 0.6);width: 100%;text-align: center;">
+			  共 {{totalPages}} 页
+		  </text>
+	  </div>
+	  <div class="row" style="top:209px">
+		  <img src="/common/images/num_pad/7.png" @click="onClick('7')"/>
+		  <img src="/common/images/num_pad/8.png" @click="onClick('8')"/>
+		  <img src="/common/images/num_pad/9.png" @click="onClick('9')"/>
+	  </div>
+	  <div class="row" style="top:276px">
+		  <img src="/common/images/num_pad/4.png" @click="onClick('4')"/>
+		  <img src="/common/images/num_pad/5.png" @click="onClick('5')"/>
+		  <img src="/common/images/num_pad/6.png" @click="onClick('6')"/>
+	  </div>
+	  <div class="row" style="top:343px">
+		  <img src="/common/images/num_pad/1.png" @click="onClick('1')"/>
+		  <img src="/common/images/num_pad/2.png" @click="onClick('2')"/>
+		  <img src="/common/images/num_pad/3.png" @click="onClick('3')"/>
+	  </div>
+	  <div class="row" style="top:410px">
+		  <img src="/common/images/num_pad/0.png" @click="onClick('0')"/>
+		  <img src="/common/images/num_pad/del.png" @click="onClick('del')"/>
+	  </div>
+  
+  
+	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+	  <img static src="/common/images/conform.png" @click="onClick('conform')" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		{{nowTime}}
+	  </text>
+	  <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		  跳转页码
+	  </text>
 	</div>
-	<div class="row" style="top:209px">
-		<img src="/common/images/num_pad/7.png" @click="onClick('7')"/>
-		<img src="/common/images/num_pad/8.png" @click="onClick('8')"/>
-		<img src="/common/images/num_pad/9.png" @click="onClick('9')"/>
-	</div>
-	<div class="row" style="top:276px">
-		<img src="/common/images/num_pad/4.png" @click="onClick('4')"/>
-		<img src="/common/images/num_pad/5.png" @click="onClick('5')"/>
-		<img src="/common/images/num_pad/6.png" @click="onClick('6')"/>
-	</div>
-	<div class="row" style="top:343px">
-		<img src="/common/images/num_pad/1.png" @click="onClick('1')"/>
-		<img src="/common/images/num_pad/2.png" @click="onClick('2')"/>
-		<img src="/common/images/num_pad/3.png" @click="onClick('3')"/>
-	</div>
-	<div class="row" style="top:410px">
-		<img src="/common/images/num_pad/0.png" @click="onClick('0')"/>
-		<img src="/common/images/num_pad/del.png" @click="onClick('del')"/>
-	</div>
-
-
-    <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-    <img static src="/common/images/conform.png" @click="onClick('conform')" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-    <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-      {{nowTime}}
-    </text>
-    <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-		阅读进度
-    </text>
-  </div>
-</template>
-
-<script>
-import router from '@system.router'
-import storage from '../../common/storage.js'
-import prompt from '@system.prompt'
-import app from '@system.app'
-
-export default {
-	// ÷﹢‐+-＋－×÷％
-  // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
-  private: {
-	percent:0,
-	savedPersent:{},
-	nowTime: "00:00",
-    timer: null
-  },
-  protected: {
-    cPath: '',
-  	name: '',
-	size: 0
-  },
-  updateTime() {
-    const date = new Date();
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-
-    // 格式化小时和分钟为两位数
-    hours = hours < 10 ? '0' + hours : hours;
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-
-    this.nowTime = `${hours}:${minutes}`;
-  },
-  onInit() {
-	this.updateTime();
-    this.timer = setInterval(() => {
-      this.updateTime();
-    }, 1000);
-    var that = this;
-    storage.get({
-      key: 'EBOOK_SAVED',
-      success: function(data) {
-        if (data) {
-          that.savedPersent = JSON.parse(data)
-		  that.percent=that.savedPersent[that.name]["p"]
-        }
-      },
-      fail: function(data, code) {
-        ////console.log(`handling fail, code = ${code}`)
-      }
-    })
-    // setInterval(() => {
-    //     //that.initData();
-	//       that.onUpdate();
-    // }, 50);
-  },
-  onDestroy(){
-	  clearInterval(this.timer);
-  },
-  onReady(){
-	  // this.resetList();
-  },
-  resetList(){
-
-  },
-  onShow(){
-
-  },
-  onClick(num){
-	if (num == 'del') {
-		if (this.percent.toString().length == 1) {
-			this.percent = 0
-			return
+  </template>
+  
+  <script>
+  import router from '@system.router'
+  import storage from '../../common/storage.js'
+  import prompt from '@system.prompt'
+  import app from '@system.app'
+  
+  export default {
+	private: {
+	  inputPage: '0',
+	  totalPages: 1,
+	  txtSizePage: 500,
+	  savedPersent:{},
+	  nowTime: "00:00",
+	  timer: null
+	},
+	protected: {
+	  cPath: '',
+		name: '',
+	  size: 0
+	},
+	updateTime() {
+	  const date = new Date();
+	  let hours = date.getHours();
+	  let minutes = date.getMinutes();
+  
+	  // 格式化小时和分钟为两位数
+	  hours = hours < 10 ? '0' + hours : hours;
+	  minutes = minutes < 10 ? '0' + minutes : minutes;
+  
+	  this.nowTime = `${hours}:${minutes}`;
+	},
+	onInit() {
+	  this.updateTime();
+	  this.timer = setInterval(() => {
+		this.updateTime();
+	  }, 1000);
+	  
+	  storage.get({
+		  key: 'EBOOK_TXTSZPAGE',
+		  success: (data) => {
+			  if (data) {
+				  this.txtSizePage = parseInt(data);
+			  }
+			  this.loadProgress();
+		  },
+		  fail: () => {
+			  this.txtSizePage = 500;
+			  this.loadProgress();
+		  }
+	  });
+	},
+	loadProgress() {
+	  const that = this;
+	  storage.get({
+		key: 'EBOOK_SAVED',
+		success: function(data) {
+		  if (data) {
+			that.savedPersent = JSON.parse(data);
+			const bookData = that.savedPersent[that.name];
+			if (bookData && that.size > 0) {
+			  that.totalPages = Math.ceil(that.size / (that.txtSizePage * 2)) || 1;
+			  const currentOffset = bookData.s || 0;
+			  const currentPage = Math.floor(currentOffset / (that.txtSizePage * 2)) + 1;
+			  that.inputPage = currentPage.toString();
+			} else {
+			  that.totalPages = Math.ceil(that.size / (that.txtSizePage * 2)) || 1;
+			  that.inputPage = '1';
+			}
+		  }
+		},
+		fail: function(data, code) {
+		  that.totalPages = Math.ceil(that.size / (that.txtSizePage * 2)) || 1;
+		  that.inputPage = '1';
 		}
-		this.percent=parseInt(this.percent.toString().slice(0, -1))
-		return
-	}
-	this.percent=parseInt(this.percent.toString().concat(num))
-	if (this.percent > 100){
-		this.percent=parseInt(this.percent.toString().slice(0, -1))
-	}
-	if(num =='conform'){
-		//console.log('size = ' + this.size)
-		//console.log('name = ' + this.name)
-		this.savedPersent[this.name]["p"]=this.percent;
-		//this.savedPersent[this.name]["s"]=0
-		this.savedPersent[this.name]["o"]=0;
-		var offset = Math.ceil(parseInt(this.size) * this.percent/200)*2;
-		this.savedPersent[this.name]["s"]=offset;
-
-		//console.log('saved data = ' + JSON.stringify(this.savedPersent))
-		storage.set({
-	  		key: 'EBOOK_SAVED',
-	  		value: JSON.stringify(this.savedPersent),
-	  		success: function(data) {
-	  		  //console.log('handling success')
-			  prompt.showToast({
-			  	message: '设置成功',
-			  	duration: 2000
-			  })
-	  		},
-	  		fail: function(data, code) {
-	  		  //console.log(`handling fail, code = ${code}`)
-			  prompt.showToast({
-			  	message: '设置失败',
-			  	duration: 2000
-			  })
-	  		}
-	  	})
-
-	}
-  },
-  change(e){
-	  this.percent=e.detail.value;
-  },
-  selectFile(item){
-	  router.push({
-	    uri: '/pages/detail',
-	  	params: { cPath: item.uri,name: item.name }
 	  })
-  },
-  routerTo(url) {
-    // 跳转到应用内的某个页面，router用法详见：文档->接口->页面路由
-	router.push({
-      uri: '/pages/' + url,
-	  params: { cPath: this.cPath,name: this.name }
-	})
-  },
-  back(){
-  	router.back();
-  },
-  exit(){
-	  app.terminate();
+	},
+	onDestroy(){
+		clearInterval(this.timer);
+	},
+	onClick(num){
+	  if (num === 'del') {
+		  if (this.inputPage.length > 1) {
+			  this.inputPage = this.inputPage.slice(0, -1);
+		  } else {
+			  this.inputPage = '0';
+		  }
+		  return;
+	  }
+  
+	  if (num === 'conform') {
+		  let targetPage = parseInt(this.inputPage);
+		  if (isNaN(targetPage) || targetPage < 1) {
+			  targetPage = 1;
+		  }
+		  if (targetPage > this.totalPages) {
+			  targetPage = this.totalPages;
+		  }
+  
+		  const newOffset = (targetPage - 1) * this.txtSizePage * 2;
+		  const newPercent = this.size > 0 ? (newOffset * 100) / this.size : 0;
+		  
+		  if (!this.savedPersent[this.name]) {
+			  this.savedPersent[this.name] = {};
+		  }
+		  this.savedPersent[this.name].p = newPercent;
+		  this.savedPersent[this.name].s = newOffset;
+		  this.savedPersent[this.name].o = 0;
+  
+		  storage.set({
+			  key: 'EBOOK_SAVED',
+			  value: JSON.stringify(this.savedPersent),
+			  success: () => {
+				  prompt.showToast({ message: '设置成功', duration: 1000 });
+				  globalThis.justJumpedFromPageNumber = true;
+				  router.back();
+			  },
+			  fail: () => {
+				  prompt.showToast({ message: '设置失败', duration: 2000 });
+			  }
+		  });
+		  return;
+	  }
+  
+	  const currentVal = this.inputPage === '0' ? '' : this.inputPage;
+	  const newValStr = currentVal + num;
+	  const newVal = parseInt(newValStr);
+  
+	  if (newVal > this.totalPages) {
+		  prompt.showToast({ message: `最大页码为 ${this.totalPages}`, duration: 1000 });
+	  } else {
+		  this.inputPage = newValStr;
+	  }
+	},
+	back(){
+		router.back();
+	}
   }
-}
-</script>
-
-<style>
-.page {
-	width: 336px;
-	height: 480px;
-	background-color: #000000;
-}
-
-/* 更多信息样式 */
-.more-info {
-  width: 335px;
-  background-color: rgb(0,0,0);
-}
-
-.caltext {
-	width: 320px;
-	lines: 4;
-	text-overflow: clip;
-	font-size: 30px;
-	color: rgb(255,255,255);
-	text-align: left;
-	height: 160px;
-}
-
-.list {
-	width: 336px;
-	height: 400px;
-	position: absolute;
-	top:72px;
-	/* background-color: red; */
-}
-
-.item {
-	position: absolute;
-	left: 6px;
-	top: 86px;
-	width: 324px;
-	height: 115px;
-	border-radius: 36px;
-	flex-direction: column;
-	border: 3px solid #262626;
-	/* align-items: center; */
-	justify-content: center;
-}
-
-.itemtext {
-	font-size: 36px;
-	font-weight: bold;
-	height: 68px;
-	width: 102px;
-	color: white;
-	text-align: center;
-	text-overflow: ellipsis;
-	lines: 1;
-	padding: 10px;
-	margin-right: 9px;
-	background-color: #262626;
-	border-radius:12px;
-}
-
-.row {
-	position:absolute;
-	width:336px;
-	height:64px;
-	padding:0px 6px;
-	justify-content: space-between;
-}
-</style>
+  </script>
+  
+  <style>
+  .page {
+	  width: 336px;
+	  height: 480px;
+	  background-color: #000000;
+  }
+  
+  /* 更多信息样式 */
+  .more-info {
+	width: 335px;
+	background-color: rgb(0,0,0);
+  }
+  
+  .caltext {
+	  width: 320px;
+	  lines: 4;
+	  text-overflow: clip;
+	  font-size: 30px;
+	  color: rgb(255,255,255);
+	  text-align: left;
+	  height: 160px;
+  }
+  
+  .list {
+	  width: 336px;
+	  height: 400px;
+	  position: absolute;
+	  top:72px;
+	  /* background-color: red; */
+  }
+  
+  .item {
+	  position: absolute;
+	  left: 6px;
+	  top: 86px;
+	  width: 324px;
+	  height: 115px;
+	  border-radius: 36px;
+	  flex-direction: column;
+	  border: 3px solid #262626;
+	  /* align-items: center; */
+	  justify-content: center;
+  }
+  
+  .itemtext {
+	  font-size: 36px;
+	  font-weight: bold;
+	  height: 68px;
+	  width: 102px;
+	  color: white;
+	  text-align: center;
+	  text-overflow: ellipsis;
+	  lines: 1;
+	  padding: 10px;
+	  margin-right: 9px;
+	  background-color: #262626;
+	  border-radius:12px;
+  }
+  
+  .row {
+	  position:absolute;
+	  width:336px;
+	  height:64px;
+	  padding:0px 6px;
+	  justify-content: space-between;
+  }
+  </style>
+  

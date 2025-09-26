@@ -1,0 +1,110 @@
+<import name="number" src="../../components/number_choose/number_choose"></import>
+<template>
+	<div class="page" style="flex-direction: column">
+		<div class="item">
+			<text style="font-size: 24px; color: white; text-align: left; padding: 20px; lines: 5;">
+				此设置影响翻页时加载的文本量。
+				值越大，每页加载的文本越多，但也可能增加单次加载时间。
+				修改后需重进阅读页生效。
+			</text>
+		</div>
+		<number style="position: absolute; bottom: 6px" max="1200" min="200" step="100" unit="字节" value="{{pageSize}}" @change="change" name="分段大小">
+		</number>
+
+		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+		<text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		  {{nowTime}}
+		</text>
+		<text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+			分段大小
+		</text>
+	</div>
+</template>
+
+<script>
+import router from "@system.router";
+import storage from '../../common/storage.js';
+
+const STORAGE_KEY = "EBOOK_TXTSZPAGE";
+const DEFAULT_SIZE = 500;
+
+export default {
+	private: {
+		pageSize: DEFAULT_SIZE,
+		nowTime: "00:00",
+		timer: null
+	},
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+
+		// 格式化小时和分钟为两位数
+		hours = hours < 10 ? '0' + hours : hours;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+
+		this.nowTime = `${hours}:${minutes}`;
+	},
+	onInit() {
+		this.updateTime();
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 1000);
+		storage.get({
+			key: STORAGE_KEY,
+			success: (data) => {
+				if (data) {
+					this.pageSize = parseInt(data);
+				}
+			},
+		})
+	},
+	onDestroy(){
+	  clearInterval(this.timer);
+	},
+	change(e) {
+		this.pageSize = e.detail.value;
+		storage.set({
+			key: STORAGE_KEY,
+			value: this.pageSize.toString(),
+		});
+	},
+	reset() {
+		this.pageSize = DEFAULT_SIZE;
+		storage.set({
+			key: STORAGE_KEY,
+			value: this.pageSize.toString(),
+		});
+	},
+	back() {
+		storage.set({
+			key: STORAGE_KEY,
+			value: this.pageSize.toString(),
+		});
+		router.back();
+	},
+};
+</script>
+
+<style>
+.page {
+	width: 336px;
+	height: 480px;
+	background-color: #000000;
+}
+
+.item {
+	position: absolute;
+	left: 6px;
+	top: 86px;
+	width: 324px;
+	height: 308px;
+	border-radius: 36px;
+	flex-direction: column;
+	border: 3px solid #262626;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+}
+</style>

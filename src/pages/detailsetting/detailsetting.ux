@@ -10,8 +10,8 @@
 		  </list-item>
 		  <list-item type="item" class="item" @click="routerTo('readPresent')">
 			  <div class="item-content">
-				  <text class="itemtext">阅读进度</text>
-				  <text class="itemtext2">跳转阅读进度</text>
+				  <text class="itemtext">跳转页码</text>
+				  <text class="itemtext2">按页码跳转</text>
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
 		  </list-item>
@@ -115,6 +115,10 @@
 		this.confirm = true;
 		if (globalThis.justJumpedFromBookmark) {
 			globalThis.justJumpedFromBookmark = false;
+			router.back();
+		}
+		if (globalThis.justJumpedFromPageNumber) {
+			globalThis.justJumpedFromPageNumber = false;
 			router.back();
 		}
 	},
@@ -253,4 +257,3 @@
 	  justify-content: space-between;
   }
   </style>
-  

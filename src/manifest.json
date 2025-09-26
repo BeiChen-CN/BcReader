@@ -1,8 +1,8 @@
 {
   "package": "com.bandbbs.ebook",
   "name": "电子书",
-  "versionName": "3.1",
-  "versionCode": 250804,
+  "versionName": "3.2",
+  "versionCode": 250927,
   "minPlatformVersion": 1100,
   "icon": "/common/logo.png",
   "simulationVersion": "default",
@@ -90,6 +90,9 @@
       },
       "pages/bookmarks": {
         "component": "bookmarks"
+      },
+      "pages/pageSizeSetting": {
+        "component": "pageSizeSetting"
       }
     }
   },

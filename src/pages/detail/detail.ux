@@ -67,7 +67,6 @@
 	import brightness from '@system.brightness'
 
 	// 每页文本字节数（实际读取字节数为 txtSizePage*2）
-	var txtSizePage = 500;
 	var allSize = 0;
 	var SAVED_KEY = "EBOOK_SAVED";
 
@@ -98,6 +97,7 @@
 		totalPages: 0,
 		currentPage: 0,
 		isKeepScreenOn: false,
+		txtSizePage: 500,
 	  },
 	  protected: {
 		cPath: '',
@@ -119,7 +119,7 @@
 			this.currentPage = 0;
 			return;
 		}
-		this.currentPage = Math.floor(this.currentFileOffset / (txtSizePage * 2)) + 1;
+		this.currentPage = Math.floor(this.currentFileOffset / (this.txtSizePage * 2)) + 1;
 		if (this.currentPage > this.totalPages) {
 			this.currentPage = this.totalPages;
 		}
@@ -145,6 +145,19 @@
 	  },
 	  onShow(){
 		var that = this;
+		storage.get({
+		  key: 'EBOOK_TXTSZPAGE',
+		  success: function(data) {
+			if (data) {
+			  that.txtSizePage = parseInt(data);
+			} else {
+			  storage.set({
+				key: 'EBOOK_TXTSZPAGE',
+				value: that.txtSizePage.toString()
+			  });
+			}
+		  }
+		});
 		// 读取全局保存的进度，恢复 currentFileOffset 和 persent
 		this.initReadFile();
 		// 读取字号设置
@@ -269,7 +282,7 @@
 			  uri: path,
 			  success: function(data){
 				allSize = data.length;
-				that.totalPages = Math.ceil(allSize / (txtSizePage * 2));
+				that.totalPages = Math.ceil(allSize / (that.txtSizePage * 2));
 				// 从 currentFileOffset 开始加载初始双页内容
 				that.loadInitialSegments();
 			  },
@@ -331,7 +344,7 @@
 		  cb('', 0);
 		  return;
 		}
-		var length = txtSizePage * 2;
+		var length = this.txtSizePage * 2;
 		if(readOffset < 0){
 		  length = length + readOffset;
 		  readOffset = 0;
@@ -413,7 +426,7 @@
 	  loadPrevSegment(){
 		var that = this;
 		let firstSeg = that.page1;
-		let newOffset = firstSeg.offset - txtSizePage * 2;
+		let newOffset = firstSeg.offset - this.txtSizePage * 2;
 		if(newOffset < 0) newOffset = 0;
 		if(firstSeg.offset <= 0){
 		  this.loadingPrev = false;
