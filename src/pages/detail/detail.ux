@@ -153,30 +153,6 @@
 				////console.log(`handling fail, code = ${code}`)
 			}
 		})
-		// 初次启动提示（保持原有逻辑）
-		storage.get({
-		  key: 'EBOOK_TIPS',
-		  success: function(data) {
-			if(data != "1"){
-			  storage.set({
-				key: 'EBOOK_TIPS',
-				value: '1',
-				success: function(){
-				  that.routerTo('info');
-				}
-			  });
-			}
-		  },
-		  fail: function(){
-			storage.set({
-			  key: 'EBOOK_TIPS',
-			  value: '1',
-			  success: function(){
-				that.routerTo('info');
-			  }
-			});
-		  }
-		});
 	  },
 	  onShow(){
 		var that = this;
@@ -221,11 +197,36 @@
 			if (data) {
 				that.swipe = data
 			} else {
+				that.swipe = 'column'
 				storage.set({
 					key: 'EBOOK_SWIPE',
-					value: 'column'
+					value: 'column',
+					success: function() {
+						storage.get({
+						  key: 'EBOOK_TIPS',
+						  success: function(data) {
+							if(data != "1"){
+							  storage.set({
+								key: 'EBOOK_TIPS',
+								value: '1',
+								success: function(){
+								  that.routerTo('info');
+								}
+							  });
+							}
+						  },
+						  fail: function(){
+							storage.set({
+							  key: 'EBOOK_TIPS',
+							  value: '1',
+							  success: function(){
+								that.routerTo('info');
+							  }
+							});
+						  }
+						});
+					}
 				});
-				that.swipe = 'column'
 			}
 		  },
 		})
