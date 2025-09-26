@@ -143,10 +143,11 @@ export default {
               if (!savedPersent[rawName]) {
                 savedPersent[rawName] = { p: 0, s: 0, o: 0 };
               }
+              const pValue = savedPersent[rawName].p || 0;
               return {
                 name: rawName,
                 // 将进度赋值给 item 用于界面展示
-                percent: savedPersent[rawName].p || 0
+                percent: parseFloat(pValue).toFixed(2)
               };
             });
           that.fileList = fileArray;
