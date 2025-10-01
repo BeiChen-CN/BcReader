@@ -44,7 +44,7 @@
 
 		<img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 336px;height: 102px;" />
 
-        <img show="{{showSetting}}" src="{{ isKeepScreenOn ? '/common/images/screen_light.png' : '/common/images/screen_light_off.png' }}" @click="toggleKeepScreenOn" style="position: absolute;left: 6px;top: 402px;width: 72px;height: 72px;"/>
+        <img show="{{showSetting}}" src="{{ isKeepScreenOn ? '/common/images/brightness.png' : '/common/images/brightness_off.png' }}" @click="toggleKeepScreenOn" style="position: absolute;left: 6px;top: 402px;width: 72px;height: 72px;"/>
 
 		<div show="{{showSetting}}" style="position: absolute; top: 402px; left: 78px; width: 180px; height: 72px; flex-direction: column; justify-content: flex-start; align-items: center;">
 			<text style="line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
@@ -55,7 +55,7 @@
 			</text>
 		</div>
 
-        <img show="{{showSetting}}" src="/common/images/bookmark.png" @click="addBookmark" @longpress="gotoBookmarks" style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;"/>
+        <img show="{{showSetting}}" src="/common/images/add_bookmark.png" @click="addBookmark" @longpress="gotoBookmarks" style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;"/>
 	</div>
   </template>
 

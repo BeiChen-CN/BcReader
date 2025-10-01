@@ -9,7 +9,7 @@
             <text class="itemtext">{{formatPageNumber($item)}}</text>
             <text class="itemtext2">{{formatTime($item.time)}}</text>
           </div>
-          <img src="/common/images/minis.png" @click="deleteBookmark($idx)" style="width: 72px; height: 72px;" />
+          <img src="/common/images/delete.png" @click="deleteBookmark($idx)" style="width: 72px; height: 72px;" />
         </list-item>
       </list>
   
