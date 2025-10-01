@@ -99,6 +99,9 @@
       },
       "pages/firstlaunchtip": {
         "component": "firstlaunchtip"
+      },
+      "pages/confirm": {
+        "component": "confirm"
       }
     }
   },

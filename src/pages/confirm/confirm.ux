@@ -1,0 +1,112 @@
+<template>
+    <div class="page">
+        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
+        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+        <img static src="/common/images/delete.png" @click="confirmAction" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+        <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+            {{nowTime}}
+        </text>
+        <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+            {{title}}
+        </text>
+
+        <img src="/common/images/bin.png" style="position: absolute;left: 104px;top: 146px;width: 128px;height: 128px;" />
+        <text style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{confirmText}}</text>
+        <text style="position: absolute;left: 0px;top: 340px;width: 336px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;padding:0 20px;">{{subText}}</text>
+    </div>
+</template>
+
+<script>
+import router from '@system.router'
+import prompt from '@system.prompt'
+import file from '@system.file'
+
+export default {
+    private: {
+        nowTime: "00:00",
+        timer: null,
+    },
+    protected: {
+        action: '',
+        cPath: '',
+        title: '请确认',
+        confirmText: '确认执行操作吗？',
+        subText: '此操作不可逆'
+    },
+    updateTime() {
+        const date = new Date();
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        hours = hours < 10 ? '0' + hours : hours;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        this.nowTime = `${hours}:${minutes}`;
+    },
+    onInit() {
+        this.updateTime();
+        this.timer = setInterval(() => {
+            this.updateTime();
+        }, 1000);
+    },
+    onDestroy() {
+        clearInterval(this.timer);
+    },
+    back() {
+        router.back();
+    },
+    confirmAction() {
+        switch (this.action) {
+            case 'deleteBook':
+                this.deleteBook();
+                break;
+            case 'clearBookshelf':
+                this.clearBookshelf();
+                break;
+            default:
+                prompt.showToast({ message: '未知操作' });
+                router.back();
+        }
+    },
+    deleteBook() {
+        if (!this.cPath) {
+            prompt.showToast({ message: '参数错误' });
+            router.back();
+            return;
+        }
+        file.delete({
+            uri: this.cPath,
+            success: (data) => {
+                prompt.showToast({ message: '删除成功', duration: 1000 });
+                router.replace({ uri: '/pages/index' });
+            },
+            fail: (data, code) => {
+                prompt.showToast({ message: `删除失败: ${code}`, duration: 1000 });
+                router.back();
+            }
+        });
+    },
+    clearBookshelf() {
+        file.rmdir({
+            uri: 'internal://files/books/',
+            recursive: true,
+            success: (data) => {
+                prompt.showToast({ message: '清空成功', duration: 1000 });
+                router.back();
+            },
+            fail: (data, code) => {
+                prompt.showToast({ message: `清空失败 ${code}`, duration: 1000 });
+                router.back();
+            }
+        });
+    }
+}
+</script>
+
+<style>
+.page {
+    width: 336px;
+    height: 480px;
+    background-color: #000000;
+    flex-direction: column;
+    align-items: center;
+}
+</style>

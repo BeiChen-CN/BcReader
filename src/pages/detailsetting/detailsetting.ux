@@ -62,7 +62,6 @@
 	  
 	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
 	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-	  <!-- <img static src="/common/images/more.png" @click="routerTo('more')" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/> -->
 	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 		{{nowTime}}
 	  </text>
@@ -80,10 +79,7 @@
   
   
   export default {
-	  // ÷﹢‐+-＋－×÷％
-	// 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
 	private: {
-		confirm: true,
 		nowTime: "00:00",
 		timer: null
 	},
@@ -97,7 +93,6 @@
 	  let hours = date.getHours();
 	  let minutes = date.getMinutes();
   
-	  // 格式化小时和分钟为两位数
 	  hours = hours < 10 ? '0' + hours : hours;
 	  minutes = minutes < 10 ? '0' + minutes : minutes;
   
@@ -113,13 +108,11 @@
 		clearInterval(this.timer);
 	},
 	onReady(){
-		// this.resetList();
 	},
 	resetList(){
   
 	},
 	onShow(){
-		this.confirm = true;
 		if (globalThis.justJumpedFromBookmark) {
 			globalThis.justJumpedFromBookmark = false;
 			router.back();
@@ -130,41 +123,18 @@
 		}
 	},
 	onBackPress(){
-		//console.log('onBackPress');
-		// this.resetList();
 	},
 	del(){
-		if(this.confirm){
-			this.confirm = false
-			prompt.showToast({
-			  message: '再次点击确认删除',
-			  duration: 1000
-			})
-			setTimeout(() => {
-                this.confirm = true;
-            }, 2000);
-			return;
-		}
-
-		file.delete({
-		  uri: this.cPath,
-		  success: (data) => {
-			prompt.showToast({
-			  message: '删除成功',
-			  duration: 1000
-			})
-			router.replace({
-			    uri: '/pages/index'
-            });
-		  },
-		  fail: (data, code) => {
-			prompt.showToast({
-			  message: '删除失败',
-			  duration: 1000
-            })
-            this.confirm = true;
-		  }
-		})
+		router.push({
+            uri: '/pages/confirm',
+            params: {
+                action: 'deleteBook',
+                title: '删除书籍',
+                confirmText: '确认删除吗？',
+                subText: '删除后不可恢复',
+                cPath: this.cPath
+            }
+        });
 	},
 	selectFile(item){
 		router.push({
@@ -173,7 +143,6 @@
 		})
 	},
 	routerTo(url) {
-	  // 跳转到应用内的某个页面，router用法详见：文档->接口->页面路由
 	  router.push({
 		uri: '/pages/' + url,
 		params: { cPath: this.cPath,name: this.name,size: this.size }
@@ -195,7 +164,6 @@
 	  background-color: #000000;
   }
   
-  /* 更多信息样式 */
   .more-info {
 	width: 335px;
 	background-color: rgb(0,0,0);
@@ -218,7 +186,6 @@
 	  top:0px;
 	  left:0px;
 	padding: 86px 6px;
-	  /* background-color: red; */
   }
   
   .item {
@@ -228,7 +195,6 @@
 	  margin-bottom: 8px;
 	  background-color: #262626;
 	  border-radius: 36px;
-	  /* flex-direction: column; */
 	  align-items: center;
 	justify-content: space-between;
   }
@@ -241,20 +207,15 @@
 	  color: white;
 	  text-overflow: ellipsis;
 	  lines: 1;
-	  /* padding-left:12px; */
-	  /* padding-right:12px; */
-	  /* padding-top:12px; */
   }
   
   .itemtext2 {
 	  font-size: 28px;
 	  line-height: 37px;
-	  /* width: 100%; */
 	  font-weight: bold;
 	  color: rgba(255,255,255,0.6);
 	  text-overflow: ellipsis;
 	  lines: 1;
-	  /* padding-right:12px; */
   }
   
   
