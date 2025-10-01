@@ -3,7 +3,7 @@
 		<list class="list">
 			<list-item class="item" type="info">
 				<text class="item-title">文件名</text>
-				<text class="item-value">{{fileName}}</text>
+				<marquee class="item-value">{{fileName}}</marquee>
 			</list-item>
 			<list-item class="item" type="info">
 				<text class="item-title">文件大小</text>
