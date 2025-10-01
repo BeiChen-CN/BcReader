@@ -114,6 +114,9 @@
       },
       "pages/help": {
         "component": "help"
+      },
+      "pages/screenBrightness": {
+        "component": "screenBrightness"
       }
     }
   },

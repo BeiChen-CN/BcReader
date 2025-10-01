@@ -47,7 +47,7 @@
         {{nowTime}}
       </text>
       <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-        文本同步
+        书籍同步
       </text>
 <!-- 	<div style="width: 336px;padding-left: 15px;padding-right: 15px;padding-top: 19px;
 		position: absolute;top: 0px;left: 0px;flex-direction: column;">

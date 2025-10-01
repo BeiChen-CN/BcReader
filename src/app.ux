@@ -2,10 +2,38 @@
 import interconnfile from "./utils/interconnfile"
 import interconn from "./utils/handshake"
 import router from '@system.router'
+import brightness from '@system.brightness'
+import storage from './common/storage.js'
 globalThis.conn = new interconn();
 globalThis.conn.setHandshakeListener(() => {
   router.push({uri: 'pages/push'})
 })
 globalThis.connfile = globalThis.conn.register(interconnfile);
-export default {}
+export default {
+    onInit() {
+        storage.get({
+            key: 'EBOOK_BRIGHTNESS_FOLLOW_SYSTEM',
+            success: (data) => {
+                if (data === 'false') {
+                    storage.get({
+                        key: 'EBOOK_BRIGHTNESS',
+                        success: function(brightnessData) {
+                            if (brightnessData) {
+                                const brightnessValue = parseInt(brightnessData);
+                                if (!isNaN(brightnessValue)) {
+                                    brightness.setMode({
+                                        mode: brightness.MANUAL_MODE
+                                    });
+                                    brightness.setValue({
+                                        value: brightnessValue
+                                    });
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+}
 </script>
