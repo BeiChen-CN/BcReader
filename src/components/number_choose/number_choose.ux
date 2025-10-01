@@ -3,7 +3,7 @@
         <img static onclick="minus" onlongpress="minusL" ontouchend="end" src="/common/images/minis.png" style="position: absolute;left: 6px;width: 72px;height: 72px;"/>
 		<img static onclick="add" onlongpress="addL" ontouchend="end" src="/common/images/plus.png" style="position: absolute;left: 258px;width: 72px;height: 72px;"/>
 		<text style="position: absolute;left: 78px;top: 39px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-			{{ value_ + unit }}
+			{{ value + unit }}
 		</text>
 		<text style="position: absolute;left: 78px;top: 1px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 			{{ name }}
@@ -31,10 +31,9 @@ export default {
 			default: "名称",
 		},
 		unit: {
-			// 单位
 			type: String,
 			default: "",
-        }, 
+        },
         style: {
             default: "",
         },
@@ -42,27 +41,19 @@ export default {
             default: true,
         },
     },
-    data: {
-        value_: 0,
-    },
-    onInit() {
-        this.value_ = parseFloat(this.value || this.min);
-        this.$watch("value", "onValueChange")
-    },
     add(){
-        if (this.value_ < this.max) {
-            this.value_ += parseFloat(this.step);
+        const currentValue = parseFloat(this.value);
+        const step = parseFloat(this.step);
+        if (currentValue < this.max) {
+            this.$emit("change", { value: currentValue + step });
         }
-        this.$emit("change", {value:this.value_});
     },
     minus(){
-        if (this.value_ > this.min) {
-            this.value_ -= parseFloat(this.step);
+        const currentValue = parseFloat(this.value);
+        const step = parseFloat(this.step);
+        if (currentValue > this.min) {
+            this.$emit("change", { value: currentValue - step });
         }
-        this.$emit("change", { value: this.value_ });
-    },
-    onValueChange(value){
-    	this.value_ = value;
     },
     addL() {
         this.end();
