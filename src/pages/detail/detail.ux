@@ -620,13 +620,6 @@
 	},
 	addBookmark() {
 		const that = this;
-		const newBookmark = {
-			s: that.currentFileOffset,
-			p: that.persent,
-			o: that.currentScrollTop,
-			time: new Date().getTime()
-		};
-
 		storage.get({
 			key: SAVED_KEY,
 			success: function(data) {
@@ -637,6 +630,15 @@
 				if (!savedData[that.name].bookmarks) {
 					savedData[that.name].bookmarks = [];
 				}
+
+				const bookmarkCount = savedData[that.name].bookmarks.length;
+				const newBookmark = {
+					s: that.currentFileOffset,
+					p: that.persent,
+					o: that.currentScrollTop,
+					time: new Date().getTime(),
+					name: `书签${bookmarkCount + 1}`
+				};
 
 				const exists = savedData[that.name].bookmarks.some(bm => bm.s === newBookmark.s && bm.o === newBookmark.o);
 				if (exists) {
@@ -660,6 +662,13 @@
 			},
 			fail: function() {
 				let savedData = {};
+				const newBookmark = {
+					s: that.currentFileOffset,
+					p: that.persent,
+					o: that.currentScrollTop,
+					time: new Date().getTime(),
+					name: '书签1'
+				};
 				savedData[that.name] = {
 					bookmarks: [newBookmark]
 				};

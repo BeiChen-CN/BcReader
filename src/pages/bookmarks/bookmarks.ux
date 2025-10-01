@@ -1,214 +1,243 @@
 <template>
-    <div class="page" style="flex-direction: column;">
-      <img if="{{bookmarks.length === 0}}" src="/common/images/empty.png" style="position: absolute;left: 104px;top: 146px;width: 128px;height: 128px;" />
-      <text if="{{bookmarks.length === 0}}" style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">暂无书签</text>
-  
-      <list class="list" if="{{bookmarks.length > 0}}">
-        <list-item for="{{bookmarks}}" class="item" type="bookmark">
-          <div class="item-content" @click="jumpTo($idx)">
-            <text class="itemtext">{{formatPageNumber($item)}}</text>
-            <text class="itemtext2">{{formatTime($item.time)}}</text>
-          </div>
+  <div class="page" style="flex-direction: column;">
+    <img if="{{bookmarks.length === 0}}" src="/common/images/empty.png" style="position: absolute;left: 104px;top: 146px;width: 128px;height: 128px;" />
+    <text if="{{bookmarks.length === 0}}" style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">暂无书签</text>
+
+    <list class="list" if="{{bookmarks.length > 0}}">
+      <list-item for="{{bookmarks}}" class="item" type="bookmark">
+        <div class="text-content" @click="jumpTo($idx)">
+          <marquee class="itemtext">{{$item.name}}</marquee>
+          <text class="itemtext2">{{formatPageNumber($item)}} | {{formatTime($item.time)}}</text>
+        </div>
+        <div class="button-container">
+          <img src="/common/images/edit.png" @click="editBookmark($idx)" style="width: 72px; height: 72px;" />
           <img src="/common/images/delete.png" @click="deleteBookmark($idx)" style="width: 72px; height: 72px;" />
-        </list-item>
-      </list>
-  
-      <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
-      <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-      <img static src="/common/images/info.png" @click="showHelp" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-      <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-        {{nowTime}}
-      </text>
-      <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-        书签管理
-      </text>
-    </div>
-  </template>
-  
-  <script>
-  import router from '@system.router'
-  import storage from '../../common/storage.js'
-  import prompt from '@system.prompt'
-  
-  const SAVED_KEY = "EBOOK_SAVED";
-  let txtSizePage = 500;
-  
-  export default {
-    private: {
-      bookmarks: [],
-      nowTime: "00:00",
-      timer: null,
-      savedData: {}
-    },
-    protected: {
-      name: '',
-      cPath: '',
-      size: 0
-    },
-    updateTime() {
-      const date = new Date();
-      let hours = date.getHours();
-      let minutes = date.getMinutes();
-      hours = hours < 10 ? '0' + hours : hours;
-      minutes = minutes < 10 ? '0' + minutes : minutes;
-      this.nowTime = `${hours}:${minutes}`;
-    },
-    onInit() {
+        </div>
+      </list-item>
+    </list>
+
+    <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
+    <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+    <img static src="/common/images/info.png" @click="showBookmarkHelp" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+    <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+      {{nowTime}}
+    </text>
+    <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+      书签管理
+    </text>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import storage from '../../common/storage.js'
+import prompt from '@system.prompt'
+
+const SAVED_KEY = "EBOOK_SAVED";
+let txtSizePage = 500;
+
+export default {
+  private: {
+    bookmarks: [],
+    nowTime: "00:00",
+    timer: null,
+    savedData: {}
+  },
+  protected: {
+    name: '',
+    cPath: '',
+    size: 0
+  },
+  updateTime() {
+    const date = new Date();
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    hours = hours < 10 ? '0' + hours : hours;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    this.nowTime = `${hours}:${minutes}`;
+  },
+  onInit() {
+    this.updateTime();
+    this.timer = setInterval(() => {
       this.updateTime();
-      this.timer = setInterval(() => {
-        this.updateTime();
-      }, 1000);
-    },
-    onShow() {
-      this.loadBookmarks();
-      storage.get({
-          key: 'EBOOK_TXTSZPAGE',
-          success: function(data) {
-              if (data) {
-                  txtSizePage = parseInt(data);
-              }
-          }
-      });
-    },
-    onDestroy() {
-      clearInterval(this.timer);
-    },
-    loadBookmarks() {
-      const that = this;
-      storage.get({
-        key: SAVED_KEY,
+    }, 1000);
+  },
+  onShow() {
+    this.loadBookmarks();
+    storage.get({
+        key: 'EBOOK_TXTSZPAGE',
         success: function(data) {
-          if (data) {
-            that.savedData = JSON.parse(data);
-            if (that.savedData[that.name] && that.savedData[that.name].bookmarks) {
-              that.bookmarks = that.savedData[that.name].bookmarks;
-            } else {
-              that.bookmarks = [];
+            if (data) {
+                txtSizePage = parseInt(data);
             }
+        }
+    });
+  },
+  onDestroy() {
+    clearInterval(this.timer);
+  },
+  loadBookmarks() {
+    const that = this;
+    storage.get({
+      key: SAVED_KEY,
+      success: function(data) {
+        if (data) {
+          that.savedData = JSON.parse(data);
+          if (that.savedData[that.name] && that.savedData[that.name].bookmarks) {
+            that.bookmarks = that.savedData[that.name].bookmarks;
           } else {
             that.bookmarks = [];
           }
-        },
-        fail: function() {
+        } else {
           that.bookmarks = [];
         }
-      });
-    },
-    jumpTo(index) {
-      const bookmark = this.bookmarks[index];
-      if (!this.savedData[this.name]) {
-          return;
+      },
+      fail: function() {
+        that.bookmarks = [];
       }
-      this.savedData[this.name].s = bookmark.s;
-      this.savedData[this.name].p = bookmark.p;
-      this.savedData[this.name].o = bookmark.o;
-  
-      storage.set({
-        key: SAVED_KEY,
-        value: JSON.stringify(this.savedData),
-        success: () => {
-          prompt.showToast({ message: '正在跳转...', duration: 500 });
-          globalThis.justJumpedFromBookmark = true;
-          router.back();
-        },
-        fail: () => {
-          prompt.showToast({ message: '跳转失败', duration: 2000 });
-        }
-      });
-    },
-    deleteBookmark(index) {
-      if (!this.savedData[this.name] || !this.savedData[this.name].bookmarks) {
-          return;
-      }
-      this.savedData[this.name].bookmarks.splice(index, 1);
-      
-      storage.set({
-        key: SAVED_KEY,
-        value: JSON.stringify(this.savedData),
-        success: () => {
-          prompt.showToast({ message: '删除成功', duration: 2000 });
-          this.bookmarks = this.savedData[this.name].bookmarks;
-        },
-        fail: () => {
-          prompt.showToast({ message: '删除失败', duration: 2000 });
-        }
-      });
-    },
-    formatPageNumber(bookmark) {
-      if (this.size === 0 || !bookmark) return '未知页码';
-      const totalPages = Math.ceil(this.size / (txtSizePage * 2));
-      const currentPage = Math.floor(bookmark.s / (txtSizePage * 2)) + 1;
-      return `第 ${currentPage} 页`;
-    },
-    formatTime(timestamp) {
-      if (!timestamp) return '';
-      const date = new Date(timestamp);
-      const year = date.getFullYear();
-      const month = ('0' + (date.getMonth() + 1)).slice(-2);
-      const day = ('0' + date.getDate()).slice(-2);
-      const hours = ('0' + date.getHours()).slice(-2);
-      const minutes = ('0' + date.getMinutes()).slice(-2);
-      return `${year}-${month}-${day} ${hours}:${minutes}`;
-    },
-    showHelp() {
-        prompt.showToast({ message: '长按书签按钮可快速进入', duration: 6000 });
-    },
-    back() {
-      router.back();
+    });
+  },
+  jumpTo(index) {
+    const bookmark = this.bookmarks[index];
+    if (!this.savedData[this.name]) {
+        return;
     }
+    this.savedData[this.name].s = bookmark.s;
+    this.savedData[this.name].p = bookmark.p;
+    this.savedData[this.name].o = bookmark.o;
+
+    storage.set({
+      key: SAVED_KEY,
+      value: JSON.stringify(this.savedData),
+      success: () => {
+        prompt.showToast({ message: '正在跳转...', duration: 500 });
+        globalThis.justJumpedFromBookmark = true;
+        router.back();
+      },
+      fail: () => {
+        prompt.showToast({ message: '跳转失败', duration: 2000 });
+      }
+    });
+  },
+  deleteBookmark(index) {
+    if (!this.savedData[this.name] || !this.savedData[this.name].bookmarks) {
+        return;
+    }
+    this.savedData[this.name].bookmarks.splice(index, 1);
+    
+    storage.set({
+      key: SAVED_KEY,
+      value: JSON.stringify(this.savedData),
+      success: () => {
+        prompt.showToast({ message: '删除成功', duration: 2000 });
+        this.bookmarks = this.savedData[this.name].bookmarks;
+      },
+      fail: () => {
+        prompt.showToast({ message: '删除失败', duration: 2000 });
+      }
+    });
+  },
+  formatPageNumber(bookmark) {
+    if (this.size === 0 || !bookmark) return '未知页码';
+    const totalPages = Math.ceil(this.size / (txtSizePage * 2));
+    const currentPage = Math.floor(bookmark.s / (txtSizePage * 2)) + 1;
+    return `第 ${currentPage} 页`;
+  },
+  formatTime(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    const day = ('0' + date.getDate()).slice(-2);
+    const hours = ('0' + date.getHours()).slice(-2);
+    const minutes = ('0' + date.getMinutes()).slice(-2);
+    return `${month}-${day} ${hours}:${minutes}`;
+  },
+  showBookmarkHelp() {
+      router.push({
+          uri: '/pages/help',
+          params: {
+              title: '书签帮助',
+              content: '点击书签可快速跳转至对应页面。\n长按书签可修改书签名称。\n长按阅读页的书签按钮可快速进入书签管理页面。'
+          }
+      });
+  },
+  editBookmark(index) {
+      const bookmark = this.bookmarks[index];
+      router.push({
+          uri: '/pages/editBookmark',
+          params: {
+              bookName: this.name,
+              bookmarkIndex: index,
+              currentName: bookmark.name
+          }
+      });
+  },
+  back() {
+    router.back();
   }
-  </script>
-  
-  <style>
-  .page {
-    width: 336px;
-    height: 480px;
-    background-color: #000000;
-  }
-  
-  .list {
-    width: 336px;
-    height: 480px;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    padding: 86px 6px;
-  }
-  
-  .item {
-    width: 100%;
-    height: 112px;
-    padding: 14px 20px;
-    margin-bottom: 8px;
-    background-color: #262626;
-    border-radius: 36px;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .item-content {
-    height: 100%;
-    flex: 1;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  
-  .itemtext {
-    font-size: 32px;
-    line-height: 40px;
-    width: 100%;
-    font-weight: bold;
-    color: white;
-    text-overflow: ellipsis;
-    lines: 1;
-  }
-  
-  .itemtext2 {
-    font-size: 28px;
-    line-height: 37px;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.6);
-    text-overflow: ellipsis;
-    lines: 1;
-  }
-  </style>
+}
+</script>
+
+<style>
+.page {
+  width: 336px;
+  height: 480px;
+  background-color: #000000;
+}
+
+.list {
+  width: 336px;
+  height: 480px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  padding: 86px 6px;
+}
+
+.item {
+  width: 100%;
+  height: 190px;
+  padding: 14px 20px;
+  margin-bottom: 8px;
+  background-color: #262626;
+  border-radius: 36px;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+.text-content {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  padding: 5px;
+  flex-grow: 1;
+}
+
+.itemtext {
+  font-size: 32px;
+  line-height: 40px;
+  width: 100%;
+  font-weight: bold;
+  color: white;
+}
+
+.itemtext2 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+  lines: 2;
+}
+
+.button-container {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+</style>

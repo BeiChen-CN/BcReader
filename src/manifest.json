@@ -42,6 +42,12 @@
     },
     {
       "name": "system.brightness"
+    },
+    {
+      "name": "system.device"
+    },
+    {
+      "name": "system.vibrator"
     }
   ],
   "config": {
@@ -102,6 +108,12 @@
       },
       "pages/confirm": {
         "component": "confirm"
+      },
+      "pages/editBookmark": {
+        "component": "editBookmark"
+      },
+      "pages/help": {
+        "component": "help"
       }
     }
   },

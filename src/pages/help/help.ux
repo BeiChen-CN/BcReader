@@ -1,0 +1,51 @@
+<template>
+	<div class="page">
+		<text class="tip-title">{{title}}</text>
+		<text class="tip-content">{{content}}</text>
+		<img src="/common/images/conform2.png" class="confirm-button" @click="confirm"/>
+	</div>
+</template>
+
+<script>
+import router from '@system.router'
+
+export default {
+    protected: {
+        title: '提示',
+        content: '这是一个提示信息。'
+    },
+	confirm() {
+		router.back();
+	}
+}
+</script>
+
+<style>
+.page {
+	width: 336px;
+	height: 480px;
+	background-color: #000000;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 24px;
+}
+.tip-title {
+	font-size: 36px;
+	font-weight: bold;
+	color: #FFFFFF;
+	text-align: center;
+	margin-bottom: 40px;
+}
+.tip-content {
+	font-size: 28px;
+	color: rgba(255, 255, 255, 0.8);
+	text-align: left;
+	line-height: 38px;
+	margin-bottom: 60px;
+}
+.confirm-button {
+	width: 102px;
+	height: 72px;
+}
+</style>
