@@ -117,6 +117,12 @@
       },
       "pages/screenBrightness": {
         "component": "screenBrightness"
+      },
+      "pages/list": {
+        "component": "list"
+      },
+      "pages/debug": {
+        "component": "debug"
       }
     }
   },

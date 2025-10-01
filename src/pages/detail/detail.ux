@@ -1,37 +1,32 @@
-<import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page">
-	  <!-- scroll 组件：绑定 scrolltop 与 scrollbottom 事件 -->
 	  <scroll id="scrollId"
 		style="position: absolute; width: 336px; height: 480px;"
 		scroll-y="{{true}}"
+		scroll-top="{{scrollTopValue}}"
 		@scroll="onScroll"
 		@scrolltop="onScrollTop"
 		@scrollbottom="onScrollBottom"
 		@click="onTxtClick"
 		onlongpress="onTxtLongPress"
 		>
-
-		<!-- 内容容器采用 flex 布局 -->
 		<div id="contentContainer" style="position: absolute; width:336px; flex-direction: column;">
-		  <!-- 循环显示双页文本 -->
-		  <text id="segment-0"
-			style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">
-			{{page1.text}}
-		  </text>
-		  <text id="segment-1"
-			style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">
-			{{page2.text}}
-		  </text>
+		  <div id="page1" style="flex-direction: column; width: 100%; flex-shrink: 0">
+			<div for="{{(index, value) in page1.lines}}" class="item">
+			  <text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">
+				{{ value }}
+			  </text>
+			</div>
+		  </div>
+		  <div id="page2" style="flex-direction: column; width: 100%; flex-shrink: 0">
+			<div for="{{(index, value) in page2.lines}}" class="item">
+			  <text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">
+				{{ value }}
+			  </text>
+			</div>
+		  </div>
 		</div>
 	  </scroll>
-
-	  <!-- 底部其他交互按钮 -->
-
-	  <!-- <text style="position: absolute; left: 0px; top: 240px; width: 336px; font-weight:bold; font-size:20px; color:blue;">
-		{{debugOutput}}
-	  </text> -->
-
 		<img show="{{showSetting}}" src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
 		<img show="{{showSetting}}" src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
 		<img show="{{showSetting}}" src="/common/images/more.png" @click="gotoSetting" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
@@ -39,13 +34,11 @@
 			{{nowTime}}
 		</text>
 		<marquee show="{{showSetting}}" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-			{{name}}
+			{{currentChapterName}}
 		</marquee>
 
 		<img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 336px;height: 102px;" />
-
         <img show="{{showSetting}}" src="{{ isKeepScreenOn ? '/common/images/brightness.png' : '/common/images/brightness_off.png' }}" @click="toggleKeepScreenOn" style="position: absolute;left: 6px;top: 402px;width: 72px;height: 72px;"/>
-
 		<div show="{{showSetting}}" style="position: absolute; top: 402px; left: 78px; width: 180px; height: 72px; flex-direction: column; justify-content: flex-start; align-items: center;">
 			<text style="line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 				{{currentPage}} / {{totalPages}}
@@ -54,8 +47,9 @@
 				阅读进度
 			</text>
 		</div>
-
         <img show="{{showSetting}}" src="/common/images/add_bookmark.png" @click="addBookmark" @longpress="gotoBookmarks" style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;"/>
+		<img if="{{isAtChapterEnd && !showSetting}}" src="/common/images/next.png" @click="goToNextChapter" style="position: absolute; right: 20px; bottom: 20px; width: 72px; height: 72px;"/>
+		<img if="{{isAtChapterStart && !showSetting}}" src="/common/images/pre.png" @click="goToPrevChapter" style="position: absolute; left: 20px; bottom: 20px; width: 72px; height: 72px;"/>
 	</div>
   </template>
 
@@ -63,29 +57,25 @@
 	import prompt from '@system.prompt'
 	import file from '@system.file'
 	import router from '@system.router'
-  import storage from '../../common/storage.js'
+    import storage from '../../common/storage.js'
 	import brightness from '@system.brightness'
 
-	// 每页文本字节数（实际读取字节数为 txtSizePage*2）
 	var allSize = 0;
 	var SAVED_KEY = "EBOOK_SAVED";
-
-    let autoInterval = null; // 自动翻页定时器
+    let autoInterval = null;
 
 	export default {
 	  private: {
-		fPath: '',
-		persent: 0,          // 阅读百分比（0～100）
+		txtSizePage: 400,
 		fontSize: 30,
 		lineHeight: 34,
 		pageHeigh: 480,
 		showSetting: true,
-		loadingNext: false,   // 防止重复加载下一页
-		loadingPrev: false,   // 防止重复加载上一页
-		page1: null,
+		loadingNext: false,
+		loadingPrev: false,
+		page1: { lines: ["加载中..."], offset: 0, length: 0 },
 		page2: null,
-		debugOutput: "初始化中...",
-		currentFileOffset: 0, // 当前顶部页面在文件中的起始偏移（字节）
+		currentFileOffset: 0, 
 		opacity: 100,
 		swipe: 'column',
 		auto: false,
@@ -97,266 +87,174 @@
 		totalPages: 0,
 		currentPage: 0,
 		isKeepScreenOn: false,
-		txtSizePage: 500,
+		currentChapterIndexInAll: 0,
+		currentChapterName: "",
+		cPath: "",
+		isAtChapterEnd: false,
+		isAtChapterStart: false,
+		scrollTopValue: 0,
+		wait: false,
+		longPressTriggered: false,
+		saveDataTimeout: null,
 	  },
 	  protected: {
-		cPath: '',
-		name: '',  // 当前书籍名称或文件名，用作全局保存进度的键
+		name: '',
+		chapterIndex: 0,
+		chapterName: '',
+		allChapters: '[]'
 	  },
 	  updateTime() {
 		const date = new Date();
 		let hours = date.getHours();
 		let minutes = date.getMinutes();
-
-		// 格式化小时和分钟为两位数
 		hours = hours < 10 ? '0' + hours : hours;
 		minutes = minutes < 10 ? '0' + minutes : minutes;
-
 		this.nowTime = `${hours}:${minutes}`;
-	},
+	 },
 	updatePageNumber(){
-		if (this.totalPages === 0) {
-			this.currentPage = 0;
+		this.currentPage = this.currentChapterIndexInAll + 1;
+		this.totalPages = JSON.parse(this.allChapters).length;
+	},
+	onInit(){
+		this.updateTime();
+		this.timer = setInterval(() => { this.updateTime(); }, 1000);
+		this.currentChapterName = this.chapterName;
+		this.loadSettingsAndContent();
+	},
+	onShow(){
+	    var that = this;
+		storage.get({ key: 'EBOOK_TXTSZPAGE', success: function(data) { if (data) that.txtSizePage = parseInt(data); } });
+		this.loadSettingsAndContent();
+	},
+	loadSettingsAndContent() {
+		var that = this;
+		storage.get({ key: 'EBOOK_FONT',
+		  success: function(data){
+			if(data){ that.fontSize = parseInt(data); }
+			that.lineHeight = parseInt((-0.01)*(that.fontSize**2) + 1.62*that.fontSize - 3.23);
+			that.pageHeigh = Math.floor(480/that.lineHeight) * that.lineHeight;
+			that.initReadFile();
+		  }
+		});
+		storage.get({ key: 'EBOOK_OPACITY', success: function(data) { if (data) that.opacity = parseInt(data) } });
+		storage.get({ key: 'EBOOK_SWIPE', success: function(data) { if (data) that.swipe = data } });
+		storage.get({ key: 'EBOOK_AUTO', success: (data) => { if(!data)return; const { speed, enable } = JSON.parse(data); if(enable)this.auto = speed; } });
+	},
+	initReadFile() {
+		var that = this;
+		storage.get({
+			key: SAVED_KEY,
+			success: function(data) {
+				if (data) { that.savedPersent = JSON.parse(data); }
+	
+				const chapters = JSON.parse(that.allChapters);
+				let chapterToLoadIndex = that.chapterIndex;
+				let offsetInChapter = 0;
+				let scrollOffset = 0;
+	
+				if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromPageNumber) {
+					if (globalThis.justJumpedFromPageNumber) {
+						chapterToLoadIndex = that.savedPersent[that.name].chapterIndex;
+					} else {
+						chapterToLoadIndex = that.chapterIndex;
+					}
+					offsetInChapter = 0;
+					scrollOffset = 0;
+					globalThis.justJumpedFromChapter = false;
+					globalThis.justJumpedFromPageNumber = false;
+				} else if (globalThis.justJumpedFromBookmark) {
+					chapterToLoadIndex = that.savedPersent[that.name].chapterIndex;
+					offsetInChapter = that.savedPersent[that.name].offsetInChapter || 0;
+					scrollOffset = that.savedPersent[that.name].scrollOffset || 0;
+					globalThis.justJumpedFromBookmark = false;
+				} else if (that.savedPersent[that.name] && that.savedPersent[that.name].chapterIndex !== undefined) {
+					chapterToLoadIndex = that.savedPersent[that.name].chapterIndex;
+					offsetInChapter = that.savedPersent[that.name].offsetInChapter || 0;
+					scrollOffset = that.savedPersent[that.name].scrollOffset || 0;
+				}
+	
+				const chapterArrayIndex = chapters.findIndex(c => c.index === chapterToLoadIndex);
+	
+				that.currentFileOffset = offsetInChapter;
+				that.savedScrollOffset = scrollOffset;
+				that.scrollTopValue = scrollOffset;
+				that.currentScrollTop = scrollOffset;
+	
+				that.loadChapter(chapterArrayIndex > -1 ? chapterArrayIndex : 0, () => {
+					that.loadInitialSegments();
+					that.isAtChapterStart = that.currentFileOffset === 0 && that.savedScrollOffset < 10;
+				});
+			}
+		});
+	},
+	loadChapter(chapterIdxInAll, callback) {
+		const chapters = JSON.parse(this.allChapters);
+		if (chapterIdxInAll < 0 || chapterIdxInAll >= chapters.length) {
+			if(callback) callback();
 			return;
 		}
-		this.currentPage = Math.floor(this.currentFileOffset / (this.txtSizePage * 2)) + 1;
-		if (this.currentPage > this.totalPages) {
-			this.currentPage = this.totalPages;
-		}
-	},
-	  onInit(){
-		this.updateTime();
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
-		var that = this;
-		storage.get({
-			key: 'EBOOK_SAVED',
-			success: function(data) {
-				if (data) {
-				that.savedPersent = JSON.parse(data)
-				// that.persent=that.savedPersent[that.name]["p"]
-				}
-			},
-			fail: function(data, code) {
-				////console.log(`handling fail, code = ${code}`)
-			}
-		})
-	  },
-	  onShow(){
-		var that = this;
-		storage.get({
-		  key: 'EBOOK_TXTSZPAGE',
-		  success: function(data) {
-			if (data) {
-			  that.txtSizePage = parseInt(data);
-			} else {
-			  storage.set({
-				key: 'EBOOK_TXTSZPAGE',
-				value: that.txtSizePage.toString()
-			  });
-			}
-		  }
-		});
-		// 读取全局保存的进度，恢复 currentFileOffset 和 persent
-		this.initReadFile();
-		// 读取字号设置
-		storage.get({
-		  key: 'EBOOK_FONT',
-		  success: function(data){
-			if(data){
-			  that.fontSize = parseInt(data);
-			  that.lineHeight = parseInt((-0.01)*(that.fontSize**2) + 1.62*that.fontSize - 3.23);
-			} else {
-			  storage.set({
-				key: 'EBOOK_FONT',
-				value: that.fontSize.toString()
-			  });
-			}
-			that.pageHeigh = Math.floor(that.pageHeigh/that.lineHeight) * that.lineHeight;
-		  },
-		  fail: function(){}
-		});
-		storage.get({
-		  key: 'EBOOK_OPACITY',
-		  success: function(data) {
-			if (data) {
-				that.opacity = parseInt(data)
-				console.log("当前字号："+that.fontSize);
-				console.log("当前透明度："+that.opacity);
-			} else {
-				storage.set({
-					key: 'EBOOK_OPACITY',
-					value: '100'
-				});
-				that.opacity = 100
-			}
-		  },
-		})
-		storage.get({
-		  key: 'EBOOK_SWIPE',
-		  success: function(data) {
-			if (data) {
-				that.swipe = data
-			} else {
-				that.swipe = 'column'
-				storage.set({
-					key: 'EBOOK_SWIPE',
-					value: 'column',
-					success: function() {
-						storage.get({
-						  key: 'EBOOK_TIPS',
-						  success: function(data) {
-							if(data != "1"){
-							  storage.set({
-								key: 'EBOOK_TIPS',
-								value: '1',
-								success: function(){
-								  that.routerTo('info');
-								}
-							  });
-							}
-						  },
-						  fail: function(){
-							storage.set({
-							  key: 'EBOOK_TIPS',
-							  value: '1',
-							  success: function(){
-								that.routerTo('info');
-							  }
-							});
-						  }
-						});
-					}
-				});
-			}
-		  },
-		})
-		storage.get({
-		  key: 'EBOOK_AUTO',
-  			success: (data) => {
-				if(!data)return;
-  				const { speed, enable } = JSON.parse(data);
-				if(enable)this.auto = speed;
-		  }
-		})
-	  },
-	  onScroll(e){
-		const that = this;
-		
-		that.currentScrollTop = e.scrollY;
-	  },
-	  //【读取进度】从全局存储中恢复当前书籍的记录（格式 {"book1":{"p":..., "s":..., "o":0}, ...}）
-	  initReadFile(){
-		var that = this;
-		storage.get({
-		  key: SAVED_KEY,
-		  success: function(data){
-			if(data){ that.savedPersent = JSON.parse(data); }
-			if(that.savedPersent[that.name] && (that.savedPersent[that.name].s || that.savedPersent[that.name].s === 0)){
-			  that.currentFileOffset = that.savedPersent[that.name].s;
-			  that.persent = that.savedPersent[that.name].p || 0;
-			  that.savedScrollOffset = that.savedPersent[that.name].o || 0;
-			} else {
-			  that.currentFileOffset = 0;
-			  that.persent = 0;
-			  that.savedScrollOffset = 0;
-			}
-			that.readFile();
-		  },
-		  fail: function(){
-			that.currentFileOffset = 0;
-			that.persent = 0;
-			that.savedScrollOffset = 0;
-			that.readFile();
-		  }
-		});
-	  },
-	  readFile(){
-		var that = this;
-		var path = this.cPath;
-		file.access({
-		  uri: path,
-		  success: function(){
-			file.get({
-			  uri: path,
-			  success: function(data){
+		this.isAtChapterStart = false;
+		this.isAtChapterEnd = false;
+		const chapter = chapters[chapterIdxInAll];
+		this.currentChapterIndexInAll = chapterIdxInAll;
+		this.currentChapterName = chapter.name;
+		this.cPath = `internal://files/books/${this.name}/${chapter.index}.txt`;
+
+		file.get({
+			uri: this.cPath,
+			success: (data) => {
 				allSize = data.length;
-				that.totalPages = Math.ceil(allSize / (that.txtSizePage * 2));
-				// 从 currentFileOffset 开始加载初始双页内容
-				that.loadInitialSegments();
-			  },
-			  fail: function(){ that.readError(); }
-			});
-		  },
-		  fail: function(){ that.readError(); that.back(); }
+				this.updatePageNumber();
+				if(callback) callback();
+			},
+			fail: (data, code) => {
+				allSize = 0;
+                prompt.showToast({ message: `加载章节失败: ${code}` });
+				if(callback) callback();
+			}
 		});
-	  },
-	  // 加载初始双页：先加载第一页，再加载第二页（如果存在）
-	  loadInitialSegments(){
+	},
+	loadInitialSegments(){
 		var that = this;
+		this.wait = true;
 		this.readFileText(this.currentFileOffset, function(str, bytesRead){
-		  that.page1 = { text: str, offset: that.currentFileOffset, length: bytesRead };
-		  // 加载第二页
+		  that.page1 = { lines: str.split('\n'), offset: that.currentFileOffset, length: bytesRead };
 		  that.loadNextSegmentNoScroll();
 		});
-	  },
-	  // 不做翻页调整，仅追加一页（用于初始加载）
-	  loadNextSegmentNoScroll(){
+	},
+	loadNextSegmentNoScroll(){
 		var that = this;
-		let lastSeg = that.page1;
-		let newOffset = lastSeg.offset + lastSeg.length;
-	
-		const restoreScroll = () => {
-			// 使用 setTimeout 等待UI渲染完成
-			setTimeout(() => {
-			that.$element("scrollId").scrollTo({
-				top: that.savedScrollOffset,
-				left: 0,
-				behavior: 'instant'
-			});
-			console.log("恢复进度："+that.savedScrollOffset);
-			}, 50);
-		};
-	
+		let newOffset = that.page1.offset + that.page1.length;
 		if(newOffset >= allSize) {
-			that.page2 = null; // 确保 page2 为空
-			restoreScroll();
+			that.isAtChapterEnd = true;
+			that.page2 = null;
+			that.restoreScrollPosition();
 			return;
 		}
 	
 		that.readFileText(newOffset, function(str, bytesRead){
 			if(str){
-			that.page2 = { text: str, offset: newOffset, length: bytesRead };
-			// 更新保存信息（顶部段代表当前进度）
-			that.currentFileOffset = that.page1.offset;
-			that.persent = (that.currentFileOffset * 100 / allSize);
-			that.updatePageNumber();
+				that.page2 = { lines: str.split('\n'), offset: newOffset, length: bytesRead };
 			} else {
-			that.page2 = null;
+				that.page2 = null;
 			}
-			restoreScroll();
+			that.restoreScrollPosition();
 		});
-	  },
-	  //【读取文件文本】回调返回文本内容和实际读取的字节数
-	  readFileText(readOffset, cb){
-		if(readOffset >= allSize){
-		  cb('', 0);
-		  return;
-		}
+	},
+	restoreScrollPosition() {
+		setTimeout(() => {
+			this.scrollTopValue = this.savedScrollOffset;
+			this.wait = false;
+		}, 50);
+	},
+	readFileText(readOffset, cb){
+		if(readOffset >= allSize){ cb('', 0); return; }
 		var length = this.txtSizePage * 2;
-		if(readOffset < 0){
-		  length = length + readOffset;
-		  readOffset = 0;
-		}
-		if((readOffset + length) >= allSize){
-		  length = allSize - readOffset;
-		}
-		var that = this;
+		if(readOffset < 0){ length += readOffset; readOffset = 0; }
+		if((readOffset + length) >= allSize){ length = allSize - readOffset; }
+		
 		file.readArrayBuffer({
-		  uri: that.cPath,
-		  position: readOffset,
-		  length: length,
+		  uri: this.cPath, position: readOffset, length: length,
 		  success: function(data){
 			var str = '';
 			for(var i = 0; i < data.buffer.length; i += 2){
@@ -364,334 +262,327 @@
 			}
 			cb(str, length);
 		  },
-		  fail: function(){
-			that.readError();
-			cb('', 0);
-		  }
+		  fail: function(){ cb('', 0); }
 		});
-	  },
-	  //【向下翻页】（scrollbottom 触发）
-	  onScrollBottom(event){
-		if(!this.loadingNext){
-		  this.loadingNext = true;
-		  this.loadNextSegment();
+	},
+	onScroll(e){
+		if (this.isAtChapterEnd && e.scrollY < this.currentScrollTop) {
+			this.isAtChapterEnd = false;
 		}
-	  },
-	  loadNextSegment(){
+		this.currentScrollTop = e.scrollY;
+		this.isAtChapterStart = this.currentFileOffset === 0 && this.currentScrollTop < 10;
+	},
+	onScrollTop(){
+		if (this.wait) return;
+		if (this.currentFileOffset > 0) {
+			if(!this.loadingPrev){ this.loadingPrev = true; this.loadPrevSegment(); }
+		}
+	},
+	onScrollBottom(){
+		if (this.wait) return;
+		if(!this.loadingNext){ this.loadingNext = true; this.loadNextSegment(); }
+	},
+	loadNextSegment(){
+		this.wait = true;
 		var that = this;
-		if (!that.page2) {
+		let lastSeg = that.page2 || that.page1;
+		let newOffset = lastSeg.offset + lastSeg.length;
+
+		if(newOffset >= allSize) {
 			that.loadingNext = false;
+			that.isAtChapterEnd = true;
+			that.wait = false;
 			return;
 		}
-		let lastSeg = that.page2;
-		let newOffset = lastSeg.offset + lastSeg.length;
-		if(newOffset >= allSize){
-		  this.loadingNext = false;
-		  return;
-		}
-  		  this.readFileText(newOffset, function (str, bytesRead) {
-		  that.loadingNext = false;
-		  if(str){
-			const nextPageData = { text: str, offset: newOffset, length: bytesRead };
-			that.$element("segment-0").getBoundingClientRect({
-				success: function(rect){
-				  let removedHeight = rect.height;
 
-				  that.page1 = that.page2;
-				  that.page2 = nextPageData;
-
-				  that.$element("scrollId").scrollBy({
-					top: -removedHeight,
-					left: 0,
-					behavior: 'instant'
-				  });
-
-				  that.currentFileOffset = that.page1.offset;
-				  that.persent = (that.currentFileOffset * 100 / allSize);
-				  that.updatePageNumber();
-				  that.saveData();
-				},
-				fail: function(){}
-			});
-		  }
-		});
-	  },
-	  //【向上翻页】（scrolltop 触发）
-	  onScrollTop(event){
-		if(!this.loadingPrev && this.currentFileOffset > 0){
-		  this.loadingPrev = true;
-		  this.loadPrevSegment();
-		}
-	  },
-	  loadPrevSegment(){
-		var that = this;
-		let firstSeg = that.page1;
-		let newOffset = firstSeg.offset - this.txtSizePage * 2;
-		if(newOffset < 0) newOffset = 0;
-		if(firstSeg.offset <= 0){
-		  this.loadingPrev = false;
-		  return;
-		}
-  		this.readFileText(newOffset, function (str, bytesRead) {
-		  that.loadingPrev = false;
-		  if(str){
-			const prevPageData = { text: str, offset: newOffset, length: bytesRead };
-
-			that.page2 = that.page1;
-			that.page1 = prevPageData;
-
-			that.$element("segment-0").getBoundingClientRect({
-			  success: function(rect){
-				let insertedHeight = rect.height;
-				that.$element("scrollId").scrollBy({
-				  top: insertedHeight,
-				  left: 0,
-				  behavior: 'instant'
-				});
-			  },
-			  fail: function(){}
-			});
-
-			that.currentFileOffset = that.page1.offset;
-			that.persent = (that.currentFileOffset * 100 / allSize);
-			that.updatePageNumber();
-			that.saveData();
-		  }
-		});
-	  },
-	  readError(){
-		prompt.showToast({
-		  message: '文件读取失败',
-		  duration: 2000
-		});
-	  },
-	  gotoSetting(){
-		this.saveData();
-		setTimeout(() => {
-			router.push({
-				uri: '/pages/detailsetting',
-				params: { cPath: this.cPath, name: this.name, size: allSize }
-			});
-		}, 200);
-	  },
-	  //【保存进度】只更新当前书籍对应的记录，格式 {"book1":{"p":..., "s":..., "o":0}, ...}
-	  saveData(){
-		var that = this;
-		storage.get({
-		  key: SAVED_KEY,
-		  success: function(data){
-
-			if(data){ that.savedPersent = JSON.parse(data); }
-            if (!that.savedPersent[that.name]) {
-                that.savedPersent[that.name] = {};
-            }
-			that.savedPersent[that.name].s = that.currentFileOffset;
-			that.savedPersent[that.name].p = that.persent;
-			that.savedPersent[that.name].o = that.currentScrollTop;
-
-			storage.set({
-			  key: SAVED_KEY,
-			  value: JSON.stringify(that.savedPersent)
-			});
-		  },
-		  fail: function(){
-            if (!that.savedPersent[that.name]) {
-                that.savedPersent[that.name] = {};
-            }
-			that.savedPersent[that.name].s = that.currentFileOffset;
-			that.savedPersent[that.name].p = that.persent;
-			that.savedPersent[that.name].o = that.currentScrollTop;
-			storage.set({
-			  key: SAVED_KEY,
-			  value: JSON.stringify(that.savedPersent)
-			});
-		  }
-		});
-		console.log('保存数据: '+ this.name + ': ' + this.currentFileOffset + ' ' + this.persent + ' ' + this.currentScrollTop);
-	  },
-	  onHide(){
-		this.saveData();
-		if (autoInterval) {
-			clearInterval(autoInterval);
-			autoInterval = null;
-			prompt.showToast({
-				message: '已关闭自动翻页',
-				duration: 2000
-			});
-		}
-		// When app is hidden, turn off keep screen on
-		brightness.setKeepScreenOn({ keepScreenOn: false });
-	  },
-	  onDestroy(){
-		clearInterval(this.timer);
-		if (autoInterval) {
-			clearInterval(autoInterval);
-			autoInterval = null;
-		}
-		brightness.setKeepScreenOn({ keepScreenOn: false });
-	  },
-	  onBackPress(){
-		this.back()
-		return true;
-	  },
-	  back(){
-		this.saveData();
-		setTimeout(() => {
-			router.back();
-		}, 200);
-	  },
-	  routerTo(url){
-		router.push({
-		  uri: '/pages/' + url
-		});
-	  },
-  	onTxtClick(event) {
-		// console.log(JSON.stringify(event));
-		if (this.swipe === 'column') {
-			this.showSetting = !this.showSetting;
-		} else {
-			if (this.showSetting) {
-				this.showSetting = false;
+		this.readFileText(newOffset, function (str, bytesRead) {
+			that.loadingNext = false;
+			if(str){
+				const nextPageData = { lines: str.split('\n'), offset: newOffset, length: bytesRead };
+				that.shiftPagesForward(nextPageData);
 			} else {
-				if (event.offsetY <= 158) {
-					this.lastPage();
-				} else if (event.offsetY <= 322) {
-					this.showSetting = !this.showSetting;
-				} else {
-					this.nextPage();
+				that.wait = false;
+			}
+		});
+	},
+	shiftPagesForward(nextPageData) {
+		var that = this;
+		const scrollPosBeforeLoad = this.currentScrollTop;
+		that.$element("page1").getBoundingClientRect({
+			success: function(rect){
+				let removedHeight = rect.height;
+				that.page1 = that.page2 || that.page1;
+				that.page2 = nextPageData;
+				
+				const newScrollPos = scrollPosBeforeLoad - removedHeight + that.lineHeight;
+				that.scrollTopValue = newScrollPos;
+				that.currentScrollTop = newScrollPos;
+
+				that.currentFileOffset = that.page1.offset;
+				that.saveData();
+				that.wait = false;
+			},
+			fail: function() {
+				that.wait = false;
+			}
+		});
+	},
+	loadPrevSegment(){
+		this.wait = true;
+		var that = this;
+		if(that.page1.offset <= 0){
+			this.wait = false;
+			this.loadingPrev = false;
+			return;
+		}
+
+		let newOffset = that.page1.offset - this.txtSizePage * 2;
+		if(newOffset < 0) newOffset = 0;
+
+		this.readFileText(newOffset, function (str, bytesRead) {
+			that.loadingPrev = false;
+			if(str){
+				const prevPageData = { lines: str.split('\n'), offset: newOffset, length: bytesRead };
+				that.page2 = that.page1;
+				that.page1 = prevPageData;
+				that.$element("page1").getBoundingClientRect({
+					success: function(rect){
+						const newScrollPos = that.currentScrollTop + rect.height;
+						that.scrollTopValue = newScrollPos;
+						that.currentScrollTop = newScrollPos;
+						that.wait = false;
+					},
+					fail: function() {
+						that.wait = false;
+					}
+				});
+				that.currentFileOffset = that.page1.offset;
+				that.saveData();
+			} else {
+				that.wait = false;
+			}
+		});
+	},
+	goToPrevChapter() {
+		if (this.wait) return;
+		this.wait = true;
+
+		const prevChapterIndex = this.currentChapterIndexInAll - 1;
+		if (prevChapterIndex < 0) {
+			prompt.showToast({ message: '已是第一章' });
+			this.wait = false;
+			return;
+		}
+		
+		this.isAtChapterEnd = false;
+
+		this.loadChapter(prevChapterIndex, () => {
+			this.loadLastSegmentsAndScrollToEnd();
+		});
+	},
+	loadLastSegmentsAndScrollToEnd() {
+        const that = this;
+        this.wait = true;
+
+        let offset2 = Math.max(0, allSize - (this.txtSizePage * 2));
+        let offset1 = Math.max(0, offset2 - (this.txtSizePage * 2));
+        
+        if (offset1 === offset2 && allSize > 0) {
+            offset1 = 0;
+            offset2 = -1;
+        } else if (offset1 === offset2) {
+            this.page1 = { lines: [""], offset: 0, length: 0 };
+            this.page2 = null;
+            this.isAtChapterEnd = true;
+            this.isAtChapterStart = true;
+            this.wait = false;
+            return;
+        }
+
+        this.currentFileOffset = offset1;
+
+        this.readFileText(offset1, function(str1, bytesRead1) {
+            that.page1 = { lines: str1.split('\n'), offset: offset1, length: bytesRead1 };
+
+            if (offset2 === -1 || offset2 >= allSize) {
+                that.page2 = null;
+                that.isAtChapterEnd = true;
+                that.scrollToEnd();
+                return;
+            }
+
+            that.readFileText(offset2, function(str2, bytesRead2) {
+                if (str2) {
+                    that.page2 = { lines: str2.split('\n'), offset: offset2, length: bytesRead2 };
+                } else {
+                    that.page2 = null;
+                }
+                that.isAtChapterEnd = true;
+                that.scrollToEnd();
+            });
+        });
+    },
+    scrollToEnd() {
+        setTimeout(() => {
+            this.$element("contentContainer").getBoundingClientRect({
+                success: (rect) => {
+                    const contentHeight = rect.height;
+                    const scrollPos = contentHeight - 480;
+                    const finalScrollTop = scrollPos > 0 ? scrollPos : 0;
+
+                    this.scrollTopValue = finalScrollTop - 1;
+
+                    setTimeout(() => {
+                        this.scrollTopValue = finalScrollTop;
+                        this.currentScrollTop = finalScrollTop;
+                        this.wait = false;
+                        this.isAtChapterStart = this.scrollTopValue < 10 && this.currentFileOffset === 0;
+                        this.saveData(true);
+                    }, 50);
+                },
+                fail: () => {
+                    this.wait = false;
+                }
+            });
+        }, 150);
+    },
+	goToNextChapter() {
+		if (this.wait) return;
+		this.wait = true;
+	
+		const nextChapterIndex = this.currentChapterIndexInAll + 1;
+		const chapters = JSON.parse(this.allChapters);
+		if (nextChapterIndex >= chapters.length) {
+			prompt.showToast({ message: '已是最后一章' });
+			if (autoInterval) {
+				clearInterval(autoInterval);
+				autoInterval = null;
+				prompt.showToast({ message: '已关闭自动翻页' });
+				if (!this.isKeepScreenOn) {
+					brightness.setKeepScreenOn({ keepScreenOn: false });
 				}
 			}
+			this.wait = false;
+			return;
+		}
+		
+		this.isAtChapterEnd = false;
+		this.currentFileOffset = 0;
+		this.savedScrollOffset = 0;
+		this.scrollTopValue = 0;
+		this.currentScrollTop = 0;
+		
+		this.loadChapter(nextChapterIndex, () => {
+			this.page1 = { lines: ["加载中..."], offset: 0, length: 0 };
+			this.page2 = null;
+			this.loadInitialSegments();
+			this.isAtChapterStart = true;
+		});
+	},
+	saveData(forceImmediate = false){
+		if (this.saveDataTimeout) {
+			clearTimeout(this.saveDataTimeout);
+			this.saveDataTimeout = null;
+		}
+		if (forceImmediate) {
+			this._performSave();
+		} else {
+			this.saveDataTimeout = setTimeout(() => {
+				this._performSave();
+			}, 2000);
+		}
+	},
+	_performSave() {
+		var that = this;
+		storage.get({ key: SAVED_KEY,
+		  success: function(data){
+			if(data){ that.savedPersent = JSON.parse(data); }
+            if (!that.savedPersent[that.name]) { that.savedPersent[that.name] = {}; }
+			
+			const chapters = JSON.parse(that.allChapters);
+			const totalChapters = chapters.length;
 
+			that.savedPersent[that.name].chapterIndex = chapters[that.currentChapterIndexInAll].index;
+			that.savedPersent[that.name].offsetInChapter = that.currentFileOffset;
+			that.savedPersent[that.name].scrollOffset = that.currentScrollTop;
+			that.savedPersent[that.name].p = totalChapters > 0 ? parseFloat(((that.currentChapterIndexInAll + 1) / totalChapters * 100).toFixed(2)) : 0;
+
+			storage.set({ key: SAVED_KEY, value: JSON.stringify(that.savedPersent) });
+		  }
+		});
+	},
+	onHide(){ this.saveData(true); if (autoInterval) { clearInterval(autoInterval); autoInterval = null; } brightness.setKeepScreenOn({ keepScreenOn: false }); },
+	onDestroy(){ clearInterval(this.timer); if (autoInterval) { clearInterval(autoInterval); autoInterval = null; } brightness.setKeepScreenOn({ keepScreenOn: false }); },
+	onBackPress(){ this.back(); return true; },
+	back(){ this.saveData(true); setTimeout(() => { router.back(); }, 200); },
+	gotoSetting(){ this.saveData(true); setTimeout(() => { router.push({ uri: '/pages/detailsetting', params: { name: this.name, cPath: this.cPath, allChapters: this.allChapters } }); }, 200); },
+  	onTxtClick(event) {
+		if (this.swipe === 'column') { this.showSetting = !this.showSetting; } 
+		else {
+			if (this.showSetting) { this.showSetting = false; } 
+			else {
+				if (event.offsetY <= 158) { this.lastPage(); } 
+				else if (event.offsetY <= 322) { this.showSetting = !this.showSetting; } 
+				else { this.nextPage(); }
+			}
 		}
 	},
 	onTxtLongPress(event) {
   		if (this.auto) {
-			if(autoInterval){
-				clearInterval(autoInterval);
-				autoInterval = null;
-				prompt.showToast({
-					message: '已关闭自动翻页',
-					duration: 2000
-				});
-				if (!this.isKeepScreenOn) {
-					brightness.setKeepScreenOn({ keepScreenOn: false });
-				}
-				return;
-			}
-
+			if(autoInterval){ clearInterval(autoInterval); autoInterval = null; prompt.showToast({ message: '已关闭自动翻页' }); if (!this.isKeepScreenOn) { brightness.setKeepScreenOn({ keepScreenOn: false }); } return; }
 			autoInterval = setInterval(() => {
-				this.nextPage();
+				if (this.isAtChapterEnd) {
+					this.goToNextChapter();
+				} else {
+					this.nextPage();
+				}
 			}, this.auto*1000);
-			prompt.showToast({
-				message: '已开启自动翻页',
-				duration: 2000
-			});
+			prompt.showToast({ message: '已开启自动翻页' });
 			brightness.setKeepScreenOn({ keepScreenOn: true });
 		}
 	},
-	onTxtSwipe(event){
-		if(event.direction === 'right'){
-		  this.back();
-		}
-  	},
-	lastPage() {
-		this.$element("scrollId").scrollBy({
-			top: - this.pageHeigh,
-			left: 0,
-			behavior: 'smooth'
-  		});
-	},
-  	nextPage() {
-		this.$element("scrollId").scrollBy({
-			top: this.pageHeigh,
-			left: 0,
-			behavior: 'smooth'
-  		});
-	},
-	toggleKeepScreenOn() {
-		this.isKeepScreenOn = !this.isKeepScreenOn;
-		brightness.setKeepScreenOn({
-			keepScreenOn: this.isKeepScreenOn
-		});
-		prompt.showToast({
-			message: this.isKeepScreenOn ? '已开启屏幕常亮' : '已关闭屏幕常亮',
-			duration: 2000
-		});
-	},
+	lastPage() { this.$element("scrollId").scrollBy({ top: - this.pageHeigh, behavior: 'smooth' }); },
+  	nextPage() { this.$element("scrollId").scrollBy({ top: this.pageHeigh, behavior: 'smooth' }); },
+	toggleKeepScreenOn() { this.isKeepScreenOn = !this.isKeepScreenOn; brightness.setKeepScreenOn({ keepScreenOn: this.isKeepScreenOn }); prompt.showToast({ message: this.isKeepScreenOn ? '已开启屏幕常亮' : '已关闭屏幕常亮' }); },
 	addBookmark() {
+		if (this.longPressTriggered) {
+			return;
+		}
 		const that = this;
-		storage.get({
-			key: SAVED_KEY,
+		storage.get({ key: SAVED_KEY,
 			success: function(data) {
 				let savedData = data ? JSON.parse(data) : {};
-				if (!savedData[that.name]) {
-					savedData[that.name] = {};
-				}
-				if (!savedData[that.name].bookmarks) {
-					savedData[that.name].bookmarks = [];
-				}
+				if (!savedData[that.name]) { savedData[that.name] = {}; }
+				if (!savedData[that.name].bookmarks) { savedData[that.name].bookmarks = []; }
+				
+				const chapters = JSON.parse(that.allChapters);
+				const chapterIndex = chapters[that.currentChapterIndexInAll].index;
 
-				const bookmarkCount = savedData[that.name].bookmarks.length;
-				const newBookmark = {
-					s: that.currentFileOffset,
-					p: that.persent,
-					o: that.currentScrollTop,
-					time: new Date().getTime(),
-					name: `书签${bookmarkCount + 1}`
+				const newBookmark = { 
+					chapterIndex: chapterIndex, 
+					offsetInChapter: that.currentFileOffset, 
+					scrollOffset: that.currentScrollTop, 
+					time: new Date().getTime(), 
+					name: `书签${savedData[that.name].bookmarks.length + 1}` 
 				};
 
-				const exists = savedData[that.name].bookmarks.some(bm => bm.s === newBookmark.s && bm.o === newBookmark.o);
-				if (exists) {
-					prompt.showToast({ message: '书签已存在', duration: 2000 });
-					return;
-				}
+				const exists = savedData[that.name].bookmarks.some(bm => bm.chapterIndex === newBookmark.chapterIndex && bm.offsetInChapter === newBookmark.offsetInChapter);
+				if (exists) { prompt.showToast({ message: '书签已存在' }); return; }
 
 				savedData[that.name].bookmarks.push(newBookmark);
-				savedData[that.name].bookmarks.sort((a, b) => a.s - b.s || a.o - b.o);
-
-				storage.set({
-					key: SAVED_KEY,
-					value: JSON.stringify(savedData),
-					success: function() {
-						prompt.showToast({ message: '添加书签成功', duration: 2000 });
-					},
-					fail: function() {
-						prompt.showToast({ message: '添加书签失败', duration: 2000 });
-					}
-				});
-			},
-			fail: function() {
-				let savedData = {};
-				const newBookmark = {
-					s: that.currentFileOffset,
-					p: that.persent,
-					o: that.currentScrollTop,
-					time: new Date().getTime(),
-					name: '书签1'
-				};
-				savedData[that.name] = {
-					bookmarks: [newBookmark]
-				};
-				storage.set({
-					key: SAVED_KEY,
-					value: JSON.stringify(savedData),
-					success: function() {
-						prompt.showToast({ message: '添加书签成功', duration: 2000 });
-					},
-					fail: function() {
-						prompt.showToast({ message: '添加书签失败', duration: 2000 });
-					}
-				});
+				savedData[that.name].bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
+				storage.set({ key: SAVED_KEY, value: JSON.stringify(savedData), success: function() { prompt.showToast({ message: '添加书签成功' }); }, fail: function() { prompt.showToast({ message: '添加书签失败' }); } });
 			}
 		});
 	},
-    gotoBookmarks() {
-        this.saveData();
-        router.push({
-            uri: '/pages/bookmarks',
-            params: { cPath: this.cPath, name: this.name, size: allSize }
-        });
-    }
+    gotoBookmarks() { 
+		this.longPressTriggered = true;
+		setTimeout(() => {
+			this.longPressTriggered = false;
+		}, 300);
+		this.saveData(true); 
+		router.push({ uri: '/pages/bookmarks', params: { name: this.name, allChapters: this.allChapters } }); 
+	}
 	}
   </script>
 
@@ -702,3 +593,6 @@
 	background-color: #000000;
 }
 </style>
+
+
+

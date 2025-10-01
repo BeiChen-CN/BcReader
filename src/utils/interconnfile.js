@@ -6,120 +6,168 @@ import str2abWrite from "./str2abWrite";
 export default class interconnfile {
     static "__interconnModule__" = true;
     static name = 'file';
-    uri = 'internal://files/books/';
-    packageCount = 0;
-    totalpkg = 0;
-    chunkSize = 1024 * 20;
-    filename = ""
+    baseUri = 'internal://files/books/';
+    currentBookName = "";
+    currentBookDir = "";
+    totalChapters = 0;
+    receivedChapters = 0;
+
     constructor({ addListener, send, setEventListener }) {
         const onmessage = (data) => {
-            const { stat, ...playload } = data;
+            const { stat, ...payload } = data;
             switch (stat) {
-                case 'getUsage':
-                    this.getUsage().then((usage) => {
-                        this.send({ usage });
-                    });
-                    break;
                 case "startTransfer":
-                    this.chunkSize = playload.chunkSize || this.chunkSize;
-                    this.startTransfer(playload.filename, playload.total);
+                    this.startTransfer(payload);
                     break;
                 case "d":
-                    if (playload.setCount === "0" || playload.setCount === 0) {
-                        runAsyncFunc(file.delete, { uri: this.currentFile });
-                    }
-                    if (playload.setCount) {
-                        this.packageCount = playload.setCount;
-                    }
-                    this.save(playload);
+                    this.saveChapter(payload);
                     break;
                 case "cancel":
                     this.send({ type: "cancel" });
-                    this.currentFile = null;
+                    this.currentBookName = "";
+                    this.currentBookDir = "";
                     break;
             }
         }
         addListener(onmessage);
         this.send = send;
-        this.currentFile = null;
         setEventListener((event) => {
             if (event !== 'open') {
-                this.currentFile = null;
-                this.callback({ msg: "error", error: event,filename:this.filename});
+                this.currentBookName = "";
+                this.currentBookDir = "";
+                this.callback({ msg: "error", error: event, filename: this.currentBookName });
             }
         })
     }
 
     async getUsage() {
         try {
-            const { fileList } = await runAsyncFunc(file.list, { uri: this.uri });
-            const usage = fileList.reduce((total, file) => total + file.length, 0);
+            const { fileList } = await runAsyncFunc(file.list, { uri: this.baseUri });
+            let usage = 0;
+            for (const item of fileList) {
+                if (item.type === 'dir') {
+                    try {
+                        const dirStat = await runAsyncFunc(file.stat, { uri: item.uri });
+                        usage += dirStat.size;
+                    } catch (e) {
+                    }
+                } else {
+                    usage += item.length;
+                }
+            }
             return usage;
         } catch (error) {
             return 0;
         }
     }
-    async startTransfer(filename, total) {
-        this.totalpkg = total;
-        this.callback({ msg: "start", total, filename });
-        this.currentFile = this.uri + filename;
-        this.filename = filename;
-        if (filename != await runAsyncFunc(storage.get, { key: "__current_file__" })) {
-            await runAsyncFunc(storage.set, {
-                key: "__current_file__", value: filename,
-            });
-            this.packageCount = 0;
-            try {
-                await runAsyncFunc(file.delete, { uri: this.currentFile });
-            } catch (error) {
-                // 不存在文件
-            }
-            this.send({ type: "ready", found: false, usage: await this.getUsage() });
-            return;
-        }
-        let length = 0;
+    
+    async startTransfer({ filename, total, wordCount }) {
         try {
-            ({ length } = await runAsyncFunc(file.get, { uri: this.currentFile }))
-        } catch (error) {
-            // 不存在文件
-        }
-        this.send({
-            type: "ready",
-            found: true,
-            length,
-            usage: await this.getUsage()
-        });
-    }
-    async save(filedata) {
-
-        try {
-            const { count, data } = filedata;
-            /* globalThis.logger.log("count" + data); */
-            if (count !== this.packageCount) {
-                this.send({ type: "error", message: "package count error", count: this.packageCount });
+            this.totalChapters = total;
+            this.receivedChapters = 0;
+            
+            if (!filename || !filename.trim()) {
+                this.send({ type: "error", message: "Filename is empty or invalid.", count: 0 });
+                this.callback({ msg: "error", error: "Filename is empty or invalid." });
                 return;
             }
-            await runAsyncFunc(file.writeArrayBuffer, {
-                uri: this.currentFile,
-                buffer: str2abWrite(data), append: true,
-            });
-            this.packageCount++;
-            this.callback({ msg: "next", progress: count / this.totalpkg, filename: this.filename });
-            if (count == this.totalpkg) {
-                this.send({ type: "success", message: "transfer success", count: this.packageCount });
-                await runAsyncFunc(storage.set, {
-                    key: "__current_file__", value: "",
-                });
-                this.currentFile = null;
-                this.callback({ msg: "success" })
+
+            this.currentBookName = filename;
+            this.currentBookDir = Date.now().toString();
+            this.callback({ msg: "start", total, filename: filename });
+
+            try {
+                await runAsyncFunc(file.mkdir, { uri: this.baseUri });
+            } catch (e) {
             }
-            await this.send({ type: "next", message: count + " success", count: this.packageCount });
-            if(count%10==0)global.runGC()//每10个包执行一次垃圾回收
+
+            const bookUri = this.baseUri + this.currentBookDir;
+            const bookInfoUri = bookUri + '/book_info.json';
+            const listUri = bookUri + '/list.txt';
+
+            try {
+                await runAsyncFunc(file.rmdir, { uri: bookUri, recursive: true });
+            } catch (e) {
+            }
+            await runAsyncFunc(file.mkdir, { uri: bookUri });
+
+            const bookInfo = {
+                name: filename,
+                chapterCount: total + 1,
+                wordCount: wordCount
+            };
+            await runAsyncFunc(file.writeText, { uri: bookInfoUri, text: JSON.stringify(bookInfo) });
+            await runAsyncFunc(file.writeText, { uri: listUri, text: '' });
+
+            const bookshelfUri = this.baseUri + 'bookshelf.json';
+            let bookshelf = [];
+            try {
+                const data = await runAsyncFunc(file.readText, { uri: bookshelfUri });
+                bookshelf = JSON.parse(data.text);
+            } catch (e) {
+            }
+            
+            bookshelf = bookshelf.filter(b => b.name !== filename);
+            bookshelf.push({ name: filename, dirName: this.currentBookDir, chapterCount: total + 1, wordCount: wordCount });
+            await runAsyncFunc(file.writeText, { uri: bookshelfUri, text: JSON.stringify(bookshelf) });
+
+            this.send({ type: "ready", count: 0, usage: await this.getUsage() });
         } catch (error) {
-            this.callback({ msg: "error", progress: error.message });
-            /* globalThis.logger.error(error.message); */
+            this.send({ type: "error", message: `Start transfer failed: ${error.message || 'unknown error'}`, count: 0 });
+            this.callback({ msg: "error", error: `Start transfer failed: ${error.message || 'unknown error'}` });
         }
     }
+
+    async saveChapter(payload) {
+        try {
+            const { count, data } = payload;
+            const chapterData = JSON.parse(data);
+
+            if (count !== this.receivedChapters) {
+                this.send({ type: "error", message: "package count error", count: this.receivedChapters });
+                return;
+            }
+
+            const chapterContent = chapterData.content;
+            const chapterFileName = `${chapterData.index}.txt`;
+            const chapterUri = `${this.baseUri}${this.currentBookDir}/${chapterFileName}`;
+
+            await runAsyncFunc(file.writeArrayBuffer, {
+                uri: chapterUri,
+                buffer: str2abWrite(chapterContent)
+            });
+
+            const chapterMeta = {
+                index: chapterData.index,
+                name: chapterData.name,
+                wordCount: chapterData.wordCount
+            };
+            const listUri = `${this.baseUri}${this.currentBookDir}/list.txt`;
+            await runAsyncFunc(file.writeText, {
+                uri: listUri,
+                text: JSON.stringify(chapterMeta) + '\n',
+                append: true
+            });
+
+            this.receivedChapters++;
+            this.callback({ msg: "next", progress: count / this.totalChapters, filename: this.currentBookName });
+
+            if (count == this.totalChapters) {
+                this.send({ type: "success", message: "transfer success", count: this.receivedChapters });
+                this.currentBookName = "";
+                this.currentBookDir = "";
+                this.callback({ msg: "success" });
+            } else {
+                await this.send({ type: "next", message: count + " success", count: this.receivedChapters });
+            }
+            
+            if(count % 10 == 0) global.runGC();
+        } catch (error) {
+            this.send({ type: "error", message: `Save chapter failed: ${error.message || 'unknown error'}`, count: this.receivedChapters });
+            this.callback({ msg: "error", progress: error.message });
+        }
+    }
+
     setCallback(callback) {
         this.callback = callback;
     }

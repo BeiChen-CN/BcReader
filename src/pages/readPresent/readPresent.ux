@@ -5,7 +5,7 @@
 			  {{inputPage}}
 		  </text>
 		  <text style="font-size: 24px;font-weight:bold;color: rgba(255, 255, 255, 0.6);width: 100%;text-align: center;">
-			  共 {{totalPages}} 页
+			  共 {{totalChapters}} 章
 		  </text>
 	  </div>
 	  <div class="row" style="top:209px">
@@ -35,7 +35,7 @@
 		{{nowTime}}
 	  </text>
 	  <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-		  跳转页码
+		  跳转章节
 	  </text>
 	</div>
   </template>
@@ -49,8 +49,6 @@
   export default {
 	private: {
 	  inputPage: '0',
-	  totalPages: 1,
-	  txtSizePage: 500,
 	  savedPersent:{},
 	  nowTime: "00:00",
 	  timer: null
@@ -58,14 +56,14 @@
 	protected: {
 	  cPath: '',
 		name: '',
-	  size: 0
+	  allChapters: '[]',
+	  totalChapters: 1
 	},
 	updateTime() {
 	  const date = new Date();
 	  let hours = date.getHours();
 	  let minutes = date.getMinutes();
   
-	  // 格式化小时和分钟为两位数
 	  hours = hours < 10 ? '0' + hours : hours;
 	  minutes = minutes < 10 ? '0' + minutes : minutes;
   
@@ -77,19 +75,8 @@
 		this.updateTime();
 	  }, 1000);
 	  
-	  storage.get({
-		  key: 'EBOOK_TXTSZPAGE',
-		  success: (data) => {
-			  if (data) {
-				  this.txtSizePage = parseInt(data);
-			  }
-			  this.loadProgress();
-		  },
-		  fail: () => {
-			  this.txtSizePage = 500;
-			  this.loadProgress();
-		  }
-	  });
+	  this.totalChapters = JSON.parse(this.allChapters).length;
+	  this.loadProgress();
 	},
 	loadProgress() {
 	  const that = this;
@@ -99,19 +86,16 @@
 		  if (data) {
 			that.savedPersent = JSON.parse(data);
 			const bookData = that.savedPersent[that.name];
-			if (bookData && that.size > 0) {
-			  that.totalPages = Math.ceil(that.size / (that.txtSizePage * 2)) || 1;
-			  const currentOffset = bookData.s || 0;
-			  const currentPage = Math.floor(currentOffset / (that.txtSizePage * 2)) + 1;
-			  that.inputPage = currentPage.toString();
+			if (bookData && bookData.chapterIndex !== undefined) {
+			  that.inputPage = (bookData.chapterIndex + 1).toString();
 			} else {
-			  that.totalPages = Math.ceil(that.size / (that.txtSizePage * 2)) || 1;
 			  that.inputPage = '1';
 			}
+		  } else {
+			that.inputPage = '1';
 		  }
 		},
 		fail: function(data, code) {
-		  that.totalPages = Math.ceil(that.size / (that.txtSizePage * 2)) || 1;
 		  that.inputPage = '1';
 		}
 	  })
@@ -130,23 +114,23 @@
 	  }
   
 	  if (num === 'conform') {
-		  let targetPage = parseInt(this.inputPage);
-		  if (isNaN(targetPage) || targetPage < 1) {
-			  targetPage = 1;
+		  let targetChapter = parseInt(this.inputPage);
+		  if (isNaN(targetChapter) || targetChapter < 1) {
+			  targetChapter = 1;
 		  }
-		  if (targetPage > this.totalPages) {
-			  targetPage = this.totalPages;
+		  if (targetChapter > this.totalChapters) {
+			  targetChapter = this.totalChapters;
 		  }
   
-		  const newOffset = (targetPage - 1) * this.txtSizePage * 2;
-		  const newPercent = this.size > 0 ? (newOffset * 100) / this.size : 0;
+		  const chapters = JSON.parse(this.allChapters);
+		  const targetChapterIndex = chapters[targetChapter - 1].index;
 		  
 		  if (!this.savedPersent[this.name]) {
 			  this.savedPersent[this.name] = {};
 		  }
-		  this.savedPersent[this.name].p = newPercent;
-		  this.savedPersent[this.name].s = newOffset;
-		  this.savedPersent[this.name].o = 0;
+		  this.savedPersent[this.name].chapterIndex = targetChapterIndex;
+		  this.savedPersent[this.name].offsetInChapter = 0;
+		  this.savedPersent[this.name].scrollOffset = 0;
   
 		  storage.set({
 			  key: 'EBOOK_SAVED',
@@ -167,8 +151,8 @@
 	  const newValStr = currentVal + num;
 	  const newVal = parseInt(newValStr);
   
-	  if (newVal > this.totalPages) {
-		  prompt.showToast({ message: `最大页码为 ${this.totalPages}`, duration: 1000 });
+	  if (newVal > this.totalChapters) {
+		  prompt.showToast({ message: `最大章节为 ${this.totalChapters}`, duration: 1000 });
 	  } else {
 		  this.inputPage = newValStr;
 	  }
@@ -186,7 +170,6 @@
 	  background-color: #000000;
   }
   
-  /* 更多信息样式 */
   .more-info {
 	width: 335px;
 	background-color: rgb(0,0,0);
@@ -207,7 +190,6 @@
 	  height: 400px;
 	  position: absolute;
 	  top:72px;
-	  /* background-color: red; */
   }
   
   .item {
@@ -219,7 +201,6 @@
 	  border-radius: 36px;
 	  flex-direction: column;
 	  border: 3px solid #262626;
-	  /* align-items: center; */
 	  justify-content: center;
   }
   
@@ -246,4 +227,3 @@
 	  justify-content: space-between;
   }
   </style>
-  

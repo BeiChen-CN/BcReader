@@ -1,7 +1,7 @@
 import file from '@system.file' 
 
 var storageFile = {}
-const fileSavedPath = 'internal://files/books/stroage-api/savedFile'
+const fileSavedPath = 'internal://files/books/storage-api/savedFile'
 
 storageFile.get = function(param){
     

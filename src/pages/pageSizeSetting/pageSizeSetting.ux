@@ -27,7 +27,7 @@ import router from "@system.router";
 import storage from '../../common/storage.js';
 
 const STORAGE_KEY = "EBOOK_TXTSZPAGE";
-const DEFAULT_SIZE = 500;
+const DEFAULT_SIZE = 400;
 
 export default {
 	private: {
@@ -108,3 +108,4 @@ export default {
 	padding: 20px;
 }
 </style>
+

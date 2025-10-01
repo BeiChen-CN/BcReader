@@ -1,0 +1,169 @@
+<template>
+    <div class="page">
+        <list class="list">
+            <list-item type="header" class="header">
+                <img static src="/common/images/back.png" @click="back" class="header-icon"/>
+                <marquee class="header-title">{{ currentPath }}</marquee>
+            </list-item>
+
+            <list-item if="{{currentPath !== 'internal://files/' && currentPath !== 'internal://files'}}" class="item" @click="goUp" type="item">
+                <text class="item-text">[..]</text>
+            </list-item>
+
+            <list-item for="{{fileList}}" class="item" @click="onItemClick($item)" type="item">
+                <text class="item-text">{{ $item.type === 'dir' ? '[' + $item.name + ']' : $item.name }}</text>
+            </list-item>
+        </list>
+        
+        <text if="{{isLoading}}" class="loading-text">加载中...</text>
+        <text if="{{!isLoading && fileList.length === 0}}" class="empty-text">目录为空</text>
+    </div>
+</template>
+
+<script>
+import router from '@system.router';
+import file from '@system.file';
+import prompt from '@system.prompt';
+
+export default {
+    private: {
+        currentPath: 'internal://',
+        fileList: [],
+        isLoading: false,
+    },
+    onInit() {
+        this.loadFileList(this.currentPath);
+    },
+    loadFileList(path) {
+        if (!path.endsWith('/')) {
+            path += '/';
+        }
+        this.isLoading = true;
+        this.currentPath = path;
+        this.fileList = [];
+
+        file.list({
+            uri: path,
+            success: (data) => {
+                this.isLoading = false;
+                if (data && data.fileList) {
+                    this.fileList = data.fileList.map(f => ({
+                        name: f.uri.split('/').filter(Boolean).pop(),
+                        uri: f.uri,
+                        type: f.type
+                    })).sort((a, b) => {
+                        if (a.type === 'dir' && b.type !== 'dir') return -1;
+                        if (a.type !== 'dir' && b.type === 'dir') return 1;
+                        return a.name.localeCompare(b.name);
+                    });
+                }
+            },
+            fail: (data, code) => {
+                this.isLoading = false;
+                prompt.showToast({ message: `加载失败: ${code}` });
+                if (this.currentPath !== 'internal://files/') {
+                    this.goUp();
+                }
+            }
+        });
+    },
+    goUp() {
+        let path = this.currentPath.slice(0, -1);
+        let parentPath = path.substring(0, path.lastIndexOf('/')) + '/';
+        this.loadFileList(parentPath);
+    },
+    onItemClick(item) {
+        if (item.type === 'dir') {
+            this.loadFileList(item.uri);
+        } else {
+            if (item.name.endsWith('.txt') || item.name.endsWith('.json')) {
+                file.readText({
+                    uri: item.uri,
+                    success: (data) => {
+                        router.push({
+                            uri: '/pages/help',
+                            params: {
+                                title: item.name,
+                                content: data.text.substring(0, 500)
+                            }
+                        });
+                    },
+                    fail: (data, code) => {
+                        prompt.showToast({ message: `读取文件失败: ${code}` });
+                    }
+                });
+            } else {
+                file.stat({
+                    uri: item.uri,
+                    success: (data) => {
+                        prompt.showToast({
+                            message: `文件名: ${item.name}\n大小: ${data.size} B`
+                        });
+                    },
+                     fail: (data, code) => {
+                        prompt.showToast({ message: `获取信息失败: ${code}` });
+                    }
+                });
+            }
+        }
+    },
+    back() {
+        router.back();
+    }
+}
+</script>
+
+<style>
+.page {
+    width: 336px;
+    height: 480px;
+    background-color: #000000;
+}
+.list {
+    width: 100%;
+    height: 100%;
+}
+.header {
+    width: 100%;
+    height: 86px;
+    padding: 14px 6px;
+    background-color: #1C1C1E;
+    align-items: center;
+}
+.header-icon {
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+}
+.header-title {
+    flex-grow: 1;
+    font-size: 28px;
+    color: white;
+    padding: 0 10px;
+    text-align: left;
+}
+.item {
+    width: 324px;
+    height: 80px;
+    margin: 4px 6px;
+    padding: 0 20px;
+    background-color: #262626;
+    border-radius: 20px;
+    align-items: center;
+}
+.item-text {
+    width: 100%;
+    font-size: 28px;
+    color: white;
+    text-overflow: ellipsis;
+    lines: 1;
+}
+.loading-text, .empty-text {
+    position: absolute;
+    top: 200px;
+    width: 100%;
+    text-align: center;
+    font-size: 28px;
+    color: #888888;
+}
+</style>

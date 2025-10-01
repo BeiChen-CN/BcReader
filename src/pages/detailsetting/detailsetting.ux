@@ -1,6 +1,13 @@
 <template>
 	<div class="page" style="flex-direction: column;">
 	  <list class="list">
+		  <list-item class="item" @click="routerTo('list')" type="item">
+			  <div class="item-content">
+				  <text class="itemtext">章节列表</text>
+				  <text class="itemtext2">查看或跳转章节</text>
+			  </div>
+			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
+		  </list-item>
 		  <list-item class="item" @click="routerTo('bookmarks')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext">书签管理</text>
@@ -10,8 +17,8 @@
 		  </list-item>
 		  <list-item type="item" class="item" @click="routerTo('readPresent')">
 			  <div class="item-content">
-				  <text class="itemtext">跳转页码</text>
-				  <text class="itemtext2">按页码跳转</text>
+				  <text class="itemtext">跳转章节</text>
+				  <text class="itemtext2">按章节号跳转</text>
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
 		  </list-item>
@@ -53,7 +60,7 @@
 		  <list-item class="item" @click="del" type="item">
 			  <div class="item-content">
 				  <text class="itemtext">删除书籍</text>
-				  <text class="itemtext2">删除 {{name}}</text>
+				  <text class="itemtext2">删除当前书籍</text>
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
 		  </list-item>
@@ -93,7 +100,7 @@
 	protected: {
 	  cPath: '',
 		name: '',
-	  size: 0
+	  allChapters: '[]'
 	},
 	updateTime() {
 	  const date = new Date();
@@ -128,6 +135,9 @@
 			globalThis.justJumpedFromPageNumber = false;
 			router.back();
 		}
+		if (globalThis.justJumpedFromChapter) {
+			router.replace({ uri: '/pages/index' });
+		}
 	},
 	onBackPress(){
 	},
@@ -139,7 +149,7 @@
                 title: '删除书籍',
                 confirmText: '确认删除吗？',
                 subText: '删除后不可恢复',
-                cPath: this.cPath
+                cPath: 'internal://files/books/' + this.name
             }
         });
 	},
@@ -150,9 +160,13 @@
 		})
 	},
 	routerTo(url) {
+	  let params = { cPath: this.cPath, name: this.name };
+	  if (url === 'bookmarks' || url === 'readPresent') {
+		  params.allChapters = this.allChapters;
+	  }
 	  router.push({
 		uri: '/pages/' + url,
-		params: { cPath: this.cPath,name: this.name,size: this.size }
+		params: params
 	  })
 	},
 	back(){

@@ -1,0 +1,192 @@
+<template>
+  <div class="page">
+    <list class="list" @scrollbottom="loadMore">
+      <list-item for="{{visibleChapters}}" class="item" @click="selectChapter($item)" type="chapter">
+        <div class="chapter-info">
+            <text class="itemtext {{currentChapterIndex == $item.index ? 'itemtext-current' : ''}}">{{$item.name}}</text>
+            <text class="itemtext2">{{$item.wordCount}} 字</text>
+        </div>
+      </list-item>
+    </list>
+
+    <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
+    <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+    <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+      {{nowTime}}
+    </text>
+    <marquee style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+      {{bookTitle}}
+    </marquee>
+  </div>
+</template>
+
+<script>
+import router from '@system.router';
+import file from '@system.file';
+import storage from '../../common/storage.js';
+import prompt from '@system.prompt';
+
+const PAGE_SIZE = 20;
+const SAVED_KEY = "EBOOK_SAVED";
+
+export default {
+  private: {
+    allChapters: [],
+    visibleChapters: [],
+    currentPage: 0,
+    currentChapterIndex: -1,
+    nowTime: "00:00",
+    timer: null,
+    bookTitle: ""
+  },
+  protected: {
+    name: ''
+  },
+  updateTime() {
+    const date = new Date();
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    hours = hours < 10 ? '0' + hours : hours;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    this.nowTime = `${hours}:${minutes}`;
+  },
+  onInit() {
+    this.updateTime();
+    this.timer = setInterval(() => { this.updateTime(); }, 1000);
+    this.loadBookInfo();
+    this.loadChapterList();
+  },
+  onDestroy() {
+    clearInterval(this.timer);
+  },
+  loadBookInfo() {
+    const that = this;
+    const bookInfoUri = `internal://files/books/${this.name}/book_info.json`;
+    file.readText({
+      uri: bookInfoUri,
+      success: function(data) {
+        const bookInfo = JSON.parse(data.text);
+        that.bookTitle = bookInfo.name;
+      },
+      fail: function() {
+        that.bookTitle = that.name;
+      }
+    });
+  },
+  loadChapterList() {
+    const that = this;
+    const listUri = `internal://files/books/${this.name}/list.txt`;
+    
+    file.readText({
+      uri: listUri,
+      success: function(data) {
+        that.allChapters = data.text.split('\n').filter(Boolean).map(JSON.parse);
+        that.loadCurrentChapterIndex();
+      },
+      fail: function(data, code) {
+        prompt.showToast({ message: `章节列表加载失败: ${code}` });
+      }
+    });
+  },
+  loadCurrentChapterIndex() {
+    const that = this;
+    storage.get({
+        key: SAVED_KEY,
+        success: function(data) {
+            if (data) {
+                const savedData = JSON.parse(data);
+                if (savedData[that.name] && savedData[that.name].chapterIndex !== undefined) {
+                    that.currentChapterIndex = savedData[that.name].chapterIndex;
+                }
+            }
+            that.initialLoad();
+        },
+        fail: function() {
+            that.initialLoad();
+        }
+    });
+  },
+  initialLoad() {
+    if (this.currentChapterIndex !== -1) {
+        const targetChapterInList = this.allChapters.findIndex(c => c.index === this.currentChapterIndex);
+        const targetPage = targetChapterInList > -1 ? Math.floor(targetChapterInList / PAGE_SIZE) : 0;
+        this.currentPage = targetPage;
+    }
+    this.loadMore();
+  },
+  loadMore() {
+    const start = this.currentPage * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    if (start >= this.allChapters.length) {
+      return;
+    }
+    const newChapters = this.allChapters.slice(start, end);
+    this.visibleChapters = this.visibleChapters.concat(newChapters);
+    this.currentPage++;
+  },
+  selectChapter(chapter) {
+    globalThis.justJumpedFromChapter = true;
+    router.replace({
+      uri: '/pages/detail',
+      params: {
+        name: this.name,
+        chapterIndex: chapter.index,
+        chapterName: chapter.name,
+        allChapters: JSON.stringify(this.allChapters) 
+      }
+    });
+  },
+  back() {
+    router.back();
+  }
+}
+</script>
+
+<style>
+.page {
+    width: 336px;
+    height: 480px;
+    background-color: #000000;
+}
+.list {
+    width: 336px;
+    height: 480px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+  padding: 86px 6px;
+}
+.item {
+    width: 100%;
+    height: 112px;
+    padding: 14px 20px;
+    margin-bottom: 8px;
+    background-color: #262626;
+    border-radius: 36px;
+    align-items: center;
+}
+.chapter-info {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  flex-grow: 1;
+}
+.itemtext {
+    font-size: 32px;
+    line-height: 40px;
+    width: 100%;
+    font-weight: bold;
+    color: white;
+    text-overflow: ellipsis;
+    lines: 1;
+}
+.itemtext-current {
+  color: #0D6EFF;
+}
+.itemtext2 {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: bold;
+    color: rgba(255,255,255,0.6);
+}
+</style>

@@ -7,7 +7,7 @@
       <list-item for="{{bookmarks}}" class="item" type="bookmark">
         <div class="text-content" @click="jumpTo($idx)">
           <marquee class="itemtext">{{$item.name}}</marquee>
-          <text class="itemtext2">{{formatPageNumber($item)}} | {{formatTime($item.time)}}</text>
+          <text class="itemtext2">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</text>
         </div>
         <div class="button-container">
           <img src="/common/images/edit.png" @click="editBookmark($idx)" style="width: 72px; height: 72px;" />
@@ -34,7 +34,6 @@ import storage from '../../common/storage.js'
 import prompt from '@system.prompt'
 
 const SAVED_KEY = "EBOOK_SAVED";
-let txtSizePage = 500;
 
 export default {
   private: {
@@ -46,7 +45,7 @@ export default {
   protected: {
     name: '',
     cPath: '',
-    size: 0
+    allChapters: '[]'
   },
   updateTime() {
     const date = new Date();
@@ -64,14 +63,6 @@ export default {
   },
   onShow() {
     this.loadBookmarks();
-    storage.get({
-        key: 'EBOOK_TXTSZPAGE',
-        success: function(data) {
-            if (data) {
-                txtSizePage = parseInt(data);
-            }
-        }
-    });
   },
   onDestroy() {
     clearInterval(this.timer);
@@ -102,9 +93,9 @@ export default {
     if (!this.savedData[this.name]) {
         return;
     }
-    this.savedData[this.name].s = bookmark.s;
-    this.savedData[this.name].p = bookmark.p;
-    this.savedData[this.name].o = bookmark.o;
+    this.savedData[this.name].chapterIndex = bookmark.chapterIndex;
+    this.savedData[this.name].offsetInChapter = bookmark.offsetInChapter;
+    this.savedData[this.name].scrollOffset = bookmark.scrollOffset;
 
     storage.set({
       key: SAVED_KEY,
@@ -133,11 +124,15 @@ export default {
         }
     });
   },
-  formatPageNumber(bookmark) {
-    if (this.size === 0 || !bookmark) return '未知页码';
-    const totalPages = Math.ceil(this.size / (txtSizePage * 2));
-    const currentPage = Math.floor(bookmark.s / (txtSizePage * 2)) + 1;
-    return `第 ${currentPage} 页`;
+  formatBookmarkLocation(bookmark) {
+    if (!this.allChapters || !bookmark) return '未知位置';
+    try {
+        const chapters = JSON.parse(this.allChapters);
+        const chapter = chapters.find(c => c.index === bookmark.chapterIndex);
+        return chapter ? chapter.name : '未知章节';
+    } catch (e) {
+        return '未知章节';
+    }
   },
   formatTime(timestamp) {
     if (!timestamp) return '';

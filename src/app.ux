@@ -4,6 +4,7 @@ import interconn from "./utils/handshake"
 import router from '@system.router'
 import brightness from '@system.brightness'
 import storage from './common/storage.js'
+import file from '@system.file'
 globalThis.conn = new interconn();
 globalThis.conn.setHandshakeListener(() => {
   router.push({uri: 'pages/push'})
@@ -11,6 +12,15 @@ globalThis.conn.setHandshakeListener(() => {
 globalThis.connfile = globalThis.conn.register(interconnfile);
 export default {
     onInit() {
+        file.mkdir({
+            uri: 'internal://files/books/',
+            success: function() {
+                file.mkdir({
+                    uri: 'internal://files/books/storage-api/'
+                });
+            }
+        });
+
         storage.get({
             key: 'EBOOK_BRIGHTNESS_FOLLOW_SYSTEM',
             success: (data) => {

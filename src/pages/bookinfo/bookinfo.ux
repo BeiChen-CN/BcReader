@@ -10,6 +10,10 @@
 				<text class="item-value">{{fileSize}}</text>
 			</list-item>
 			<list-item class="item" type="info">
+				<text class="item-title">总字数</text>
+				<text class="item-value">{{wordCount}}</text>
+			</list-item>
+			<list-item class="item" type="info">
 				<text class="item-title">修改日期</text>
 				<text class="item-value">{{modifiedTime}}</text>
 			</list-item>
@@ -36,6 +40,7 @@ export default {
 		fileName: '加载中...',
 		fileSize: '加载中...',
 		modifiedTime: '加载中...',
+		wordCount: '加载中...',
 		nowTime: "00:00",
 		timer: null
 	},
@@ -63,18 +68,37 @@ export default {
 	},
 	loadFileInfo() {
 		const that = this;
-		this.fileName = this.name + '.txt';
+		this.fileName = this.name;
 
-		file.get({
-			uri: this.cPath,
+		const bookDirUri = `internal://files/books/${this.name}/`;
+		const bookInfoUri = `internal://files/books/${this.name}/book_info.json`;
+
+		file.stat({
+			uri: bookDirUri,
 			success: function(data) {
-				that.fileSize = that.formatFileSize(data.length);
+				that.fileSize = that.formatFileSize(data.size);
 				that.modifiedTime = that.formatTime(data.lastModifiedTime);
 			},
 			fail: function(data, code) {
-				prompt.showToast({ message: `加载失败: ${code}` });
+				prompt.showToast({ message: `加载大小失败: ${code}` });
 				that.fileSize = '加载失败';
 				that.modifiedTime = '加载失败';
+			}
+		});
+
+		file.readText({
+			uri: bookInfoUri,
+			success: function(data) {
+				try {
+					const info = JSON.parse(data.text);
+					that.wordCount = info.wordCount ? `${info.wordCount} 字` : '未知';
+				} catch (e) {
+					that.wordCount = '解析失败';
+				}
+			},
+			fail: function(data, code) {
+				prompt.showToast({ message: `加载字数失败: ${code}` });
+				that.wordCount = '加载失败';
 			}
 		});
 	},
