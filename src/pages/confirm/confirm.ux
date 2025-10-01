@@ -20,6 +20,9 @@
 import router from '@system.router'
 import prompt from '@system.prompt'
 import file from '@system.file'
+import storage from '../../common/storage.js'
+
+const SAVED_KEY = "EBOOK_SAVED";
 
 export default {
     private: {
@@ -31,7 +34,9 @@ export default {
         cPath: '',
         title: '请确认',
         confirmText: '确认执行操作吗？',
-        subText: '此操作不可逆'
+        subText: '此操作不可逆',
+        bookName: '',
+        bookmarkIndex: -1
     },
     updateTime() {
         const date = new Date();
@@ -61,10 +66,56 @@ export default {
             case 'clearBookshelf':
                 this.clearBookshelf();
                 break;
+            case 'deleteBookmark':
+                this.deleteBookmark();
+                break;
             default:
                 prompt.showToast({ message: '未知操作' });
                 router.back();
         }
+    },
+    deleteBookmark() {
+        if (!this.bookName || this.bookmarkIndex < 0) {
+            prompt.showToast({ message: '参数错误' });
+            router.back();
+            return;
+        }
+
+        storage.get({
+            key: SAVED_KEY,
+            success: (data) => {
+                if (!data) {
+                    prompt.showToast({ message: '找不到存储数据' });
+                    router.back();
+                    return;
+                }
+
+                let savedData = JSON.parse(data);
+                if (savedData[this.bookName] && savedData[this.bookName].bookmarks && savedData[this.bookName].bookmarks[this.bookmarkIndex] !== undefined) {
+                    savedData[this.bookName].bookmarks.splice(this.bookmarkIndex, 1);
+
+                    storage.set({
+                        key: SAVED_KEY,
+                        value: JSON.stringify(savedData),
+                        success: () => {
+                            prompt.showToast({ message: '删除成功' });
+                            router.back();
+                        },
+                        fail: () => {
+                            prompt.showToast({ message: '删除失败' });
+                            router.back();
+                        }
+                    });
+                } else {
+                    prompt.showToast({ message: '找不到书签' });
+                    router.back();
+                }
+            },
+            fail: () => {
+                prompt.showToast({ message: '读取数据失败' });
+                router.back();
+            }
+        });
     },
     deleteBook() {
         if (!this.cPath) {

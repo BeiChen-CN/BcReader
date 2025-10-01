@@ -120,21 +120,17 @@ export default {
     });
   },
   deleteBookmark(index) {
-    if (!this.savedData[this.name] || !this.savedData[this.name].bookmarks) {
-        return;
-    }
-    this.savedData[this.name].bookmarks.splice(index, 1);
-    
-    storage.set({
-      key: SAVED_KEY,
-      value: JSON.stringify(this.savedData),
-      success: () => {
-        prompt.showToast({ message: '删除成功', duration: 2000 });
-        this.bookmarks = this.savedData[this.name].bookmarks;
-      },
-      fail: () => {
-        prompt.showToast({ message: '删除失败', duration: 2000 });
-      }
+    const bookmark = this.bookmarks[index];
+    router.push({
+        uri: '/pages/confirm',
+        params: {
+            action: 'deleteBookmark',
+            title: '删除书签',
+            confirmText: `确认删除此书签吗？`,
+            subText: '此操作不可恢复',
+            bookName: this.name,
+            bookmarkIndex: index
+        }
     });
   },
   formatPageNumber(bookmark) {
@@ -157,7 +153,7 @@ export default {
           uri: '/pages/help',
           params: {
               title: '书签帮助',
-              content: '点击书签可快速跳转至对应页面。\n长按书签可修改书签名称。\n长按阅读页的书签按钮可快速进入书签管理页面。'
+              content: '长按书签可修改书签名称。\n长按阅读页的书签按钮可快速进入书签管理页面。'
           }
       });
   },
