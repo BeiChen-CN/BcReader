@@ -34,7 +34,7 @@
               当前任务
           </text> -->
           <div class="item">
-            <text class="itemtext" style="flex:1">文本文件</text>
+            <text class="itemtext" style="flex:1">书籍内容</text>
             <text class="itemtext" style="color:rgb(168, 168, 168)">{{persent}}%</text>
           </div>
       </div>
@@ -119,6 +119,9 @@ export default {
         case "success":
           this.state = "upload"
           this.state2 = "succ"
+          break;
+        case "cancel":
+          this.state = "ready";
           break;
         default:
           break;

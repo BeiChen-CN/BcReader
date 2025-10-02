@@ -28,6 +28,10 @@ export default class interconnfile {
                     this.send({ type: "cancel" });
                     this.currentBookName = "";
                     this.currentBookDir = "";
+                    this.callback({ msg: "cancel" });
+                    break;
+                case "get_book_status":
+                    this.getBookStatus(payload);
                     break;
             }
         }
@@ -62,58 +66,67 @@ export default class interconnfile {
             return 0;
         }
     }
-    
-    async startTransfer({ filename, total, wordCount }) {
+
+    async getBookStatus({ filename }) {
+        const sanitizedDirName = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const listUri = `${this.baseUri}${sanitizedDirName}/list.txt`;
+        let chapterCount = 0;
         try {
-            this.totalChapters = total;
-            this.receivedChapters = 0;
-            
+            const data = await runAsyncFunc(file.readText, { uri: listUri });
+            chapterCount = data.text.split('\n').filter(Boolean).length;
+        } catch (e) {
+            chapterCount = 0;
+        }
+        this.send({ type: "book_status", chapterCount: chapterCount });
+    }
+    
+    async startTransfer({ filename, total, wordCount, startFrom = 0 }) {
+        try {
             if (!filename || !filename.trim()) {
                 this.send({ type: "error", message: "Filename is empty or invalid.", count: 0 });
                 this.callback({ msg: "error", error: "Filename is empty or invalid." });
                 return;
             }
 
+            const sanitizedDirName = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
             this.currentBookName = filename;
-            this.currentBookDir = Date.now().toString();
-            this.callback({ msg: "start", total, filename: filename });
+            this.currentBookDir = sanitizedDirName;
+            this.totalChapters = total;
+            this.receivedChapters = startFrom;
 
-            try {
-                await runAsyncFunc(file.mkdir, { uri: this.baseUri });
-            } catch (e) {
-            }
+            this.callback({ msg: "start", total, filename: filename });
 
             const bookUri = this.baseUri + this.currentBookDir;
             const bookInfoUri = bookUri + '/book_info.json';
             const listUri = bookUri + '/list.txt';
-
-            try {
-                await runAsyncFunc(file.rmdir, { uri: bookUri, recursive: true });
-            } catch (e) {
-            }
-            await runAsyncFunc(file.mkdir, { uri: bookUri });
-
-            const bookInfo = {
-                name: filename,
-                chapterCount: total + 1,
-                wordCount: wordCount
-            };
-            await runAsyncFunc(file.writeText, { uri: bookInfoUri, text: JSON.stringify(bookInfo) });
-            await runAsyncFunc(file.writeText, { uri: listUri, text: '' });
-
             const bookshelfUri = this.baseUri + 'bookshelf.json';
+
+            if (startFrom === 0) {
+                try { await runAsyncFunc(file.rmdir, { uri: bookUri, recursive: true }); } catch (e) {}
+                await runAsyncFunc(file.mkdir, { uri: bookUri });
+                await runAsyncFunc(file.writeText, { uri: listUri, text: '' });
+            }
+
+            const bookInfo = { name: filename, chapterCount: total, wordCount: wordCount };
+            await runAsyncFunc(file.writeText, { uri: bookInfoUri, text: JSON.stringify(bookInfo) });
+            
             let bookshelf = [];
             try {
                 const data = await runAsyncFunc(file.readText, { uri: bookshelfUri });
                 bookshelf = JSON.parse(data.text);
-            } catch (e) {
+            } catch (e) {}
+
+            const existingBookIndex = bookshelf.findIndex(b => b.dirName === this.currentBookDir);
+            if (existingBookIndex > -1) {
+                bookshelf[existingBookIndex].name = filename;
+                bookshelf[existingBookIndex].chapterCount = total;
+                bookshelf[existingBookIndex].wordCount = wordCount;
+            } else {
+                bookshelf.push({ name: filename, dirName: this.currentBookDir, chapterCount: total, wordCount: wordCount, progress: 0 });
             }
-            
-            bookshelf = bookshelf.filter(b => b.name !== filename);
-            bookshelf.push({ name: filename, dirName: this.currentBookDir, chapterCount: total + 1, wordCount: wordCount, progress: 0 });
             await runAsyncFunc(file.writeText, { uri: bookshelfUri, text: JSON.stringify(bookshelf) });
 
-            this.send({ type: "ready", count: 0, usage: await this.getUsage() });
+            this.send({ type: "ready", count: startFrom, usage: await this.getUsage() });
         } catch (error) {
             this.send({ type: "error", message: `Start transfer failed: ${error.message || 'unknown error'}`, count: 0 });
             this.callback({ msg: "error", error: `Start transfer failed: ${error.message || 'unknown error'}` });
@@ -129,8 +142,12 @@ export default class interconnfile {
             const isLastChunk = chapterData.chunkNum === chapterData.totalChunks - 1;
 
             if (isFirstChunk) {
+                if (count < this.receivedChapters) {
+                    await this.send({ type: "next", message: "duplicate chapter", count: this.receivedChapters });
+                    return;
+                }
                 if (count !== this.receivedChapters) {
-                    this.send({ type: "error", message: "package count error", count: this.receivedChapters });
+                    this.send({ type: "next", message: "package count error", count: this.receivedChapters });
                     return;
                 }
                 this.partialChapterContent = chapterData.content;
@@ -144,7 +161,7 @@ export default class interconnfile {
             }
             
             const chunkProgress = (chapterData.chunkNum + 1) / chapterData.totalChunks;
-            const overallProgress = (count + chunkProgress) / (this.totalChapters + 1);
+            const overallProgress = (count + chunkProgress) / (this.totalChapters);
             this.callback({ msg: "next", progress: overallProgress, filename: this.currentBookName });
 
             if (isLastChunk) {
@@ -172,7 +189,7 @@ export default class interconnfile {
                 this.currentSavingChapterIndex = -1;
                 this.receivedChapters++;
 
-                if (count == this.totalChapters) {
+                if (count >= this.totalChapters - 1) {
                     this.send({ type: "success", message: "transfer success", count: this.receivedChapters });
                     this.currentBookName = "";
                     this.currentBookDir = "";
