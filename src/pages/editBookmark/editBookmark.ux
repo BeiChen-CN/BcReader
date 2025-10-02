@@ -18,10 +18,9 @@
             keyboardtype="QWERTY"
             vibratemode="short"
             screentype="rect"
-            @key-down="onKeyDown"
+            @complete="onInput"
             @delete="onDelete"
-            @complete="onComplete"
-        ></input-method>
+            @visibilityChange="onVisibilityChange" />
     </div>
 </template>
 
@@ -43,7 +42,7 @@ export default {
     onInit() {
         this.textValue = this.currentName || '';
     },
-    onKeyDown(evt) {
+    onInput(evt) {
         if (this.textValue.length < 20) {
             this.textValue += evt.detail.content;
         }
@@ -51,8 +50,10 @@ export default {
     onDelete() {
         this.textValue = this.textValue.slice(0, -1);
     },
-    onComplete() {
-        this.hideKeyboard = true;
+    onVisibilityChange(evt) {
+        if (!evt.detail.visible) {
+            this.hideKeyboard = true;
+        }
     },
     toggleKeyboard() {
         this.hideKeyboard = !this.hideKeyboard;

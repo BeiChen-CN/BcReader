@@ -533,8 +533,17 @@
 	onHide(){ this.saveData(true); if (autoInterval) { clearInterval(autoInterval); autoInterval = null; } brightness.setKeepScreenOn({ keepScreenOn: false }); },
 	onDestroy(){ clearInterval(this.timer); if (autoInterval) { clearInterval(autoInterval); autoInterval = null; } brightness.setKeepScreenOn({ keepScreenOn: false }); },
 	onBackPress(){ this.back(); return true; },
-	back(){ this.saveData(true); setTimeout(() => { router.back(); }, 200); },
-	gotoSetting(){ this.saveData(true); setTimeout(() => { router.push({ uri: '/pages/detailsetting', params: { name: this.name } }); }, 200); },
+	back(){
+		this.saveData(true);
+		router.back();
+	},
+	gotoSetting(){
+		this.saveData(true);
+		router.push({
+			uri: '/pages/detailsetting',
+			params: { name: this.name }
+		});
+	},
   	onTxtClick(event) {
 		if (this.swipe === 'column') { this.showSetting = !this.showSetting; } 
 		else {
@@ -612,3 +621,4 @@
 	background-color: #000000;
 }
 </style>
+

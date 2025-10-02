@@ -13,10 +13,6 @@
 				<text class="item-title">总字数</text>
 				<text class="item-value">{{wordCount}}</text>
 			</list-item>
-			<list-item class="item" type="info">
-				<text class="item-title">修改日期</text>
-				<text class="item-value">{{modifiedTime}}</text>
-			</list-item>
 		</list>
 
 		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
@@ -47,7 +43,6 @@ export default {
 	private: {
 		fileName: '加载中...',
 		fileSize: '加载中...',
-		modifiedTime: '加载中...',
 		wordCount: '加载中...',
 		nowTime: "00:00",
 		timer: null
@@ -97,15 +92,6 @@ export default {
 			}
 		});
 
-		file.stat({
-			uri: bookDirUri,
-			success: function(data) {
-				that.modifiedTime = that.formatTime(data.lastModifiedTime);
-			},
-			fail: function(data, code) {
-				that.modifiedTime = '加载失败';
-			}
-		});
 
 		this.fileSize = '计算中...';
 		try {
@@ -187,3 +173,4 @@ export default {
 	lines: 1;
 }
 </style>
+
