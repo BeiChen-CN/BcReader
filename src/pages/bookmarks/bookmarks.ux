@@ -30,22 +30,17 @@
 
 <script>
 import router from '@system.router'
-import storage from '../../common/storage.js'
 import prompt from '@system.prompt'
-
-const SAVED_KEY = "EBOOK_SAVED";
+import bookStorage from '../../common/bookStorage.js'
 
 export default {
   private: {
     bookmarks: [],
     nowTime: "00:00",
-    timer: null,
-    savedData: {}
+    timer: null
   },
   protected: {
-    name: '',
-    cPath: '',
-    allChapters: '[]'
+    name: ''
   },
   updateTime() {
     const date = new Date();
@@ -67,51 +62,28 @@ export default {
   onDestroy() {
     clearInterval(this.timer);
   },
-  loadBookmarks() {
-    const that = this;
-    storage.get({
-      key: SAVED_KEY,
-      success: function(data) {
-        if (data) {
-          that.savedData = JSON.parse(data);
-          if (that.savedData[that.name] && that.savedData[that.name].bookmarks) {
-            that.bookmarks = that.savedData[that.name].bookmarks;
-          } else {
-            that.bookmarks = [];
-          }
-        } else {
-          that.bookmarks = [];
-        }
-      },
-      fail: function() {
-        that.bookmarks = [];
-      }
-    });
+  async loadBookmarks() {
+    const progress = await bookStorage.get(this.name);
+    this.bookmarks = progress.bookmarks || [];
   },
-  jumpTo(index) {
+  async jumpTo(index) {
     const bookmark = this.bookmarks[index];
-    if (!this.savedData[this.name]) {
-        return;
-    }
-    this.savedData[this.name].chapterIndex = bookmark.chapterIndex;
-    this.savedData[this.name].offsetInChapter = bookmark.offsetInChapter;
-    this.savedData[this.name].scrollOffset = bookmark.scrollOffset;
+    const progress = await bookStorage.get(this.name);
 
-    storage.set({
-      key: SAVED_KEY,
-      value: JSON.stringify(this.savedData),
-      success: () => {
-        prompt.showToast({ message: '正在跳转...', duration: 500 });
-        globalThis.justJumpedFromBookmark = true;
-        router.back();
-      },
-      fail: () => {
-        prompt.showToast({ message: '跳转失败', duration: 2000 });
-      }
-    });
+    progress.chapterIndex = bookmark.chapterIndex;
+    progress.offsetInChapter = bookmark.offsetInChapter;
+    progress.scrollOffset = bookmark.scrollOffset;
+
+    try {
+      await bookStorage.set(this.name, progress);
+      prompt.showToast({ message: '正在跳转...', duration: 500 });
+      globalThis.justJumpedFromBookmark = true;
+      router.back();
+    } catch (e) {
+      prompt.showToast({ message: '跳转失败', duration: 2000 });
+    }
   },
   deleteBookmark(index) {
-    const bookmark = this.bookmarks[index];
     router.push({
         uri: '/pages/confirm',
         params: {
@@ -125,14 +97,10 @@ export default {
     });
   },
   formatBookmarkLocation(bookmark) {
-    if (!this.allChapters || !bookmark) return '未知位置';
-    try {
-        const chapters = JSON.parse(this.allChapters);
-        const chapter = chapters.find(c => c.index === bookmark.chapterIndex);
-        return chapter ? chapter.name : '未知章节';
-    } catch (e) {
-        return '未知章节';
+    if (bookmark && bookmark.chapterName) {
+        return bookmark.chapterName;
     }
+    return '未知章节';
   },
   formatTime(timestamp) {
     if (!timestamp) return '';

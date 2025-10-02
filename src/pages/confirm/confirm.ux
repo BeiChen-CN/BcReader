@@ -21,8 +21,8 @@ import router from '@system.router'
 import prompt from '@system.prompt'
 import file from '@system.file'
 import storage from '../../common/storage.js'
+import bookStorage from '../../common/bookStorage.js'
 
-const SAVED_KEY = "EBOOK_SAVED";
 const BOOKSHELF_URI = 'internal://files/books/bookshelf.json';
 
 export default {
@@ -75,48 +75,28 @@ export default {
                 router.back();
         }
     },
-    deleteBookmark() {
+    async deleteBookmark() {
         if (!this.bookName || this.bookmarkIndex < 0) {
             prompt.showToast({ message: '参数错误' });
             router.back();
             return;
         }
 
-        storage.get({
-            key: SAVED_KEY,
-            success: (data) => {
-                if (!data) {
-                    prompt.showToast({ message: '找不到存储数据' });
-                    router.back();
-                    return;
-                }
-
-                let savedData = JSON.parse(data);
-                if (savedData[this.bookName] && savedData[this.bookName].bookmarks && savedData[this.bookName].bookmarks[this.bookmarkIndex] !== undefined) {
-                    savedData[this.bookName].bookmarks.splice(this.bookmarkIndex, 1);
-
-                    storage.set({
-                        key: SAVED_KEY,
-                        value: JSON.stringify(savedData),
-                        success: () => {
-                            prompt.showToast({ message: '删除成功' });
-                            router.back();
-                        },
-                        fail: () => {
-                            prompt.showToast({ message: '删除失败' });
-                            router.back();
-                        }
-                    });
-                } else {
-                    prompt.showToast({ message: '找不到书签' });
-                    router.back();
-                }
-            },
-            fail: () => {
-                prompt.showToast({ message: '读取数据失败' });
+        try {
+            const progress = await bookStorage.get(this.bookName);
+            if (progress.bookmarks && progress.bookmarks[this.bookmarkIndex] !== undefined) {
+                progress.bookmarks.splice(this.bookmarkIndex, 1);
+                await bookStorage.set(this.bookName, progress);
+                prompt.showToast({ message: '删除成功' });
+                router.back();
+            } else {
+                prompt.showToast({ message: '找不到书签' });
                 router.back();
             }
-        });
+        } catch (e) {
+            prompt.showToast({ message: '删除失败' });
+            router.back();
+        }
     },
     deleteBook() {
         if (!this.cPath) {
@@ -140,48 +120,23 @@ export default {
         });
     },
     updateBookshelf(dirName) {
-        const that = this;
         file.readText({
             uri: BOOKSHELF_URI,
             success: function(data) {
-                const bookshelf = JSON.parse(data.text);
-                const newBookshelf = bookshelf.filter(b => b.dirName !== dirName);
-                file.writeText({
-                    uri: BOOKSHELF_URI,
-                    text: JSON.stringify(newBookshelf),
-                    complete: function() {
-                        that.updateSavedData(dirName);
-                    }
-                });
-            },
-            fail: function() {
-                that.updateSavedData(dirName);
-            }
-        });
-    },
-    updateSavedData(dirName) {
-        storage.get({
-            key: SAVED_KEY,
-            success: function(data) {
-                if (data) {
-                    let savedData = JSON.parse(data);
-                    if (savedData[dirName]) {
-                        delete savedData[dirName];
-                        storage.set({
-                            key: SAVED_KEY,
-                            value: JSON.stringify(savedData),
-                            complete: function() {
-                                prompt.showToast({ message: '删除成功', duration: 1000 });
-                                router.replace({ uri: '/pages/index' });
-                            }
-                        });
-                    } else {
-                        prompt.showToast({ message: '删除成功', duration: 1000 });
-                        router.replace({ uri: '/pages/index' });
-                    }
-                } else {
-                    prompt.showToast({ message: '删除成功', duration: 1000 });
-                    router.replace({ uri: '/pages/index' });
+                try {
+                    const bookshelf = JSON.parse(data.text);
+                    const newBookshelf = bookshelf.filter(b => b.dirName !== dirName);
+                    file.writeText({
+                        uri: BOOKSHELF_URI,
+                        text: JSON.stringify(newBookshelf),
+                        complete: function() {
+                            prompt.showToast({ message: '删除成功', duration: 1000 });
+                            router.replace({ uri: '/pages/index' });
+                        }
+                    });
+                } catch (e) {
+                     prompt.showToast({ message: '删除成功', duration: 1000 });
+                     router.replace({ uri: '/pages/index' });
                 }
             },
             fail: function() {
@@ -195,8 +150,7 @@ export default {
             uri: 'internal://files/books/',
             recursive: true,
             complete: () => {
-                storage.delete({
-                    key: SAVED_KEY,
+                storage.clear({
                     complete: function() {
                         prompt.showToast({ message: '清空成功', duration: 1000 });
                         router.back();
@@ -217,4 +171,3 @@ export default {
     align-items: center;
 }
 </style>
-

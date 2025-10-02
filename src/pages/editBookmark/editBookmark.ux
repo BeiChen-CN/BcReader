@@ -27,10 +27,8 @@
 
 <script>
 import router from '@system.router'
-import storage from '../../common/storage.js'
 import prompt from '@system.prompt'
-
-const SAVED_KEY = "EBOOK_SAVED";
+import bookStorage from '../../common/bookStorage.js'
 
 export default {
     private: {
@@ -62,43 +60,25 @@ export default {
     back() {
         router.back();
     },
-    save() {
+    async save() {
         if (!this.textValue) {
             prompt.showToast({ message: '名称不能为空' });
             return;
         }
 
-        const that = this;
-        storage.get({
-            key: SAVED_KEY,
-            success: function(data) {
-                if (data) {
-                    let savedData = JSON.parse(data);
-                    if (savedData[that.bookName] && savedData[that.bookName].bookmarks && savedData[that.bookName].bookmarks[that.bookmarkIndex]) {
-                        savedData[that.bookName].bookmarks[that.bookmarkIndex].name = that.textValue;
-
-                        storage.set({
-                            key: SAVED_KEY,
-                            value: JSON.stringify(savedData),
-                            success: () => {
-                                prompt.showToast({ message: '保存成功' });
-                                router.back();
-                            },
-                            fail: () => {
-                                prompt.showToast({ message: '保存失败' });
-                            }
-                        });
-                    } else {
-                        prompt.showToast({ message: '找不到书签' });
-                    }
-                } else {
-                    prompt.showToast({ message: '找不到存储数据' });
-                }
-            },
-            fail: function() {
-                prompt.showToast({ message: '读取数据失败' });
+        try {
+            const progress = await bookStorage.get(this.bookName);
+            if (progress.bookmarks && progress.bookmarks[this.bookmarkIndex]) {
+                progress.bookmarks[this.bookmarkIndex].name = this.textValue;
+                await bookStorage.set(this.bookName, progress);
+                prompt.showToast({ message: '保存成功' });
+                router.back();
+            } else {
+                prompt.showToast({ message: '找不到书签' });
             }
-        });
+        } catch (e) {
+            prompt.showToast({ message: '保存失败' });
+        }
     }
 }
 </script>

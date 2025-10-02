@@ -23,11 +23,10 @@
 <script>
 import router from '@system.router';
 import file from '@system.file';
-import storage from '../../common/storage.js';
 import prompt from '@system.prompt';
+import bookStorage from '../../common/bookStorage.js';
 
 const PAGE_SIZE = 20;
-const SAVED_KEY = "EBOOK_SAVED";
 
 export default {
   private: {
@@ -88,30 +87,16 @@ export default {
       }
     });
   },
-  loadCurrentChapterIndex() {
-    const that = this;
-    storage.get({
-        key: SAVED_KEY,
-        success: function(data) {
-            if (data) {
-                const savedData = JSON.parse(data);
-                if (savedData[that.name] && savedData[that.name].chapterIndex !== undefined) {
-                    that.currentChapterIndex = savedData[that.name].chapterIndex;
-                }
-            }
-            that.initialLoad();
-        },
-        fail: function() {
-            that.initialLoad();
-        }
-    });
+  async loadCurrentChapterIndex() {
+    const progress = await bookStorage.get(this.name);
+    if (progress.chapterIndex !== null) {
+        this.currentChapterIndex = progress.chapterIndex;
+    }
+    this.initialLoad();
   },
   initialLoad() {
-    if (this.currentChapterIndex !== -1) {
-        const targetChapterInList = this.allChapters.findIndex(c => c.index === this.currentChapterIndex);
-        const targetPage = targetChapterInList > -1 ? Math.floor(targetChapterInList / PAGE_SIZE) : 0;
-        this.currentPage = targetPage;
-    }
+    this.currentPage = 0;
+    this.visibleChapters = [];
     this.loadMore();
   },
   loadMore() {
@@ -126,15 +111,9 @@ export default {
   },
   selectChapter(chapter) {
     globalThis.justJumpedFromChapter = true;
-    router.replace({
-      uri: '/pages/detail',
-      params: {
-        name: this.name,
-        chapterIndex: chapter.index,
-        chapterName: chapter.name,
-        allChapters: JSON.stringify(this.allChapters) 
-      }
-    });
+    globalThis.newChapterIndex = chapter.index;
+    globalThis.newChapterName = chapter.name;
+    router.back();
   },
   back() {
     router.back();

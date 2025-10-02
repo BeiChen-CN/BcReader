@@ -103,9 +103,6 @@
       "pages/bookinfo": {
         "component": "bookinfo"
       },
-      "pages/firstlaunchtip": {
-        "component": "firstlaunchtip"
-      },
       "pages/confirm": {
         "component": "confirm"
       },
@@ -120,9 +117,6 @@
       },
       "pages/list": {
         "component": "list"
-      },
-      "pages/debug": {
-        "component": "debug"
       }
     }
   },

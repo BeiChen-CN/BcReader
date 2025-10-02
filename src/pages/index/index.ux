@@ -36,7 +36,6 @@ import app from '@system.app';
 import prompt from '@system.prompt';
 
 const INIT_PATH = "internal://files/books";
-const SAVED_KEY = "EBOOK_SAVED";
 
 export default {
   private: {
@@ -74,40 +73,41 @@ export default {
   checkFirstLaunch() {
     storage.get({
         key: 'EBOOK_FIRST_LAUNCH_TIP_SHOWN',
-        success: function(data) {
+        success: (data) => {
             if (data !== 'true') {
-                router.push({ uri: '/pages/firstlaunchtip' });
+                router.push({
+                    uri: '/pages/help',
+                    params: {
+                        title: '使用提醒',
+                        content: '由于无缝加载的逻辑问题，换页时可能会有部分滚动错位，阅读请确认行和字的位置。',
+                        isFirstLaunch: true
+                    }
+                });
             }
         },
-        fail: function() {
-            router.push({ uri: '/pages/firstlaunchtip' });
+        fail: () => {
+             router.push({
+                uri: '/pages/help',
+                params: {
+                    title: '使用提醒',
+                    content: '由于无缝加载的逻辑问题，换页时可能会有部分滚动错位，阅读请确认行和字的位置。',
+                    isFirstLaunch: true
+                }
+            });
         }
     });
   },
   loadFileList() {
-    this._doListFiles();
-  },
-  _doListFiles() {
     const that = this;
     const bookshelfUri = INIT_PATH + '/bookshelf.json';
     file.readText({
         uri: bookshelfUri,
         success: function(data) {
-            const bookshelf = JSON.parse(data.text);
-            storage.get({
-                key: SAVED_KEY,
-                success: function(savedDataText) {
-                    const savedData = savedDataText ? JSON.parse(savedDataText) : {};
-                    const bookshelfWithProgress = bookshelf.map(book => {
-                        const progress = (savedData[book.dirName] && savedData[book.dirName].p) ? savedData[book.dirName].p : 0;
-                        return { ...book, progress: progress };
-                    });
-                    that.fileList = bookshelfWithProgress;
-                },
-                fail: function() {
-                    that.fileList = bookshelf.map(book => ({ ...book, progress: 0 }));
-                }
-            });
+            try {
+                that.fileList = JSON.parse(data.text);
+            } catch (e) {
+                that.fileList = [];
+            }
         },
         fail: function() {
             that.fileList = [];
@@ -116,57 +116,10 @@ export default {
   },
 
   selectFile(item) {
-    const bookName = item.dirName;
-    const listUri = `internal://files/books/${bookName}/list.txt`;
-
-    file.readText({
-        uri: listUri,
-        success: function(listData) {
-            const allChapters = listData.text.split('\n').filter(Boolean).map(JSON.parse);
-            if (allChapters.length === 0) {
-                prompt.showToast({ message: '这本书没有章节' });
-                return;
-            }
-
-            storage.get({
-                key: SAVED_KEY,
-                success: function(savedDataText) {
-                    let chapterIndex = allChapters[0].index;
-                    if (savedDataText) {
-                        const savedData = JSON.parse(savedDataText);
-                        if (savedData[bookName] && savedData[bookName].chapterIndex !== undefined) {
-                            chapterIndex = savedData[bookName].chapterIndex;
-                        }
-                    }
-                    
-                    const chapter = allChapters.find(c => c.index === chapterIndex) || allChapters[0];
-
-                    router.push({
-                        uri: '/pages/detail',
-                        params: {
-                            name: bookName,
-                            chapterIndex: chapter.index,
-                            chapterName: chapter.name,
-                            allChapters: JSON.stringify(allChapters)
-                        }
-                    });
-                },
-                fail: function() {
-                    const chapter = allChapters[0];
-                    router.push({
-                        uri: '/pages/detail',
-                        params: {
-                            name: bookName,
-                            chapterIndex: chapter.index,
-                            chapterName: chapter.name,
-                            allChapters: JSON.stringify(allChapters)
-                        }
-                    });
-                }
-            });
-        },
-        fail: function(data, code) {
-            prompt.showToast({ message: `打开书籍失败: ${code}` });
+    router.push({
+        uri: '/pages/detail',
+        params: {
+            name: item.dirName
         }
     });
   },

@@ -108,7 +108,7 @@ export default class interconnfile {
             }
             
             bookshelf = bookshelf.filter(b => b.name !== filename);
-            bookshelf.push({ name: filename, dirName: this.currentBookDir, chapterCount: total + 1, wordCount: wordCount });
+            bookshelf.push({ name: filename, dirName: this.currentBookDir, chapterCount: total + 1, wordCount: wordCount, progress: 0 });
             await runAsyncFunc(file.writeText, { uri: bookshelfUri, text: JSON.stringify(bookshelf) });
 
             this.send({ type: "ready", count: 0, usage: await this.getUsage() });

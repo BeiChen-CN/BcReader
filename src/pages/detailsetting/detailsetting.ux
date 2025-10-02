@@ -98,9 +98,7 @@
 		timer: null
 	},
 	protected: {
-	  cPath: '',
-		name: '',
-	  allChapters: '[]'
+		name: ''
 	},
 	updateTime() {
 	  const date = new Date();
@@ -127,17 +125,6 @@
   
 	},
 	onShow(){
-		if (globalThis.justJumpedFromBookmark) {
-			globalThis.justJumpedFromBookmark = false;
-			router.back();
-		}
-		if (globalThis.justJumpedFromPageNumber) {
-			globalThis.justJumpedFromPageNumber = false;
-			router.back();
-		}
-		if (globalThis.justJumpedFromChapter) {
-			router.replace({ uri: '/pages/index' });
-		}
 	},
 	onBackPress(){
 	},
@@ -156,17 +143,13 @@
 	selectFile(item){
 		router.push({
 		  uri: '/pages/detail',
-			params: { cPath: item.uri,name: item.name }
+			params: { name: item.dirName }
 		})
 	},
 	routerTo(url) {
-	  let params = { cPath: this.cPath, name: this.name };
-	  if (url === 'bookmarks' || url === 'readPresent') {
-		  params.allChapters = this.allChapters;
-	  }
 	  router.push({
 		uri: '/pages/' + url,
-		params: params
+		params: { name: this.name }
 	  })
 	},
 	back(){

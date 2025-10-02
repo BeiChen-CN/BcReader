@@ -8,14 +8,26 @@
 
 <script>
 import router from '@system.router'
+import storage from '../../common/storage.js'
 
 export default {
     protected: {
         title: '提示',
-        content: '这是一个提示信息。'
+        content: '这是一个提示信息。',
+        isFirstLaunch: false
     },
 	confirm() {
-		router.back();
+        if (this.isFirstLaunch) {
+            storage.set({
+                key: 'EBOOK_FIRST_LAUNCH_TIP_SHOWN',
+                value: 'true',
+                complete: function() {
+                    router.back();
+                }
+            });
+        } else {
+		    router.back();
+        }
 	}
 }
 </script>

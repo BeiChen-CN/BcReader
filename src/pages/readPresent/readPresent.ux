@@ -42,22 +42,20 @@
   
   <script>
   import router from '@system.router'
-  import storage from '../../common/storage.js'
   import prompt from '@system.prompt'
-  import app from '@system.app'
+  import file from '@system.file'
+  import bookStorage from '../../common/bookStorage.js'
   
   export default {
 	private: {
 	  inputPage: '0',
-	  savedPersent:{},
 	  nowTime: "00:00",
-	  timer: null
+	  timer: null,
+	  allChapters: [],
+	  totalChapters: 1
 	},
 	protected: {
-	  cPath: '',
-		name: '',
-	  allChapters: '[]',
-	  totalChapters: 1
+		name: ''
 	},
 	updateTime() {
 	  const date = new Date();
@@ -74,36 +72,31 @@
 	  this.timer = setInterval(() => {
 		this.updateTime();
 	  }, 1000);
-	  
-	  this.totalChapters = JSON.parse(this.allChapters).length;
-	  this.loadProgress();
+	  this.loadData();
 	},
-	loadProgress() {
-	  const that = this;
-	  storage.get({
-		key: 'EBOOK_SAVED',
-		success: function(data) {
-		  if (data) {
-			that.savedPersent = JSON.parse(data);
-			const bookData = that.savedPersent[that.name];
-			if (bookData && bookData.chapterIndex !== undefined) {
-			  that.inputPage = (bookData.chapterIndex + 1).toString();
-			} else {
-			  that.inputPage = '1';
-			}
-		  } else {
-			that.inputPage = '1';
-		  }
-		},
-		fail: function(data, code) {
-		  that.inputPage = '1';
+	async loadData() {
+        const listUri = `internal://files/books/${this.name}/list.txt`;
+        try {
+            const listData = await new Promise((resolve, reject) => file.readText({ uri: listUri, success: resolve, fail: reject }));
+            this.allChapters = listData.text.split('\n').filter(Boolean).map(JSON.parse);
+            this.totalChapters = this.allChapters.length;
+        } catch (e) {
+            this.allChapters = [];
+            this.totalChapters = 0;
+        }
+
+		const progress = await bookStorage.get(this.name);
+		if (progress.chapterIndex !== null) {
+			const chapterArrayIndex = this.allChapters.findIndex(c => c.index === progress.chapterIndex);
+			this.inputPage = (chapterArrayIndex + 1).toString();
+		} else {
+			this.inputPage = '1';
 		}
-	  })
 	},
 	onDestroy(){
 		clearInterval(this.timer);
 	},
-	onClick(num){
+	async onClick(num){
 	  if (num === 'del') {
 		  if (this.inputPage.length > 1) {
 			  this.inputPage = this.inputPage.slice(0, -1);
@@ -114,36 +107,30 @@
 	  }
   
 	  if (num === 'conform') {
-		  let targetChapter = parseInt(this.inputPage);
-		  if (isNaN(targetChapter) || targetChapter < 1) {
-			  targetChapter = 1;
+		  let targetChapterNum = parseInt(this.inputPage);
+		  if (isNaN(targetChapterNum) || targetChapterNum < 1) {
+			  targetChapterNum = 1;
 		  }
-		  if (targetChapter > this.totalChapters) {
-			  targetChapter = this.totalChapters;
+		  if (targetChapterNum > this.totalChapters) {
+			  targetChapterNum = this.totalChapters;
 		  }
-  
-		  const chapters = JSON.parse(this.allChapters);
-		  const targetChapterIndex = chapters[targetChapter - 1].index;
+		  if (this.totalChapters === 0) return;
+
+		  const targetChapterIndex = this.allChapters[targetChapterNum - 1].index;
 		  
-		  if (!this.savedPersent[this.name]) {
-			  this.savedPersent[this.name] = {};
+		  try {
+			  const progress = await bookStorage.get(this.name);
+			  progress.chapterIndex = targetChapterIndex;
+			  progress.offsetInChapter = 0;
+			  progress.scrollOffset = 0;
+			  await bookStorage.set(this.name, progress);
+			  
+			  prompt.showToast({ message: '设置成功', duration: 1000 });
+			  globalThis.justJumpedFromPageNumber = true;
+			  router.back();
+		  } catch (e) {
+			  prompt.showToast({ message: '设置失败', duration: 2000 });
 		  }
-		  this.savedPersent[this.name].chapterIndex = targetChapterIndex;
-		  this.savedPersent[this.name].offsetInChapter = 0;
-		  this.savedPersent[this.name].scrollOffset = 0;
-  
-		  storage.set({
-			  key: 'EBOOK_SAVED',
-			  value: JSON.stringify(this.savedPersent),
-			  success: () => {
-				  prompt.showToast({ message: '设置成功', duration: 1000 });
-				  globalThis.justJumpedFromPageNumber = true;
-				  router.back();
-			  },
-			  fail: () => {
-				  prompt.showToast({ message: '设置失败', duration: 2000 });
-			  }
-		  });
 		  return;
 	  }
   

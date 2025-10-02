@@ -35,6 +35,14 @@ import router from '@system.router'
 import file from '@system.file'
 import prompt from '@system.prompt'
 
+function runAsyncFunc(func, params) {
+    return new Promise((resolve, reject) => func({
+        success: resolve,
+        fail: (data, code) => reject({data, code}),
+        ...params
+    }));
+}
+
 export default {
 	private: {
 		fileName: '加载中...',
@@ -66,41 +74,54 @@ export default {
 	onDestroy() {
 		clearInterval(this.timer);
 	},
-	loadFileInfo() {
+	async loadFileInfo() {
 		const that = this;
-		this.fileName = this.name;
-
 		const bookDirUri = `internal://files/books/${this.name}/`;
 		const bookInfoUri = `internal://files/books/${this.name}/book_info.json`;
-
-		file.stat({
-			uri: bookDirUri,
-			success: function(data) {
-				that.fileSize = that.formatFileSize(data.size);
-				that.modifiedTime = that.formatTime(data.lastModifiedTime);
-			},
-			fail: function(data, code) {
-				prompt.showToast({ message: `加载大小失败: ${code}` });
-				that.fileSize = '加载失败';
-				that.modifiedTime = '加载失败';
-			}
-		});
 
 		file.readText({
 			uri: bookInfoUri,
 			success: function(data) {
 				try {
 					const info = JSON.parse(data.text);
+					that.fileName = info.name || that.name;
 					that.wordCount = info.wordCount ? `${info.wordCount} 字` : '未知';
 				} catch (e) {
+					that.fileName = that.name;
 					that.wordCount = '解析失败';
 				}
 			},
 			fail: function(data, code) {
-				prompt.showToast({ message: `加载字数失败: ${code}` });
+				that.fileName = that.name;
 				that.wordCount = '加载失败';
 			}
 		});
+
+		file.stat({
+			uri: bookDirUri,
+			success: function(data) {
+				that.modifiedTime = that.formatTime(data.lastModifiedTime);
+			},
+			fail: function(data, code) {
+				that.modifiedTime = '加载失败';
+			}
+		});
+
+		this.fileSize = '计算中...';
+		try {
+			const listResult = await runAsyncFunc(file.list, { uri: bookDirUri });
+			let totalSize = 0;
+			if (listResult.fileList) {
+				for (const f of listResult.fileList) {
+					if (f.type === 'file') {
+						totalSize += f.length;
+					}
+				}
+			}
+			this.fileSize = this.formatFileSize(totalSize);
+		} catch (e) {
+			this.fileSize = '计算失败';
+		}
 	},
 	formatFileSize(bytes) {
 		if (bytes === 0) return '0 Bytes';

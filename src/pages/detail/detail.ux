@@ -58,10 +58,10 @@
 	import file from '@system.file'
 	import router from '@system.router'
     import storage from '../../common/storage.js'
+	import bookStorage from '../../common/bookStorage.js'
 	import brightness from '@system.brightness'
 
 	var allSize = 0;
-	var SAVED_KEY = "EBOOK_SAVED";
     let autoInterval = null;
 
 	export default {
@@ -75,13 +75,12 @@
 		loadingPrev: false,
 		page1: { lines: ["加载中..."], offset: 0, length: 0 },
 		page2: null,
-		currentFileOffset: 0, 
+		currentFileOffset: 0,
 		opacity: 100,
 		swipe: 'column',
 		auto: false,
 		nowTime: "00:00",
 		timer: null,
-		savedPersent:{},
 		savedScrollOffset: 0,
       	currentScrollTop: 0,
 		totalPages: 0,
@@ -96,12 +95,12 @@
 		wait: false,
 		longPressTriggered: false,
 		saveDataTimeout: null,
+		allChapters: []
 	  },
 	  protected: {
 		name: '',
-		chapterIndex: 0,
-		chapterName: '',
-		allChapters: '[]'
+		chapterIndex: -1,
+		chapterName: ''
 	  },
 	  updateTime() {
 		const date = new Date();
@@ -113,89 +112,104 @@
 	 },
 	updatePageNumber(){
 		this.currentPage = this.currentChapterIndexInAll + 1;
-		this.totalPages = JSON.parse(this.allChapters).length;
+		this.totalPages = this.allChapters.length;
 	},
 	onInit(){
 		this.updateTime();
 		this.timer = setInterval(() => { this.updateTime(); }, 1000);
-		this.currentChapterName = this.chapterName;
-		this.loadSettingsAndContent();
+		this.loadBook();
+		this.loadSettings();
 	},
-	onShow(){
-	    var that = this;
-		storage.get({ key: 'EBOOK_TXTSZPAGE', success: function(data) { if (data) that.txtSizePage = parseInt(data); } });
-		this.loadSettingsAndContent();
+	async onShow(){
+		this.loadSettings();
+		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber) {
+            if(globalThis.justJumpedFromChapter) {
+			    this.chapterIndex = globalThis.newChapterIndex;
+			    this.chapterName = globalThis.newChapterName;
+                delete globalThis.newChapterIndex;
+			    delete globalThis.newChapterName;
+            }
+			await this.loadBook();
+		}
 	},
-	loadSettingsAndContent() {
-		var that = this;
+	loadSettings() {
+		storage.get({ key: 'EBOOK_TXTSZPAGE', success: (data) => { if (data) this.txtSizePage = parseInt(data); } });
 		storage.get({ key: 'EBOOK_FONT',
-		  success: function(data){
-			if(data){ that.fontSize = parseInt(data); }
-			that.lineHeight = parseInt((-0.01)*(that.fontSize**2) + 1.62*that.fontSize - 3.23);
-			that.pageHeigh = Math.floor(480/that.lineHeight) * that.lineHeight;
-			that.initReadFile();
+		  success: (data) => {
+			if(data){ this.fontSize = parseInt(data); }
+			this.lineHeight = parseInt((-0.01)*(this.fontSize**2) + 1.62*this.fontSize - 3.23);
+			this.pageHeigh = Math.floor(480/this.lineHeight) * this.lineHeight;
 		  }
 		});
-		storage.get({ key: 'EBOOK_OPACITY', success: function(data) { if (data) that.opacity = parseInt(data) } });
-		storage.get({ key: 'EBOOK_SWIPE', success: function(data) { if (data) that.swipe = data } });
+		storage.get({ key: 'EBOOK_OPACITY', success: (data) => { if (data) this.opacity = parseInt(data) } });
+		storage.get({ key: 'EBOOK_SWIPE', success: (data) => { if (data) this.swipe = data } });
 		storage.get({ key: 'EBOOK_AUTO', success: (data) => { if(!data)return; const { speed, enable } = JSON.parse(data); if(enable)this.auto = speed; } });
 	},
-	initReadFile() {
-		var that = this;
-		storage.get({
-			key: SAVED_KEY,
-			success: function(data) {
-				if (data) { that.savedPersent = JSON.parse(data); }
-	
-				const chapters = JSON.parse(that.allChapters);
-				let chapterToLoadIndex = that.chapterIndex;
-				let offsetInChapter = 0;
-				let scrollOffset = 0;
-	
-				if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromPageNumber) {
-					if (globalThis.justJumpedFromPageNumber) {
-						chapterToLoadIndex = that.savedPersent[that.name].chapterIndex;
-					} else {
-						chapterToLoadIndex = that.chapterIndex;
-					}
-					offsetInChapter = 0;
-					scrollOffset = 0;
-					globalThis.justJumpedFromChapter = false;
-					globalThis.justJumpedFromPageNumber = false;
-				} else if (globalThis.justJumpedFromBookmark) {
-					chapterToLoadIndex = that.savedPersent[that.name].chapterIndex;
-					offsetInChapter = that.savedPersent[that.name].offsetInChapter || 0;
-					scrollOffset = that.savedPersent[that.name].scrollOffset || 0;
-					globalThis.justJumpedFromBookmark = false;
-				} else if (that.savedPersent[that.name] && that.savedPersent[that.name].chapterIndex !== undefined) {
-					chapterToLoadIndex = that.savedPersent[that.name].chapterIndex;
-					offsetInChapter = that.savedPersent[that.name].offsetInChapter || 0;
-					scrollOffset = that.savedPersent[that.name].scrollOffset || 0;
-				}
-	
-				const chapterArrayIndex = chapters.findIndex(c => c.index === chapterToLoadIndex);
-	
-				that.currentFileOffset = offsetInChapter;
-				that.savedScrollOffset = scrollOffset;
-				that.scrollTopValue = scrollOffset;
-				that.currentScrollTop = scrollOffset;
-	
-				that.loadChapter(chapterArrayIndex > -1 ? chapterArrayIndex : 0, () => {
-					that.loadInitialSegments();
-					that.isAtChapterStart = that.currentFileOffset === 0 && that.savedScrollOffset < 10;
-				});
-			}
+	async loadBook() {
+		const listUri = `internal://files/books/${this.name}/list.txt`;
+		try {
+			const listData = await new Promise((resolve, reject) => file.readText({ uri: listUri, success: resolve, fail: reject }));
+			this.allChapters = listData.text.split('\n').filter(Boolean).map(JSON.parse);
+		} catch (e) {
+			prompt.showToast({ message: '章节列表加载失败' });
+			this.allChapters = [];
+			return;
+		}
+
+		if (this.allChapters.length === 0) {
+			this.page1 = { lines: ["本书没有内容"], offset: 0, length: 0 };
+			return;
+		}
+
+		const progress = await bookStorage.get(this.name);
+		let chapterToLoadIndex;
+		let offsetInChapter = 0;
+		let scrollOffset = 0;
+
+		if (globalThis.justJumpedFromChapter) {
+			chapterToLoadIndex = this.chapterIndex;
+			this.currentChapterName = this.chapterName;
+			offsetInChapter = 0;
+			scrollOffset = 0;
+			globalThis.justJumpedFromChapter = false;
+		} else if (globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber) {
+			chapterToLoadIndex = progress.chapterIndex;
+			offsetInChapter = progress.offsetInChapter || 0;
+			scrollOffset = progress.scrollOffset || 0;
+			globalThis.justJumpedFromBookmark = false;
+			globalThis.justJumpedFromPageNumber = false;
+		} else if (progress.chapterIndex !== null) {
+			chapterToLoadIndex = progress.chapterIndex;
+			offsetInChapter = progress.offsetInChapter || 0;
+			scrollOffset = progress.scrollOffset || 0;
+		} else {
+			chapterToLoadIndex = this.allChapters[0].index;
+		}
+
+		let chapterArrayIndex = this.allChapters.findIndex(c => c.index === chapterToLoadIndex);
+		if (chapterArrayIndex === -1) {
+			chapterToLoadIndex = this.allChapters[0].index;
+			chapterArrayIndex = 0;
+		}
+
+		this.currentFileOffset = offsetInChapter;
+		this.savedScrollOffset = scrollOffset;
+		this.scrollTopValue = scrollOffset;
+		this.currentScrollTop = scrollOffset;
+
+		this.loadChapter(chapterArrayIndex, () => {
+			this.loadInitialSegments();
+			this.isAtChapterStart = this.currentFileOffset === 0 && this.savedScrollOffset < 10;
 		});
 	},
 	loadChapter(chapterIdxInAll, callback) {
-		const chapters = JSON.parse(this.allChapters);
-		if (chapterIdxInAll < 0 || chapterIdxInAll >= chapters.length) {
+		if (chapterIdxInAll < 0 || chapterIdxInAll >= this.allChapters.length) {
 			if(callback) callback();
 			return;
 		}
 		this.isAtChapterStart = false;
 		this.isAtChapterEnd = false;
-		const chapter = chapters[chapterIdxInAll];
+		const chapter = this.allChapters[chapterIdxInAll];
 		this.currentChapterIndexInAll = chapterIdxInAll;
 		this.currentChapterName = chapter.name;
 		this.cPath = `internal://files/books/${this.name}/${chapter.index}.txt`;
@@ -451,8 +465,7 @@
 		this.wait = true;
 	
 		const nextChapterIndex = this.currentChapterIndexInAll + 1;
-		const chapters = JSON.parse(this.allChapters);
-		if (nextChapterIndex >= chapters.length) {
+		if (nextChapterIndex >= this.allChapters.length) {
 			prompt.showToast({ message: '已是最后一章' });
 			if (autoInterval) {
 				clearInterval(autoInterval);
@@ -492,30 +505,36 @@
 			}, 2000);
 		}
 	},
-	_performSave() {
-		var that = this;
-		storage.get({ key: SAVED_KEY,
-		  success: function(data){
-			if(data){ that.savedPersent = JSON.parse(data); }
-            if (!that.savedPersent[that.name]) { that.savedPersent[that.name] = {}; }
-			
-			const chapters = JSON.parse(that.allChapters);
-			const totalChapters = chapters.length;
+	async _performSave() {
+		if (!this.name || this.allChapters.length === 0) return;
+		
+		const progress = await bookStorage.get(this.name);
+		const totalChapters = this.allChapters.length;
 
-			that.savedPersent[that.name].chapterIndex = chapters[that.currentChapterIndexInAll].index;
-			that.savedPersent[that.name].offsetInChapter = that.currentFileOffset;
-			that.savedPersent[that.name].scrollOffset = that.currentScrollTop;
-			that.savedPersent[that.name].p = totalChapters > 0 ? parseFloat(((that.currentChapterIndexInAll + 1) / totalChapters * 100).toFixed(2)) : 0;
+		progress.chapterIndex = this.allChapters[this.currentChapterIndexInAll].index;
+		progress.offsetInChapter = this.currentFileOffset;
+		progress.scrollOffset = this.currentScrollTop;
+		progress.p = totalChapters > 0 ? parseFloat(((this.currentChapterIndexInAll + 1) / totalChapters * 100).toFixed(2)) : 0;
+		
+		await bookStorage.set(this.name, progress);
 
-			storage.set({ key: SAVED_KEY, value: JSON.stringify(that.savedPersent) });
-		  }
-		});
+		try {
+			const bookshelfUri = 'internal://files/books/bookshelf.json';
+			const data = await new Promise((resolve, reject) => file.readText({uri: bookshelfUri, success: resolve, fail: reject}));
+			const bookshelf = JSON.parse(data.text);
+			const bookIndex = bookshelf.findIndex(b => b.dirName === this.name);
+			if (bookIndex > -1) {
+				bookshelf[bookIndex].progress = progress.p;
+				await new Promise((resolve, reject) => file.writeText({uri: bookshelfUri, text: JSON.stringify(bookshelf), success: resolve, fail: reject}));
+			}
+		} catch (e) {
+		}
 	},
 	onHide(){ this.saveData(true); if (autoInterval) { clearInterval(autoInterval); autoInterval = null; } brightness.setKeepScreenOn({ keepScreenOn: false }); },
 	onDestroy(){ clearInterval(this.timer); if (autoInterval) { clearInterval(autoInterval); autoInterval = null; } brightness.setKeepScreenOn({ keepScreenOn: false }); },
 	onBackPress(){ this.back(); return true; },
 	back(){ this.saveData(true); setTimeout(() => { router.back(); }, 200); },
-	gotoSetting(){ this.saveData(true); setTimeout(() => { router.push({ uri: '/pages/detailsetting', params: { name: this.name, cPath: this.cPath, allChapters: this.allChapters } }); }, 200); },
+	gotoSetting(){ this.saveData(true); setTimeout(() => { router.push({ uri: '/pages/detailsetting', params: { name: this.name } }); }, 200); },
   	onTxtClick(event) {
 		if (this.swipe === 'column') { this.showSetting = !this.showSetting; } 
 		else {
@@ -544,36 +563,36 @@
 	lastPage() { this.$element("scrollId").scrollBy({ top: - this.pageHeigh, behavior: 'smooth' }); },
   	nextPage() { this.$element("scrollId").scrollBy({ top: this.pageHeigh, behavior: 'smooth' }); },
 	toggleKeepScreenOn() { this.isKeepScreenOn = !this.isKeepScreenOn; brightness.setKeepScreenOn({ keepScreenOn: this.isKeepScreenOn }); prompt.showToast({ message: this.isKeepScreenOn ? '已开启屏幕常亮' : '已关闭屏幕常亮' }); },
-	addBookmark() {
+	async addBookmark() {
 		if (this.longPressTriggered) {
 			return;
 		}
-		const that = this;
-		storage.get({ key: SAVED_KEY,
-			success: function(data) {
-				let savedData = data ? JSON.parse(data) : {};
-				if (!savedData[that.name]) { savedData[that.name] = {}; }
-				if (!savedData[that.name].bookmarks) { savedData[that.name].bookmarks = []; }
-				
-				const chapters = JSON.parse(that.allChapters);
-				const chapterIndex = chapters[that.currentChapterIndexInAll].index;
+		
+		const progress = await bookStorage.get(this.name);
+		if (!progress.bookmarks) { progress.bookmarks = []; }
+		
+		const chapterIndex = this.allChapters[this.currentChapterIndexInAll].index;
+		const newBookmark = { 
+			chapterIndex: chapterIndex,
+			chapterName: this.currentChapterName,
+			offsetInChapter: this.currentFileOffset, 
+			scrollOffset: this.currentScrollTop, 
+			time: new Date().getTime(), 
+			name: `书签${progress.bookmarks.length + 1}` 
+		};
 
-				const newBookmark = { 
-					chapterIndex: chapterIndex, 
-					offsetInChapter: that.currentFileOffset, 
-					scrollOffset: that.currentScrollTop, 
-					time: new Date().getTime(), 
-					name: `书签${savedData[that.name].bookmarks.length + 1}` 
-				};
+		const exists = progress.bookmarks.some(bm => bm.chapterIndex === newBookmark.chapterIndex && bm.offsetInChapter === newBookmark.offsetInChapter);
+		if (exists) { prompt.showToast({ message: '书签已存在' }); return; }
 
-				const exists = savedData[that.name].bookmarks.some(bm => bm.chapterIndex === newBookmark.chapterIndex && bm.offsetInChapter === newBookmark.offsetInChapter);
-				if (exists) { prompt.showToast({ message: '书签已存在' }); return; }
-
-				savedData[that.name].bookmarks.push(newBookmark);
-				savedData[that.name].bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
-				storage.set({ key: SAVED_KEY, value: JSON.stringify(savedData), success: function() { prompt.showToast({ message: '添加书签成功' }); }, fail: function() { prompt.showToast({ message: '添加书签失败' }); } });
-			}
-		});
+		progress.bookmarks.push(newBookmark);
+		progress.bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
+		
+		try {
+			await bookStorage.set(this.name, progress);
+			prompt.showToast({ message: '添加书签成功' });
+		} catch (e) {
+			prompt.showToast({ message: '添加书签失败' });
+		}
 	},
     gotoBookmarks() { 
 		this.longPressTriggered = true;
@@ -581,7 +600,7 @@
 			this.longPressTriggered = false;
 		}, 300);
 		this.saveData(true); 
-		router.push({ uri: '/pages/bookmarks', params: { name: this.name, allChapters: this.allChapters } }); 
+		router.push({ uri: '/pages/bookmarks', params: { name: this.name } }); 
 	}
 	}
   </script>
@@ -593,6 +612,3 @@
 	background-color: #000000;
 }
 </style>
-
-
-
