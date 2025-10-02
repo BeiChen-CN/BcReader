@@ -11,7 +11,7 @@
       {{bigTitle}}
     </text>
     <text style="position: absolute;left: 26px;top: 102px;width: 282px;height: 48px;font-size: 36px;font-weight: bold;color: #FFFFFF;">
-      喵喵{{appName}}
+      弦{{appName}}
     </text>
     <text style="position: absolute;left: 26px;top: 154px;width: 204px;height: 48px;font-size: 36px;font-weight: bold;color: rgba(255, 255, 255, 0.6);">
       {{appVer}}
@@ -37,7 +37,7 @@
 	private: {
     nowTime:':',
 	  bigTitle:'关于',
-    appName:'喵喵笔记',
+    appName:'弦电子书',
     appVer:'1.0.0',
     timer:null
 	},

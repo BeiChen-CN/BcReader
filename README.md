@@ -3,11 +3,10 @@
 ### 喵喵电子书多端设计稿  
 https://mastergo.com/goto/KWzbQtxB?file=165290124574010  
 
-### 喵喵电子书安卓客户端  
-https://github.com/BandBBS-Vela-Dev/com.bandbbs.ebook-android
+### 弦电子书安卓客户端  
 
-### 喵喵电子书 AstroBox 插件端  
-https://github.com/leset0ng/com.bandbbs.ebook-AstroBox
+https://github.com/youshen2/com.bandbbs.ebook-android
+
 </br></br>
 
 ## 快速上手
