@@ -60,6 +60,7 @@
     import storage from '../../common/storage.js'
 	import bookStorage from '../../common/bookStorage.js'
 	import brightness from '@system.brightness'
+	import app from '@system.app'
 
 	var allSize = 0;
     let autoInterval = null;
@@ -95,7 +96,10 @@
 		wait: false,
 		longPressTriggered: false,
 		saveDataTimeout: null,
-		allChapters: []
+		allChapters: [],
+		teacherScreenEnabled: false,
+		clickCount: 0,
+		clickTimeout: null
 	  },
 	  protected: {
 		name: '',
@@ -122,6 +126,12 @@
 	},
 	async onShow(){
 		this.loadSettings();
+		storage.get({
+			key: 'EBOOK_TEACHER_SCREEN_ENABLED',
+			success: (data) => {
+				this.teacherScreenEnabled = data === 'true';
+			}
+		});
 		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber) {
             if(globalThis.justJumpedFromChapter) {
 			    this.chapterIndex = globalThis.newChapterIndex;
@@ -544,7 +554,35 @@
 			params: { name: this.name }
 		});
 	},
+	async exitAppForTeacherScreen() {
+		await this.saveData(true);
+		app.terminate();
+	},
   	onTxtClick(event) {
+		if (this.wait) {
+			return;
+		}
+
+		if (this.teacherScreenEnabled) {
+			this.clickCount++;
+			if (this.clickTimeout) {
+				clearTimeout(this.clickTimeout);
+			}
+
+			if (this.clickCount >= 3) {
+				this.clickCount = 0;
+				clearTimeout(this.clickTimeout);
+				this.clickTimeout = null;
+				this.exitAppForTeacherScreen();
+				return;
+			}
+
+			this.clickTimeout = setTimeout(() => {
+				this.clickCount = 0;
+				this.clickTimeout = null;
+			}, 500);
+		}
+
 		if (this.swipe === 'column') { this.showSetting = !this.showSetting; } 
 		else {
 			if (this.showSetting) { this.showSetting = false; } 
@@ -621,4 +659,3 @@
 	background-color: #000000;
 }
 </style>
-

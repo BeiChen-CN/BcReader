@@ -1,0 +1,109 @@
+<template>
+	<div class="page" style="flex-direction: column;">
+		<div class="item">
+			<img static src="/common/images/Switch_ON.png" style="width: 113px;height: 80px;" @click="toggleFeature" if="{{isEnabled}}"/>
+			<img static src="/common/images/Switch_OFF.png" style="width: 113px;height: 80px;" @click="toggleFeature" else/>
+			<text style="font-size: 36px;font-weight:bold;color: white;width: 100%;text-align: center;top: 25px;">
+				{{isEnabled ? 'ON' : 'OFF'}}
+			</text>
+            <text style="font-size: 24px; color: white; text-align: left; padding: 20px; lines: 3; margin-top: 35px;">
+                开启后，阅读时短时间内连续点击三次屏幕自动退出电子书。
+			</text>
+		</div>
+
+		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+		<text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		  {{nowTime}}
+		</text>
+		<text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+			老师屏
+		</text>
+	</div>
+</template>
+
+<script>
+import router from "@system.router";
+import storage from '../../common/storage.js';
+
+const TEACHER_SCREEN_KEY = "EBOOK_TEACHER_SCREEN_ENABLED";
+
+export default {
+	private: {
+		isEnabled: false,
+		nowTime: "00:00",
+		timer: null
+	},
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		hours = hours < 10 ? '0' + hours : hours;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		this.nowTime = `${hours}:${minutes}`;
+	},
+	onInit() {
+		this.updateTime();
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 1000);
+
+		storage.get({
+            key: TEACHER_SCREEN_KEY,
+            success: (data) => {
+                this.isEnabled = data === 'true';
+            }
+        });
+	},
+	onDestroy(){
+	  clearInterval(this.timer);
+	},
+    toggleFeature() {
+        const targetState = !this.isEnabled;
+        if (targetState) {
+             this.isEnabled = true;
+            this.saveState(true);
+            router.push({
+                uri: '/pages/help',
+                params: {
+                    title: '功能提醒',
+                    content: '本功能不能保证在重要情况下确实可用，请尽量不要在学习时间看电子书。'
+                }
+            });
+        } else {
+            this.isEnabled = false;
+            this.saveState(false);
+        }
+    },
+    saveState(state) {
+        storage.set({
+            key: TEACHER_SCREEN_KEY,
+            value: state.toString()
+        });
+    },
+	back() {
+		router.back();
+	},
+};
+</script>
+
+<style>
+.page {
+	width: 336px;
+	height: 480px;
+	background-color: #000000;
+}
+
+.item {
+	position: absolute;
+	left: 6px;
+	top: 86px;
+	width: 324px;
+	height: 308px;
+	border-radius: 36px;
+	flex-direction: column;
+	border: 3px solid #262626;
+	align-items: center;
+	justify-content: flex-start;
+	padding: 20px;
+}
+</style>

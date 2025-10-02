@@ -117,6 +117,9 @@
       },
       "pages/list": {
         "component": "list"
+      },
+      "pages/teacherScreen": {
+        "component": "teacherScreen"
       }
     }
   },
