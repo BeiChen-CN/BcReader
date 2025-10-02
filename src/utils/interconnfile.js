@@ -11,6 +11,8 @@ export default class interconnfile {
     currentBookDir = "";
     totalChapters = 0;
     receivedChapters = 0;
+    partialChapterContent = "";
+    currentSavingChapterIndex = -1;
 
     constructor({ addListener, send, setEventListener }) {
         const onmessage = (data) => {
@@ -123,45 +125,66 @@ export default class interconnfile {
             const { count, data } = payload;
             const chapterData = JSON.parse(data);
 
-            if (count !== this.receivedChapters) {
-                this.send({ type: "error", message: "package count error", count: this.receivedChapters });
-                return;
-            }
+            const isFirstChunk = chapterData.chunkNum === 0;
+            const isLastChunk = chapterData.chunkNum === chapterData.totalChunks - 1;
 
-            const chapterContent = chapterData.content;
-            const chapterFileName = `${chapterData.index}.txt`;
-            const chapterUri = `${this.baseUri}${this.currentBookDir}/${chapterFileName}`;
-
-            await runAsyncFunc(file.writeArrayBuffer, {
-                uri: chapterUri,
-                buffer: str2abWrite(chapterContent)
-            });
-
-            const chapterMeta = {
-                index: chapterData.index,
-                name: chapterData.name,
-                wordCount: chapterData.wordCount
-            };
-            const listUri = `${this.baseUri}${this.currentBookDir}/list.txt`;
-            await runAsyncFunc(file.writeText, {
-                uri: listUri,
-                text: JSON.stringify(chapterMeta) + '\n',
-                append: true
-            });
-
-            this.receivedChapters++;
-            this.callback({ msg: "next", progress: count / this.totalChapters, filename: this.currentBookName });
-
-            if (count == this.totalChapters) {
-                this.send({ type: "success", message: "transfer success", count: this.receivedChapters });
-                this.currentBookName = "";
-                this.currentBookDir = "";
-                this.callback({ msg: "success" });
+            if (isFirstChunk) {
+                if (count !== this.receivedChapters) {
+                    this.send({ type: "error", message: "package count error", count: this.receivedChapters });
+                    return;
+                }
+                this.partialChapterContent = chapterData.content;
+                this.currentSavingChapterIndex = chapterData.index;
             } else {
-                await this.send({ type: "next", message: count + " success", count: this.receivedChapters });
+                if (this.currentSavingChapterIndex !== chapterData.index) {
+                    this.send({ type: "error", message: "chunk chapter index mismatch", count: this.receivedChapters });
+                    return;
+                }
+                this.partialChapterContent += chapterData.content;
             }
             
-            if(count % 10 == 0) global.runGC();
+            const chunkProgress = (chapterData.chunkNum + 1) / chapterData.totalChunks;
+            const overallProgress = (count + chunkProgress) / (this.totalChapters + 1);
+            this.callback({ msg: "next", progress: overallProgress, filename: this.currentBookName });
+
+            if (isLastChunk) {
+                const chapterFileName = `${chapterData.index}.txt`;
+                const chapterUri = `${this.baseUri}${this.currentBookDir}/${chapterFileName}`;
+
+                await runAsyncFunc(file.writeArrayBuffer, {
+                    uri: chapterUri,
+                    buffer: str2abWrite(this.partialChapterContent)
+                });
+
+                const chapterMeta = {
+                    index: chapterData.index,
+                    name: chapterData.name,
+                    wordCount: chapterData.wordCount
+                };
+                const listUri = `${this.baseUri}${this.currentBookDir}/list.txt`;
+                await runAsyncFunc(file.writeText, {
+                    uri: listUri,
+                    text: JSON.stringify(chapterMeta) + '\n',
+                    append: true
+                });
+
+                this.partialChapterContent = "";
+                this.currentSavingChapterIndex = -1;
+                this.receivedChapters++;
+
+                if (count == this.totalChapters) {
+                    this.send({ type: "success", message: "transfer success", count: this.receivedChapters });
+                    this.currentBookName = "";
+                    this.currentBookDir = "";
+                    this.callback({ msg: "success" });
+                } else {
+                    await this.send({ type: "next", message: count + " success", count: this.receivedChapters });
+                }
+                
+                if(count % 10 == 0) global.runGC();
+            } else {
+                await this.send({ type: "next_chunk" });
+            }
         } catch (error) {
             this.send({ type: "error", message: `Save chapter failed: ${error.message || 'unknown error'}`, count: this.receivedChapters });
             this.callback({ msg: "error", progress: error.message });
