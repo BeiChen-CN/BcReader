@@ -217,6 +217,10 @@
 			if(callback) callback();
 			return;
 		}
+		// 清理旧章节数据，释放内存
+		this.page1 = { lines: [], offset: 0, length: 0 };
+		this.page2 = null;
+		
 		this.isAtChapterStart = false;
 		this.isAtChapterEnd = false;
 		const chapter = this.allChapters[chapterIdxInAll];
@@ -540,12 +544,59 @@
 		} catch (e) {
 		}
 	},
-	onHide(){ this.saveData(true); if (autoInterval) { clearInterval(autoInterval); autoInterval = null; } brightness.setKeepScreenOn({ keepScreenOn: false }); },
-	onDestroy(){ clearInterval(this.timer); if (autoInterval) { clearInterval(autoInterval); autoInterval = null; } brightness.setKeepScreenOn({ keepScreenOn: false }); },
+	onHide(){ 
+		this.saveData(true); 
+		if (autoInterval) { 
+			clearInterval(autoInterval); 
+			autoInterval = null; 
+		} 
+		brightness.setKeepScreenOn({ keepScreenOn: false }); 
+	},
+	onDestroy(){ 
+		// 清理所有定时器
+		if (this.timer) {
+			clearInterval(this.timer); 
+			this.timer = null;
+		}
+		if (autoInterval) { 
+			clearInterval(autoInterval); 
+			autoInterval = null; 
+		} 
+		if (this.saveDataTimeout) {
+			clearTimeout(this.saveDataTimeout);
+			this.saveDataTimeout = null;
+		}
+		if (this.clickTimeout) {
+			clearTimeout(this.clickTimeout);
+			this.clickTimeout = null;
+		}
+		// 清理页面数据，释放内存
+		this.page1 = null;
+		this.page2 = null;
+		this.allChapters = [];
+		brightness.setKeepScreenOn({ keepScreenOn: false }); 
+	},
 	onBackPress(){ this.back(); return true; },
 	back(){
-		this.saveData(true);
-		router.back();
+		// 立即清理所有定时器和资源
+		if (this.saveDataTimeout) {
+			clearTimeout(this.saveDataTimeout);
+			this.saveDataTimeout = null;
+		}
+		if (this.clickTimeout) {
+			clearTimeout(this.clickTimeout);
+			this.clickTimeout = null;
+		}
+		if (autoInterval) { 
+			clearInterval(autoInterval); 
+			autoInterval = null; 
+		}
+		// 立即保存数据
+		this._performSave();
+		// 等待保存完成后再返回
+		setTimeout(() => {
+			router.back();
+		}, 100);
 	},
 	gotoSetting(){
 		this.saveData(true);

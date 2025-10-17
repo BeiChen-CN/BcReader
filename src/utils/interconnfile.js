@@ -67,8 +67,25 @@ export default class interconnfile {
         }
     }
 
+    generateDirName(filename) {
+        // 生成书名的简单哈希值
+        let hash = 0;
+        for (let i = 0; i < filename.length; i++) {
+            const char = filename.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // 转换为32位整数
+        }
+        const hashStr = Math.abs(hash).toString(36);
+        
+        // 保留书名中的字母和数字，其他字符替换为下划线
+        const sanitized = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+        // 截取前30个字符（避免过长）+ 哈希值，确保唯一性
+        const truncated = sanitized.substring(0, 30);
+        return `${truncated}_${hashStr}`;
+    }
+
     async getBookStatus({ filename }) {
-        const sanitizedDirName = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const sanitizedDirName = this.generateDirName(filename);
         const listUri = `${this.baseUri}${sanitizedDirName}/list.txt`;
         let chapterCount = 0;
         try {
@@ -88,7 +105,7 @@ export default class interconnfile {
                 return;
             }
 
-            const sanitizedDirName = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const sanitizedDirName = this.generateDirName(filename);
             this.currentBookName = filename;
             this.currentBookDir = sanitizedDirName;
             this.totalChapters = total;
