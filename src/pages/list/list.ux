@@ -104,7 +104,17 @@ export default {
   },
   initialLoad() {
     this.totalPages = Math.ceil(this.allChapters.length / PAGE_SIZE) || 1;
-    this.currentPage = 0;
+    if (this.currentChapterIndex >= 0) {
+      this.currentPage = Math.floor(this.currentChapterIndex / PAGE_SIZE);
+      if (this.currentPage >= this.totalPages) {
+        this.currentPage = this.totalPages - 1;
+      }
+      if (this.currentPage < 0) {
+        this.currentPage = 0;
+      }
+    } else {
+      this.currentPage = 0;
+    }
     this.updateVisibleChapters();
   },
   updateVisibleChapters() {
@@ -152,7 +162,7 @@ export default {
 }
 .item {
     width: 100%;
-    height: 112px;
+    min-height: 112px;
     padding: 14px 20px;
     margin-bottom: 8px;
     background-color: #262626;
@@ -171,8 +181,6 @@ export default {
     width: 100%;
     font-weight: bold;
     color: white;
-    text-overflow: ellipsis;
-    lines: 1;
 }
 .itemtext-current {
   color: #0D6EFF;

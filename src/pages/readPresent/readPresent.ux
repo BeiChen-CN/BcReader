@@ -98,7 +98,6 @@
 			clearInterval(this.timer);
 			this.timer = null;
 		}
-		// 清理数据，释放内存
 		this.allChapters = [];
 	},
 	async onClick(num){
