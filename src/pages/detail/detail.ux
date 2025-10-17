@@ -271,7 +271,9 @@
 	restoreScrollPosition() {
 		setTimeout(() => {
 			this.scrollTopValue = this.savedScrollOffset;
+			this.currentScrollTop = this.savedScrollOffset;
 			this.wait = false;
+			this.saveData(true);
 		}, 50);
 	},
 	readFileText(readOffset, cb){
@@ -298,6 +300,7 @@
 		}
 		this.currentScrollTop = e.scrollY;
 		this.isAtChapterStart = this.currentFileOffset === 0 && this.currentScrollTop < 10;
+		this.saveData();
 	},
 	onScrollTop(){
 		if (this.wait) return;
@@ -346,7 +349,7 @@
 				that.currentScrollTop = newScrollPos;
 
 				that.currentFileOffset = that.page1.offset;
-				that.saveData();
+				that.saveData(true);
 				that.wait = false;
 			},
 			fail: function() {
@@ -377,14 +380,14 @@
 						const newScrollPos = that.currentScrollTop + rect.height;
 						that.scrollTopValue = newScrollPos;
 						that.currentScrollTop = newScrollPos;
+						that.currentFileOffset = that.page1.offset;
+						that.saveData(true);
 						that.wait = false;
 					},
 					fail: function() {
 						that.wait = false;
 					}
 				});
-				that.currentFileOffset = that.page1.offset;
-				that.saveData();
 			} else {
 				that.wait = false;
 			}
@@ -503,6 +506,7 @@
 			this.page2 = null;
 			this.loadInitialSegments();
 			this.isAtChapterStart = true;
+			this.saveData(true);
 		});
 	},
 	saveData(forceImmediate = false){
@@ -552,6 +556,12 @@
 		brightness.setKeepScreenOn({ keepScreenOn: false }); 
 	},
 	onDestroy(){ 
+		if (this.saveDataTimeout) {
+			clearTimeout(this.saveDataTimeout);
+			this.saveDataTimeout = null;
+		}
+		this._performSave();
+		
 		if (this.timer) {
 			clearInterval(this.timer); 
 			this.timer = null;
@@ -560,10 +570,6 @@
 			clearInterval(autoInterval); 
 			autoInterval = null; 
 		} 
-		if (this.saveDataTimeout) {
-			clearTimeout(this.saveDataTimeout);
-			this.saveDataTimeout = null;
-		}
 		if (this.clickTimeout) {
 			clearTimeout(this.clickTimeout);
 			this.clickTimeout = null;
