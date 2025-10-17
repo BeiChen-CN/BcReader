@@ -11,7 +11,7 @@ export default class interconnfile {
     currentBookDir = "";
     totalChapters = 0;
     receivedChapters = 0;
-    partialChapterContent = "";
+    partialChapterContent = [];
     currentSavingChapterIndex = -1;
 
     constructor({ addListener, send, setEventListener }) {
@@ -119,6 +119,27 @@ export default class interconnfile {
                 try { await runAsyncFunc(file.rmdir, { uri: bookUri, recursive: true }); } catch (e) {}
                 await runAsyncFunc(file.mkdir, { uri: bookUri });
                 await runAsyncFunc(file.writeText, { uri: listUri, text: '' });
+            } else {
+                // 断点续传时，确保目录存在
+                try {
+                    await runAsyncFunc(file.access, { uri: bookUri });
+                } catch (e) {
+                    // 如果目录不存在，创建它
+                    await runAsyncFunc(file.mkdir, { uri: bookUri });
+                    await runAsyncFunc(file.writeText, { uri: listUri, text: '' });
+                    this.receivedChapters = 0;
+                }
+                
+                // 验证已接收的章节数量与list.txt一致
+                try {
+                    const listData = await runAsyncFunc(file.readText, { uri: listUri });
+                    const existingChapters = listData.text.split('\n').filter(Boolean);
+                    this.receivedChapters = existingChapters.length;
+                } catch (e) {
+                    // 如果list.txt不存在或读取失败，重置为0
+                    await runAsyncFunc(file.writeText, { uri: listUri, text: '' });
+                    this.receivedChapters = 0;
+                }
             }
 
             const bookInfo = { name: filename, chapterCount: total, wordCount: wordCount };
@@ -156,22 +177,27 @@ export default class interconnfile {
             const isLastChunk = chapterData.chunkNum === chapterData.totalChunks - 1;
 
             if (isFirstChunk) {
+                // 允许跳章传输：如果收到的章节索引小于已接收的章节数，说明是重复的章节
                 if (count < this.receivedChapters) {
                     await this.send({ type: "next", message: "duplicate chapter", count: this.receivedChapters });
                     return;
+                }
+                // 如果 count 大于 receivedChapters，说明是跳章传输，更新 receivedChapters
+                if (count > this.receivedChapters) {
+                    this.receivedChapters = count;
                 }
                 if (count !== this.receivedChapters) {
                     this.send({ type: "next", message: "package count error", count: this.receivedChapters });
                     return;
                 }
-                this.partialChapterContent = chapterData.content;
+                this.partialChapterContent = [chapterData.content];
                 this.currentSavingChapterIndex = chapterData.index;
             } else {
                 if (this.currentSavingChapterIndex !== chapterData.index) {
                     this.send({ type: "error", message: "chunk chapter index mismatch", count: this.receivedChapters });
                     return;
                 }
-                this.partialChapterContent += chapterData.content;
+                this.partialChapterContent.push(chapterData.content);
             }
             
             const chunkProgress = (chapterData.chunkNum + 1) / chapterData.totalChunks;
@@ -182,25 +208,58 @@ export default class interconnfile {
                 const chapterFileName = `${chapterData.index}.txt`;
                 const chapterUri = `${this.baseUri}${this.currentBookDir}/${chapterFileName}`;
 
+                // 合并所有分块并写入文件
+                const fullContent = this.partialChapterContent.join('');
                 await runAsyncFunc(file.writeArrayBuffer, {
                     uri: chapterUri,
-                    buffer: str2abWrite(this.partialChapterContent)
+                    buffer: str2abWrite(fullContent)
                 });
+
+                // 立即释放内存
+                this.partialChapterContent = [];
+                this.currentSavingChapterIndex = -1;
 
                 const chapterMeta = {
                     index: chapterData.index,
                     name: chapterData.name,
                     wordCount: chapterData.wordCount
                 };
+                
+                // 更新章节列表，确保按章节索引排序
                 const listUri = `${this.baseUri}${this.currentBookDir}/list.txt`;
+                let chapterList = [];
+                try {
+                    const listData = await runAsyncFunc(file.readText, { uri: listUri });
+                    const lines = listData.text.split('\n').filter(Boolean);
+                    chapterList = lines.map(line => {
+                        try {
+                            return JSON.parse(line);
+                        } catch (e) {
+                            return null;
+                        }
+                    }).filter(item => item !== null);
+                } catch (e) {
+                    chapterList = [];
+                }
+                
+                // 检查章节是否已存在，如果存在则更新，否则添加
+                const existingIndex = chapterList.findIndex(ch => ch.index === chapterData.index);
+                if (existingIndex >= 0) {
+                    chapterList[existingIndex] = chapterMeta;
+                } else {
+                    chapterList.push(chapterMeta);
+                }
+                
+                // 按章节索引排序
+                chapterList.sort((a, b) => a.index - b.index);
+                
+                // 写回文件
+                const listText = chapterList.map(ch => JSON.stringify(ch)).join('\n') + '\n';
                 await runAsyncFunc(file.writeText, {
                     uri: listUri,
-                    text: JSON.stringify(chapterMeta) + '\n',
-                    append: true
+                    text: listText
                 });
 
-                this.partialChapterContent = "";
-                this.currentSavingChapterIndex = -1;
                 this.receivedChapters++;
 
                 if (count >= this.totalChapters - 1) {

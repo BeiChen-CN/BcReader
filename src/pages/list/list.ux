@@ -80,20 +80,31 @@ export default {
       }
     });
   },
-  loadChapterList() {
+  async loadChapterList() {
     const that = this;
     const listUri = `internal://files/books/${this.name}/list.txt`;
     
-    file.readText({
-      uri: listUri,
-      success: function(data) {
-        that.allChapters = data.text.split('\n').filter(Boolean).map(JSON.parse);
-        that.loadCurrentChapterIndex();
-      },
-      fail: function(data, code) {
-        prompt.showToast({ message: `章节列表加载失败: ${code}` });
-      }
-    });
+    try {
+      const data = await new Promise((resolve, reject) => {
+        file.readText({
+          uri: listUri,
+          success: resolve,
+          fail: (data, code) => reject({ data, code })
+        });
+      });
+      
+      that.allChapters = data.text.split('\n').filter(Boolean).map(line => {
+        try {
+          return JSON.parse(line);
+        } catch (e) {
+          return null;
+        }
+      }).filter(item => item !== null);
+      
+      await that.loadCurrentChapterIndex();
+    } catch (error) {
+      prompt.showToast({ message: `章节列表加载失败: ${error.code || 'unknown'}` });
+    }
   },
   async loadCurrentChapterIndex() {
     const progress = await bookStorage.get(this.name);
@@ -162,12 +173,14 @@ export default {
 }
 .item {
     width: 100%;
-    min-height: 112px;
+    height: 130px;
     padding: 14px 20px;
     margin-bottom: 8px;
     background-color: #262626;
     border-radius: 36px;
     align-items: center;
+    text-overflow: ellipsis;
+    lines: 1;
 }
 .chapter-info {
   flex-direction: column;
