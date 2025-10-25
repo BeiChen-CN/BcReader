@@ -68,34 +68,6 @@ export default {
   },
   onShow() {
     this.loadFileList();
-    this.checkFirstLaunch();
-  },
-  checkFirstLaunch() {
-    storage.get({
-        key: 'EBOOK_FIRST_LAUNCH_TIP_SHOWN',
-        success: (data) => {
-            if (data !== 'true') {
-                router.push({
-                    uri: '/pages/help',
-                    params: {
-                        title: '使用提醒',
-                        content: '由于无缝加载的逻辑问题，换页时可能会有部分滚动错位，阅读请确认行和字的位置。',
-                        isFirstLaunch: true
-                    }
-                });
-            }
-        },
-        fail: () => {
-             router.push({
-                uri: '/pages/help',
-                params: {
-                    title: '使用提醒',
-                    content: '由于无缝加载的逻辑问题，换页时可能会有部分滚动错位，阅读请确认行和字的位置。',
-                    isFirstLaunch: true
-                }
-            });
-        }
-    });
   },
   loadFileList() {
     const that = this;

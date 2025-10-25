@@ -166,7 +166,7 @@
 			return;
 		}
 
-		if (this.allChapters.length === 0) {
+		if (!this.allChapters || this.allChapters.length === 0) {
 			this.page1 = { lines: ["本书没有内容"], offset: 0, length: 0 };
 			return;
 		}
@@ -213,7 +213,7 @@
 		});
 	},
 	loadChapter(chapterIdxInAll, callback) {
-		if (chapterIdxInAll < 0 || chapterIdxInAll >= this.allChapters.length) {
+		if (!this.allChapters || chapterIdxInAll < 0 || chapterIdxInAll >= this.allChapters.length) {
 			if(callback) callback();
 			return;
 		}
@@ -556,11 +556,16 @@
 		brightness.setKeepScreenOn({ keepScreenOn: false }); 
 	},
 	onDestroy(){ 
+		
 		if (this.saveDataTimeout) {
 			clearTimeout(this.saveDataTimeout);
 			this.saveDataTimeout = null;
 		}
-		this._performSave();
+		
+		setTimeout(() => {
+			this._performSave();
+		}, 0);
+		
 		
 		if (this.timer) {
 			clearInterval(this.timer); 
@@ -574,9 +579,13 @@
 			clearTimeout(this.clickTimeout);
 			this.clickTimeout = null;
 		}
+		
+		
+		
 		this.page1 = null;
 		this.page2 = null;
-		this.allChapters = [];
+		this.allChapters = null;
+		
 		brightness.setKeepScreenOn({ keepScreenOn: false }); 
 	},
 	onBackPress(){ this.back(); return true; },

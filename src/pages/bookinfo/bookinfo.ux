@@ -1,6 +1,11 @@
 <template>
 	<div class="page">
-		<list class="list">
+		<list class="list" style="padding: 86px 6px 6px 6px;">
+			<!-- 封面图片（如果有）作为列表的第一项 -->
+			<list-item if="{{hasCover}}" type="cover" style="height: 255px; align-items: center; justify-content: center; margin-bottom: 12px;">
+				<img src="{{coverPath}}" style="width: 160px;height: 213px;object-fit: cover;border-radius: 12px;" />
+			</list-item>
+			
 			<list-item class="item" type="info">
 				<text class="item-title">文件名</text>
 				<marquee class="item-value">{{fileName}}</marquee>
@@ -45,7 +50,9 @@ export default {
 		fileSize: '加载中...',
 		wordCount: '加载中...',
 		nowTime: "00:00",
-		timer: null
+		timer: null,
+		hasCover: false,
+		coverPath: ''
 	},
 	protected: {
 		cPath: '',
@@ -73,6 +80,7 @@ export default {
 		const that = this;
 		const bookDirUri = `internal://files/books/${this.name}/`;
 		const bookInfoUri = `internal://files/books/${this.name}/book_info.json`;
+		const coverUri = `internal://files/books/${this.name}/cover.jpg`;
 
 		file.readText({
 			uri: bookInfoUri,
@@ -81,6 +89,10 @@ export default {
 					const info = JSON.parse(data.text);
 					that.fileName = info.name || that.name;
 					that.wordCount = info.wordCount ? `${info.wordCount} 字` : '未知';
+					that.hasCover = info.hasCover || false;
+					if (that.hasCover) {
+						that.coverPath = coverUri;
+					}
 				} catch (e) {
 					that.fileName = that.name;
 					that.wordCount = '解析失败';
@@ -144,7 +156,6 @@ export default {
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	padding: 86px 6px;
 }
 .item {
 	width: 100%;
