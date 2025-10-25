@@ -217,6 +217,7 @@
 			if(callback) callback();
 			return;
 		}
+		
 		this.page1 = { lines: [], offset: 0, length: 0 };
 		this.page2 = null;
 		
@@ -562,9 +563,8 @@
 			this.saveDataTimeout = null;
 		}
 		
-		setTimeout(() => {
-			this._performSave();
-		}, 0);
+		
+		this._performSave();
 		
 		
 		if (this.timer) {
@@ -581,10 +581,9 @@
 		}
 		
 		
-		
 		this.page1 = null;
 		this.page2 = null;
-		this.allChapters = null;
+		this.allChapters = [];
 		
 		brightness.setKeepScreenOn({ keepScreenOn: false }); 
 	},
