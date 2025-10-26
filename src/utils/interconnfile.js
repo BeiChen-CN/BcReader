@@ -94,6 +94,14 @@ export default class interconnfile {
     }
 
     async getBookStatus({ filename }) {
+        
+        try {
+            await runAsyncFunc(file.access, { uri: this.baseUri });
+        } catch (e) {
+            this.send({ type: "book_status", chapterCount: 0, hasCover: false });
+            return;
+        }
+        
         const sanitizedDirName = this.generateDirName(filename);
         const listUri = `${this.baseUri}${sanitizedDirName}/list.txt`;
         const coverUri = `${this.baseUri}${sanitizedDirName}/cover.jpg`;
@@ -122,6 +130,13 @@ export default class interconnfile {
             }
             this.currentBookName = filename;
             this.currentBookDir = this.generateDirName(filename);
+
+            
+            try {
+                await runAsyncFunc(file.access, { uri: this.baseUri });
+            } catch (e) {
+                await runAsyncFunc(file.mkdir, { uri: this.baseUri, recursive: true });
+            }
 
             const bookUri = this.baseUri + this.currentBookDir;
             try {
@@ -154,6 +169,13 @@ export default class interconnfile {
             this.receivedChapters = startFrom;
 
             this.callback({ msg: "start", total, filename: filename });
+
+            
+            try {
+                await runAsyncFunc(file.access, { uri: this.baseUri });
+            } catch (e) {
+                await runAsyncFunc(file.mkdir, { uri: this.baseUri, recursive: true });
+            }
 
             const bookUri = this.baseUri + this.currentBookDir;
             const bookInfoUri = bookUri + '/book_info.json';
