@@ -192,13 +192,12 @@ export default {
 }
 .item {
     width: 100%;
-    min-height: 100px;
-    max-height: 500px;
+    height: 180px;
     padding: 16px 20px;
     margin-bottom: 8px;
     background-color: #262626;
     border-radius: 36px;
-    align-items: flex-start;
+    align-items: center;
 }
 .chapter-info {
   flex-direction: column;
