@@ -8,7 +8,7 @@
 			
 			<list-item class="item" type="info">
 				<text class="item-title">文件名</text>
-				<marquee class="item-value">{{fileName}}</marquee>
+				<marquee class="item-value" scrollamount="12">{{fileName}}</marquee>
 			</list-item>
 			<list-item class="item" type="info">
 				<text class="item-title">文件大小</text>

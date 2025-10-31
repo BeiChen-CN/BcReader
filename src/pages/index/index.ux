@@ -8,7 +8,7 @@
 
 	  <list class="list">
 		  <list-item for="{{fileList}}" class="item" @click="selectFile($item)" type="nook">
-			  <marquee class="itemtext">{{$item.name}}</marquee>
+			  <marquee scrollamount="12" class="itemtext">{{$item.name}}</marquee>
 			  <text class="itemtext2">{{$item.chapterCount}}章 · 进度 {{$item.progress || 0}}%</text>
 		  </list-item>
 	  </list>

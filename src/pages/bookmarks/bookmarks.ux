@@ -6,7 +6,7 @@
     <list class="list" if="{{allBookmarks.length > 0}}">
       <list-item for="{{visibleBookmarks}}" class="item" type="bookmark">
         <div class="text-content" @click="jumpTo($idx)">
-          <marquee class="itemtext">{{$item.name}}</marquee>
+          <marquee class="itemtext" scrollamount="12">{{$item.name}}</marquee>
           <text class="itemtext2">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</text>
         </div>
         <div class="button-container">
