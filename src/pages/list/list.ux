@@ -93,13 +93,23 @@ export default {
         });
       });
       
-      that.allChapters = data.text.split('\n').filter(Boolean).map(line => {
+      const lines = data.text.split('\n').filter(Boolean);
+      
+      // 优化：使用 Map 去重（保留最后一次出现的章节）并排序
+      const chapterMap = new Map();
+      for (const line of lines) {
         try {
-          return JSON.parse(line);
+          const chapter = JSON.parse(line);
+          if (chapter.index !== null && chapter.index !== undefined) {
+            chapterMap.set(chapter.index, chapter);
+          }
         } catch (e) {
-          return null;
+          // 忽略无效行
         }
-      }).filter(item => item !== null);
+      }
+      
+      // 转换为数组并按 index 排序
+      that.allChapters = Array.from(chapterMap.values()).sort((a, b) => a.index - b.index);
       
       await that.loadCurrentChapterIndex();
     } catch (error) {

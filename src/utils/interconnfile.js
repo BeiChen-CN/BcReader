@@ -15,12 +15,15 @@ export default class interconnfile {
     currentSavingChapterIndex = -1;
     currentChapterMeta = null;
     isCoverOnly = false;
+    
+    pendingChapterMetas = [];
+    BATCH_WRITE_SIZE = 10;
 
     constructor({ addListener, send, setEventListener }) {
         this.partialCoverData = [];
         this.totalCoverChunks = 0;
         
-        const onmessage = (data) => {
+        const onmessage = async (data) => {
             const { stat, ...payload } = data;
             switch (stat) {
                 case "startTransfer":
@@ -41,9 +44,15 @@ export default class interconnfile {
                     this.handleTransferComplete();
                     break;
                 case "cancel":
+                    if (this.pendingChapterMetas && this.pendingChapterMetas.length > 0) {
+                        await this.flushPendingChapterMetas().catch(e => {
+                            console.error('Failed to flush pending metas on cancel:', e);
+                        });
+                    }
                     this.send({ type: "cancel" });
                     this.currentBookName = "";
                     this.currentBookDir = "";
+                    this.pendingChapterMetas = [];
                     this.callback({ msg: "cancel" });
                     break;
                 case "get_book_status":
@@ -61,6 +70,11 @@ export default class interconnfile {
         this.send = send;
         setEventListener((event) => {
             if (event !== 'open') {
+                if (this.pendingChapterMetas && this.pendingChapterMetas.length > 0) {
+                    this.flushPendingChapterMetas().catch(e => {
+                        console.error('Failed to flush pending metas on disconnect:', e);
+                    });
+                }
                 this.currentBookName = "";
                 this.currentBookDir = "";
                 this.callback({ msg: "error", error: event, filename: this.currentBookName });
@@ -121,14 +135,19 @@ export default class interconnfile {
         try {
             const data = await runAsyncFunc(file.readText, { uri: listUri });
             const lines = data.text.split('\n').filter(Boolean);
-            syncedChapterIndices = lines.map(line => {
+            
+            const indexSet = new Set();
+            for (const line of lines) {
                 try {
                     const chapterMeta = JSON.parse(line);
-                    return chapterMeta.index;
+                    if (chapterMeta.index !== null && chapterMeta.index !== undefined) {
+                        indexSet.add(chapterMeta.index);
+                    }
                 } catch (e) {
-                    return null;
+                    // 忽略无效行
                 }
-            }).filter(index => index !== null);
+            }
+            syncedChapterIndices = Array.from(indexSet);
         } catch (e) {
             syncedChapterIndices = [];
         }
@@ -201,6 +220,7 @@ export default class interconnfile {
             this.currentBookDir = sanitizedDirName;
             this.totalChapters = total;
             this.receivedChapters = startFrom;
+            this.pendingChapterMetas = [];
 
             this.callback({ msg: "start", total, filename: filename });
 
@@ -544,48 +564,25 @@ export default class interconnfile {
                 return;
             }
             
-            const listUri = `${this.baseUri}${this.currentBookDir}/list.txt`;
-            let chapterList = [];
-            try {
-                const listData = await runAsyncFunc(file.readText, { uri: listUri });
-                const lines = listData.text.split('\n').filter(Boolean);
-                chapterList = lines.map(line => {
-                    try {
-                        return JSON.parse(line);
-                    } catch (e) {
-                        return null;
-                    }
-                }).filter(item => item !== null);
-            } catch (e) {
-                chapterList = [];
-            }
-            
-            const existingIndex = chapterList.findIndex(ch => ch.index === this.currentChapterMeta.index);
-            if (existingIndex >= 0) {
-                chapterList[existingIndex] = this.currentChapterMeta;
-            } else {
-                chapterList.push(this.currentChapterMeta);
-            }
-            
-            chapterList.sort((a, b) => a.index - b.index);
-            
-            const listText = chapterList.map(ch => JSON.stringify(ch)).join('\n') + '\n';
-            await runAsyncFunc(file.writeText, {
-                uri: listUri,
-                text: listText
-            });
+            this.pendingChapterMetas.push(this.currentChapterMeta);
             
             this.currentChapterMeta = null;
             this.currentSavingChapterIndex = -1;
             this.receivedChapters++;
             
-            const syncedCount = chapterList.length;
-            const progressPercent = (syncedCount / this.totalChapters) * 100;
+            const shouldFlush = (this.pendingChapterMetas.length >= this.BATCH_WRITE_SIZE) || 
+                               (this.receivedChapters >= this.totalChapters);
+            
+            if (shouldFlush) {
+                await this.flushPendingChapterMetas();
+            }
+            
+            const progressPercent = (this.receivedChapters / this.totalChapters) * 100;
             
             await this.send({ 
                 type: "chapter_saved", 
                 count: this.receivedChapters,
-                syncedCount: syncedCount,
+                syncedCount: this.receivedChapters,
                 totalCount: this.totalChapters,
                 progress: progressPercent
             });
@@ -595,15 +592,48 @@ export default class interconnfile {
             this.callback({ msg: "error", error: `Complete chapter transfer failed: ${error.message || 'unknown error'}` });
         }
     }
+    
+    async flushPendingChapterMetas() {
+        if (this.pendingChapterMetas.length === 0) return;
+        
+        const listUri = `${this.baseUri}${this.currentBookDir}/list.txt`;
+        
+        try {
+            const metaLines = this.pendingChapterMetas.map(meta => JSON.stringify(meta)).join('\n') + '\n';
+            
+            let existingContent = '';
+            try {
+                const listData = await runAsyncFunc(file.readText, { uri: listUri });
+                existingContent = listData.text;
+            } catch (e) {
+                existingContent = '';
+            }
+            
+            await runAsyncFunc(file.writeText, {
+                uri: listUri,
+                text: existingContent + metaLines
+            });
+            
+            this.pendingChapterMetas = [];
+        } catch (error) {
+            console.error('Failed to flush chapter metas:', error);
+            throw error;
+        }
+    }
 
     async handleTransferComplete() {
         try {
+            if (this.pendingChapterMetas.length > 0) {
+                await this.flushPendingChapterMetas();
+            }
+            
             this.partialCoverData = [];
             this.totalCoverChunks = 0;
             this.currentBookCoverUri = null;
             this.partialChapterContent = [];
             this.currentSavingChapterIndex = -1;
             this.currentChapterMeta = null;
+            this.pendingChapterMetas = [];
             this.currentBookName = "";
             this.currentBookDir = "";
             
