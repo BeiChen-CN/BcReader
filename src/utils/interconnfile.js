@@ -201,6 +201,7 @@ export default class interconnfile {
             this.totalCoverChunks = 0;
             this.currentBookCoverUri = coverUri;
             
+            console.log(`Cover-only transfer initialized: ${coverUri}`);
             this.send({ type: "cover_ready" });
         } catch (error) {
             this.send({ type: "error", message: `Start cover transfer failed: ${error.message || 'unknown error'}`, count: 0 });
@@ -279,16 +280,18 @@ export default class interconnfile {
             }
 
             
-            if (hasCover) {
-                this.partialCoverData = [];
-                this.totalCoverChunks = 0;
-                this.currentBookCoverUri = coverUri;
-            }
-
             try {
                 await runAsyncFunc(file.access, { uri: contentUri });
             } catch (e) {
                 await runAsyncFunc(file.mkdir, { uri: contentUri });
+            }
+
+            
+            if (hasCover) {
+                this.partialCoverData = [];
+                this.totalCoverChunks = 0;
+                this.currentBookCoverUri = coverUri;
+                console.log(`Cover transfer initialized: ${coverUri}`);
             }
 
             const bookInfo = { name: filename, chapterCount: total, wordCount: wordCount, hasCover: hasCover };
