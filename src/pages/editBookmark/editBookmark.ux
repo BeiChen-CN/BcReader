@@ -8,9 +8,18 @@
             编辑名称
         </text>
 
-        <div class="input-display" @click="toggleKeyboard">
-            <text class="input-text">{{textValue}}</text>
-            <span class="cursor" if="{{!hideKeyboard}}"></span>
+        <div class="input-container">
+            <div class="input-display" @click="toggleKeyboard">
+                <text class="input-label">书签名称</text>
+                <div class="input-field">
+                    <text class="input-text" if="{{textValue}}">{{textValue}}</text>
+                    <text class="input-placeholder" if="{{!textValue}}">请输入书签名称</text>
+                    <span class="cursor" if="{{!hideKeyboard}}"></span>
+                </div>
+            </div>
+            <div class="input-counter">
+                <text class="counter-text">{{textValue.length}} / 20</text>
+            </div>
         </div>
 
         <input-method
@@ -91,24 +100,61 @@ export default {
     background-color: #000000;
     flex-direction: column;
 }
-.input-display {
+.input-container {
     position: absolute;
-    top: 150px;
+    top: 100px;
     left: 20px;
     width: 296px;
-    height: 60px;
-    border-bottom: 2px solid #FFFFFF;
-    justify-content: flex-start;
+    flex-direction: column;
+}
+.input-display {
+    width: 100%;
+    padding: 20px 24px;
+    background-color: #1a1a1a;
+    border-radius: 16px;
+    border: 2px solid #333333;
+    flex-direction: column;
+}
+.input-label {
+    font-size: 24px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 32px;
+    margin-bottom: 8px;
+}
+.input-field {
+    width: 100%;
+    min-height: 44px;
+    flex-direction: row;
     align-items: center;
 }
 .input-text {
     font-size: 32px;
+    font-weight: bold;
     color: #FFFFFF;
+    line-height: 44px;
+}
+.input-placeholder {
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.3);
+    line-height: 44px;
+}
+.input-counter {
+    width: 100%;
+    padding: 8px 4px 0 4px;
+    align-items: flex-end;
+}
+.counter-text {
+    font-size: 22px;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 28px;
 }
 .cursor {
-    width: 2px;
-    height: 32px;
+    width: 3px;
+    height: 36px;
+    margin-left: 2px;
     background-color: #FFFFFF;
+    border-radius: 2px;
     animation-name: blink;
     animation-duration: 1s;
     animation-iteration-count: infinite;
