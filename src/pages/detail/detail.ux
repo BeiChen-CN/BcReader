@@ -226,7 +226,7 @@
 		const chapter = this.allChapters[chapterIdxInAll];
 		this.currentChapterIndexInAll = chapterIdxInAll;
 		this.currentChapterName = chapter.name;
-		this.cPath = `internal://files/books/${this.name}/${chapter.index}.txt`;
+		this.cPath = `internal://files/books/${this.name}/content/${chapter.index}.txt`;
 
 		file.get({
 			uri: this.cPath,
