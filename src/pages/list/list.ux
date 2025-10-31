@@ -32,19 +32,21 @@ import router from '@system.router';
 import file from '@system.file';
 import prompt from '@system.prompt';
 import bookStorage from '../../common/bookStorage.js';
+import chapterManager from '../../common/chapterManager.js';
 
 const PAGE_SIZE = 8;
 
 export default {
   private: {
-    allChapters: [],
     visibleChapters: [],
     currentPage: 0,
     totalPages: 1,
+    totalChapters: 0,
     currentChapterIndex: -1,
     nowTime: "00:00",
     timer: null,
-    bookTitle: ""
+    bookTitle: "",
+    loading: false
   },
   protected: {
     name: ''
@@ -64,7 +66,12 @@ export default {
     this.loadChapterList();
   },
   onDestroy() {
-    clearInterval(this.timer);
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+    
+    this.visibleChapters = null;
   },
   loadBookInfo() {
     const that = this;
@@ -72,8 +79,12 @@ export default {
     file.readText({
       uri: bookInfoUri,
       success: function(data) {
-        const bookInfo = JSON.parse(data.text);
-        that.bookTitle = bookInfo.name;
+        try {
+          const bookInfo = JSON.parse(data.text);
+          that.bookTitle = bookInfo.name;
+        } catch (e) {
+          that.bookTitle = that.name;
+        }
       },
       fail: function() {
         that.bookTitle = that.name;
@@ -81,78 +92,76 @@ export default {
     });
   },
   async loadChapterList() {
-    const that = this;
-    const listUri = `internal://files/books/${this.name}/list.txt`;
+    if (this.loading) return;
+    this.loading = true;
     
     try {
-      const data = await new Promise((resolve, reject) => {
-        file.readText({
-          uri: listUri,
-          success: resolve,
-          fail: (data, code) => reject({ data, code })
-        });
-      });
       
-      const lines = data.text.split('\n').filter(Boolean);
-      
-      // 优化：使用 Map 去重（保留最后一次出现的章节）并排序
-      const chapterMap = new Map();
-      for (const line of lines) {
-        try {
-          const chapter = JSON.parse(line);
-          if (chapter.index !== null && chapter.index !== undefined) {
-            chapterMap.set(chapter.index, chapter);
-          }
-        } catch (e) {
-          // 忽略无效行
-        }
+      const progress = await bookStorage.get(this.name);
+      if (progress.chapterIndex !== null) {
+        this.currentChapterIndex = progress.chapterIndex;
       }
       
-      // 转换为数组并按 index 排序
-      that.allChapters = Array.from(chapterMap.values()).sort((a, b) => a.index - b.index);
       
-      await that.loadCurrentChapterIndex();
-    } catch (error) {
-      prompt.showToast({ message: `章节列表加载失败: ${error.code || 'unknown'}` });
-    }
-  },
-  async loadCurrentChapterIndex() {
-    const progress = await bookStorage.get(this.name);
-    if (progress.chapterIndex !== null) {
-        this.currentChapterIndex = progress.chapterIndex;
-    }
-    this.initialLoad();
-  },
-  initialLoad() {
-    this.totalPages = Math.ceil(this.allChapters.length / PAGE_SIZE) || 1;
-    if (this.currentChapterIndex >= 0) {
-      this.currentPage = Math.floor(this.currentChapterIndex / PAGE_SIZE);
+      const allChapters = await chapterManager.loadChapterList(this.name);
+      this.totalChapters = allChapters.length;
+      
+      
+      this.totalPages = Math.ceil(allChapters.length / PAGE_SIZE) || 1;
+      if (this.currentChapterIndex >= 0) {
+        
+        const currentIndex = allChapters.findIndex(ch => ch.index === this.currentChapterIndex);
+        if (currentIndex >= 0) {
+          this.currentPage = Math.floor(currentIndex / PAGE_SIZE);
+        } else {
+          this.currentPage = 0;
+        }
+      } else {
+        this.currentPage = 0;
+      }
+      
+      
       if (this.currentPage >= this.totalPages) {
         this.currentPage = this.totalPages - 1;
       }
       if (this.currentPage < 0) {
         this.currentPage = 0;
       }
-    } else {
-      this.currentPage = 0;
+      
+      
+      const start = this.currentPage * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+      this.visibleChapters = allChapters.slice(start, end);
+    } catch (error) {
+      prompt.showToast({ message: `章节列表加载失败` });
+      this.visibleChapters = [];
+      this.totalPages = 1;
+    } finally {
+      this.loading = false;
     }
-    this.updateVisibleChapters();
   },
-  updateVisibleChapters() {
-    const start = this.currentPage * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
-    this.visibleChapters = this.allChapters.slice(start, end);
+  async loadPage(page) {
+    if (this.loading) return;
+    
+    
+    try {
+      const result = await chapterManager.getChapterPage(this.name, page, PAGE_SIZE);
+      this.visibleChapters = result.chapters;
+      this.currentPage = result.currentPage;
+      this.totalPages = result.totalPages;
+      this.totalChapters = result.totalChapters;
+    } catch (error) {
+      prompt.showToast({ message: '加载失败' });
+    }
   },
   prevPage() {
     if (this.currentPage > 0) {
-        this.currentPage--;
-        this.updateVisibleChapters();
+        this.loadPage(this.currentPage - 1);
     }
   },
   nextPage() {
     if (this.currentPage < this.totalPages - 1) {
-        this.currentPage++;
-        this.updateVisibleChapters();
+        this.loadPage(this.currentPage + 1);
     }
   },
   selectChapter(chapter) {
@@ -183,36 +192,41 @@ export default {
 }
 .item {
     width: 100%;
-    height: 130px;
-    padding: 14px 20px;
+    min-height: 100px;
+    max-height: 500px;
+    padding: 16px 20px;
     margin-bottom: 8px;
     background-color: #262626;
     border-radius: 36px;
-    align-items: center;
-    text-overflow: ellipsis;
-    lines: 1;
+    align-items: flex-start;
 }
 .chapter-info {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  flex-grow: 1;
+  flex: 1;
+  width: 100%;
 }
 .itemtext {
     font-size: 32px;
-    line-height: 40px;
+    line-height: 42px;
     width: 100%;
     font-weight: bold;
     color: white;
+    text-overflow: ellipsis;
+    lines: 3;
+    margin-bottom: 6px;
 }
 .itemtext-current {
   color: #0D6EFF;
 }
 .itemtext2 {
     font-size: 24px;
-    line-height: 32px;
+    line-height: 30px;
     font-weight: bold;
     color: rgba(255,255,255,0.6);
+    text-overflow: ellipsis;
+    lines: 1;
 }
 .pagination-container {
     width: 100%;

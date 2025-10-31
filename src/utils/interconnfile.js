@@ -144,7 +144,7 @@ export default class interconnfile {
                         indexSet.add(chapterMeta.index);
                     }
                 } catch (e) {
-                    // 忽略无效行
+                    
                 }
             }
             syncedChapterIndices = Array.from(indexSet);
@@ -188,13 +188,13 @@ export default class interconnfile {
                 await runAsyncFunc(file.mkdir, { uri: bookUri });
             }
             
-            // 如果封面文件已存在，删除旧的
+            
             const coverUri = bookUri + '/cover.jpg';
             try {
                 await runAsyncFunc(file.access, { uri: coverUri });
                 await runAsyncFunc(file.delete, { uri: coverUri });
             } catch (e) {
-                // 封面不存在，忽略
+                
             }
             
             this.partialCoverData = [];
@@ -544,7 +544,7 @@ export default class interconnfile {
 
                 await this.send({ type: "chapter_chunk_complete" });
                 
-                // 每10章触发一次垃圾回收
+                
                 if(count % 10 == 0) global.runGC();
             } else {
                 await this.send({ type: "next_chunk" });

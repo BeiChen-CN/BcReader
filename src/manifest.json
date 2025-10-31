@@ -85,6 +85,9 @@
       "pages/fontSetting": {
         "component": "fontSetting"
       },
+      "pages/marginSetting": {
+        "component": "marginSetting"
+      },
       "pages/push": {
         "component": "push"
       },

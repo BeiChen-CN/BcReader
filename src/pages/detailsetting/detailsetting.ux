@@ -43,6 +43,13 @@
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
 		  </list-item>
+		  <list-item class="item" @click="routerTo('marginSetting')" type="item">
+			  <div class="item-content">
+				  <text class="itemtext">垂直边距</text>
+				  <text class="itemtext2">调整屏幕留白</text>
+			  </div>
+			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
+		  </list-item>
 		  <list-item class="item" @click="routerTo('swipe')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext">滑动翻页</text>

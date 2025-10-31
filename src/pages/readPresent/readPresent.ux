@@ -80,7 +80,7 @@
             const listData = await new Promise((resolve, reject) => file.readText({ uri: listUri, success: resolve, fail: reject }));
             const lines = listData.text.split('\n').filter(Boolean);
             
-            // 优化：使用 Map 去重（保留最后一次出现的章节）并排序
+            
             const chapterMap = new Map();
             for (const line of lines) {
                 try {
@@ -89,11 +89,11 @@
                         chapterMap.set(chapter.index, chapter);
                     }
                 } catch (e) {
-                    // 忽略无效行
+                    
                 }
             }
             
-            // 转换为数组并按 index 排序
+            
             this.allChapters = Array.from(chapterMap.values()).sort((a, b) => a.index - b.index);
             this.totalChapters = this.allChapters.length;
         } catch (e) {
