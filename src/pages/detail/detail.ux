@@ -194,8 +194,10 @@
 		let chapterToLoadIndex;
 		let offsetInChapter = 0;
 		let scrollOffset = 0;
+		let fromChapterJump = false;
 
 		if (globalThis.justJumpedFromChapter) {
+			fromChapterJump = true;
 			chapterToLoadIndex = this.chapterIndex;
 			this.currentChapterName = this.chapterName;
 			offsetInChapter = 0;
@@ -228,7 +230,11 @@
 
 		this.loadChapter(chapterArrayIndex, () => {
 			this.loadInitialSegments();
-			this.isAtChapterStart = this.currentFileOffset === 0 && this.savedScrollOffset < 10;
+			if (fromChapterJump) {
+				this.isAtChapterStart = false;
+			} else {
+				this.isAtChapterStart = this.currentFileOffset === 0 && this.savedScrollOffset < 10;
+			}
 		});
 	},
 	loadChapter(chapterIdxInAll, callback) {
@@ -567,7 +573,7 @@
 			this.page1 = { lines: ["加载中..."], offset: 0, length: 0 };
 			this.page2 = null;
 			this.loadInitialSegments();
-			this.isAtChapterStart = true;
+			this.isAtChapterStart = false;
 			this.chapterProgress = 0;
 			this.saveData(true);
 		});
