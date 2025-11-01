@@ -65,6 +65,13 @@
 			  </div>
 			  <img src="{{showProgressBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 40px;"/>
 		  </list-item>
+		  <list-item class="item" @click="routerTo('progressBarSetting')" type="item">
+			  <div class="item-content">
+				  <text class="itemtext">进度条高度</text>
+				  <text class="itemtext2">调整进度条高度</text>
+			  </div>
+			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
+		  </list-item>
 		  <list-item class="item" @click="routerTo('pageSizeSetting')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext">分段大小</text>
@@ -74,7 +81,7 @@
 		  </list-item>
 		  <list-item class="item" @click="clearBooks" type="item">
 			  <div class="item-content">
-				  <text class="itemtext">清空书架</text>
+				  <text class="itemtext">清空数据</text>
 				  <text class="itemtext2">清空全部数据</text>
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
@@ -163,8 +170,8 @@
             uri: '/pages/confirm',
             params: {
                 action: 'clearBookshelf',
-                title: '清空书架',
-                confirmText: '确认清空书架？',
+                title: '清空数据',
+                confirmText: '确认清空数据？',
                 subText: '所有书籍和阅读进度都将被删除'
             }
         });

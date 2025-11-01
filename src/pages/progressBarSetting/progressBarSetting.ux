@@ -1,0 +1,188 @@
+<import name="number" src="../../components/number_choose/number_choose"></import>
+<template>
+  <div class="page" style="flex-direction: column;">
+
+	<div class="preview-container">
+		<div class="preview-screen">
+			<div class="content-area">
+				<text class="preview-text">
+					文本内容区域
+				</text>
+			</div>
+			<div class="progress-bar-preview" style="height: {{progressBarHeight / 3}}px;">
+				<progress class="p1" percent="50" style="width: 100%;color: #E1DDDD;stroke-width: {{progressBarHeight / 3}}px;layer-color: #00000000;"></progress>
+			</div>
+		</div>
+		<div class="info-panel">
+			<text class="info-title">进度条高度</text>
+			<text class="info-value">{{progressBarHeight}}px</text>
+			<text class="info-desc">章节进度指示</text>
+		</div>
+	</div>
+	
+	<number style="position: absolute;bottom:6px" max="50" min="5" step="5" value="{{progressBarHeight}}" @change="changeHeight" name="调整高度"></number>
+
+	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+	<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+	<text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	  {{nowTime}}
+	</text>
+	<text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		进度条高度
+	</text>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import storage from '../../common/storage.js'
+import app from '@system.app'
+
+export default {
+  private: {
+	progressBarHeight: 8,
+	nowTime: "00:00",
+	timer: null
+  },
+  updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+
+		hours = hours < 10 ? '0' + hours : hours;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+
+		this.nowTime = `${hours}:${minutes}`;
+	},
+  onInit() {
+	this.updateTime();
+	this.timer = setInterval(() => {
+		this.updateTime();
+	}, 1000);
+    storage.get({
+      key: 'EBOOK_PROGRESS_BAR_HEIGHT',
+      success:(data)=>{
+        if (data) {
+          this.progressBarHeight = parseInt(data)
+        }
+      }
+	})
+  },
+  onDestroy(){
+	  clearInterval(this.timer);
+	},
+  changeHeight(e){
+	  this.progressBarHeight = e.detail.value
+	  storage.set({
+		  key: 'EBOOK_PROGRESS_BAR_HEIGHT',
+		  value: this.progressBarHeight.toString()
+	  })
+  },
+  reset() {
+	this.progressBarHeight = 8;
+	storage.set({
+		key: "EBOOK_PROGRESS_BAR_HEIGHT",
+		value: this.progressBarHeight.toString(),
+	});
+  },
+  back(){
+	storage.set({
+	  		key: 'EBOOK_PROGRESS_BAR_HEIGHT',
+	  		value: this.progressBarHeight.toString(),
+	  	})
+  	router.back();
+  },
+  exit(){
+	  app.terminate();
+  }
+}
+</script>
+
+<style>
+.page {
+	width: 336px;
+	height: 480px;
+	background-color: #000000;
+}
+
+.preview-container {
+	position: absolute;
+	left: 6px;
+	top: 86px;
+	width: 324px;
+	height: 280px;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px;
+}
+
+.preview-screen {
+	width: 112px;
+	height: 160px;
+	background-color: #1a1a1a;
+	border-radius: 20px;
+	border: 3px solid #333333;
+	flex-direction: column;
+	overflow: hidden;
+	position: relative;
+}
+
+.content-area {
+	flex: 1;
+	width: 100%;
+	background-color: #262626;
+	align-items: center;
+	justify-content: center;
+	padding: 8px;
+}
+
+.preview-text {
+	font-size: 20px;
+	font-weight: bold;
+	color: white;
+	text-align: center;
+	lines: 3;
+	text-overflow: ellipsis;
+}
+
+.progress-bar-preview {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	background-color: transparent;
+}
+
+.info-panel {
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	margin-left: 10px;
+}
+
+.info-title {
+	font-size: 28px;
+	font-weight: bold;
+	color: white;
+	line-height: 38px;
+	margin-bottom: 6px;
+}
+
+.info-value {
+	font-size: 48px;
+	font-weight: bold;
+	color: #0D6EFF;
+	line-height: 56px;
+	margin-bottom: 10px;
+}
+
+.info-desc {
+	font-size: 22px;
+	color: rgba(255,255,255,0.6);
+	line-height: 30px;
+	text-align: center;
+}
+</style>
+

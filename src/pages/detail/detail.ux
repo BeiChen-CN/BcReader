@@ -11,7 +11,7 @@
 		onlongpress="onTxtLongPress"
 		>
 		<div id="contentContainer" style="position: absolute; width:336px; flex-direction: column;">
-			<div if="{{isAtChapterStart && !showSetting}}" style="width: 100%; height: 120px; justify-content: center; align-items: center;" @click="goToPrevChapter">
+			<div if="{{isAtChapterStart && !showSetting && currentChapterIndexInAll > 0}}" style="width: 100%; height: 80px; justify-content: center; align-items: center;" @click="goToPrevChapter">
 				<text style="color: #aaa; font-size: 28px; font-weight: bold;">上一章</text>
 			</div>
 		  <div id="page1" style="flex-direction: column; width: 100%; flex-shrink: 0;">
@@ -20,7 +20,7 @@
 		  <div id="page2" if="{{page2}}" style="flex-direction: column; width: 100%; flex-shrink: 0;">
 			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page2.lines.join('\n') }}</text>
 		  </div>
-			<div if="{{isAtChapterEnd && !showSetting}}" style="width: 100%; height: 120px; justify-content: center; align-items: center;" @click="goToNextChapter">
+			<div if="{{isAtChapterEnd && !showSetting && currentChapterIndexInAll < allChapters.length - 1}}" style="width: 100%; height: 80px; justify-content: center; align-items: center;" @click="goToNextChapter">
 				<text style="color: #aaa; font-size: 28px; font-weight: bold;">下一章</text>
 			</div>
 		</div>
@@ -47,8 +47,8 @@
 		</div>
         <img show="{{showSetting}}" src="/common/images/add_bookmark.png" @click="addBookmark" @longpress="gotoBookmarks" style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;"/>
 		
-		<div if="{{showProgressBar && !showSetting}}" class="progress-bar-container">
-			<progress class="p1" percent="{{chapterProgress}}" style="width: 100%;color: #E1DDDD;stroke-width: 25px;layer-color: #00000000;"></progress>
+		<div if="{{showProgressBar && !showSetting}}" class="progress-bar-container" style="height: {{progressBarHeight}}px;">
+			<progress class="p1" percent="{{chapterProgress}}" style="width: 100%;color: #E1DDDD;stroke-width: {{progressBarHeight}}px;layer-color: #00000000;"></progress>
 		</div>
 	</div>
   </template>
@@ -105,6 +105,7 @@
 		clickTimeout: null,
 		chapterProgress: 0,
 		showProgressBar: true,
+		progressBarHeight: 8,
 		gestureMode: 'single',
 		gestureClickCount: 0,
 		gestureClickTimeout: null,
@@ -169,6 +170,7 @@
 		storage.get({ key: 'EBOOK_SWIPE', success: (data) => { if (data) this.swipe = data } });
 		storage.get({ key: 'EBOOK_AUTO', success: (data) => { if(!data)return; const { speed, enable } = JSON.parse(data); if(enable)this.auto = speed; } });
 		storage.get({ key: 'EBOOK_SHOW_PROGRESS_BAR', success: (data) => { if (data !== '') this.showProgressBar = data === 'true'; } });
+		storage.get({ key: 'EBOOK_PROGRESS_BAR_HEIGHT', success: (data) => { if (data) this.progressBarHeight = parseInt(data); } });
 		storage.get({ key: 'EBOOK_GESTURE', success: (data) => { if (data) this.gestureMode = data; }, fail: () => { this.gestureMode = 'single'; } });
 	},
 	updateScrollHeight() {
@@ -935,7 +937,6 @@
 	bottom: 0px;
 	left: 0px;
 	width: 336px;
-	height: 8px;
 	padding: 0 6px;
 }
 </style>

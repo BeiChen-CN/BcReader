@@ -208,11 +208,11 @@ export default class interconnfile {
         }
     }
 
-    async startTransfer({ filename, total, wordCount, startFrom = 0, hasCover = false }) {
+    async startTransfer({ filename, total, wordCount, startFrom = 0, hasCover = false, author = null, summary = null, bookStatus = null, category = null }) {
         try {
             if (!filename || !filename.trim()) {
-                this.send({ type: "error", message: "Filename is empty or invalid.", count: 0 });
-                this.callback({ msg: "error", error: "Filename is empty or invalid." });
+                this.send({ type: "error", message: "文件名为空或无效", count: 0 });
+                this.callback({ msg: "error", error: "文件名为空或无效" });
                 return;
             }
 
@@ -305,7 +305,16 @@ export default class interconnfile {
                 console.log(`Cover transfer initialized: ${coverUri}`);
             }
 
-            const bookInfo = { name: filename, chapterCount: total, wordCount: wordCount, hasCover: hasCover };
+            const bookInfo = { 
+                name: filename, 
+                chapterCount: total, 
+                wordCount: wordCount, 
+                hasCover: hasCover,
+                author: author,
+                summary: summary,
+                bookStatus: bookStatus,
+                category: category
+            };
             await runAsyncFunc(file.writeText, { uri: bookInfoUri, text: JSON.stringify(bookInfo) });
             
             let bookshelf = [];
@@ -327,8 +336,17 @@ export default class interconnfile {
 
             this.send({ type: "ready", count: startFrom, usage: await this.getUsage() });
         } catch (error) {
-            this.send({ type: "error", message: `Start transfer failed: ${error.message || 'unknown error'}`, count: 0 });
-            this.callback({ msg: "error", error: `Start transfer failed: ${error.message || 'unknown error'}` });
+            const errorMsg = error.message || '未知错误';
+            let displayMsg = `开始传输失败: ${errorMsg}`;
+            
+            // 检测空间不足错误
+            if (errorMsg.includes('space') || errorMsg.includes('disk') || errorMsg.includes('full') || 
+                errorMsg.includes('storage') || errorMsg.includes('1300') || errorMsg.includes('202')) {
+                displayMsg = "存储空间不足";
+            }
+            
+            this.send({ type: "error", message: displayMsg, count: 0 });
+            this.callback({ msg: "error", error: displayMsg });
         }
     }
 
@@ -337,7 +355,7 @@ export default class interconnfile {
             
             if (!this.currentBookCoverUri) {
                 console.error('Cover URI not initialized');
-                this.send({ type: "error", message: "Cover transfer not initialized", count: 0 });
+                this.send({ type: "error", message: "封面传输未初始化", count: 0 });
                 return;
             }
             
@@ -361,7 +379,7 @@ export default class interconnfile {
                     this.partialCoverData = [];
                     this.totalCoverChunks = 0;
                     this.currentBookCoverUri = null;
-                    this.send({ type: "error", message: "Cover chunk index mismatch", count: 0 });
+                    this.send({ type: "error", message: "封面分块索引不匹配", count: 0 });
                     return;
                 }
             }
@@ -370,15 +388,21 @@ export default class interconnfile {
             
             await this.send({ type: "cover_chunk_received" });
         } catch (error) {
-            this.send({ type: "error", message: `Save cover chunk failed: ${error.message || 'unknown error'}`, count: 0 });
-            this.callback({ msg: "error", error: `Save cover chunk failed: ${error.message || 'unknown error'}` });
+            const errorMsg = error.message || '未知错误';
+            let displayMsg = `保存封面分块失败: ${errorMsg}`;
+            if (errorMsg.includes('space') || errorMsg.includes('disk') || errorMsg.includes('full') || 
+                errorMsg.includes('storage') || errorMsg.includes('1300') || errorMsg.includes('202')) {
+                displayMsg = "存储空间不足";
+            }
+            this.send({ type: "error", message: displayMsg, count: 0 });
+            this.callback({ msg: "error", error: displayMsg });
         }
     }
 
     async completeCoverTransfer() {
         try {
             if (!this.currentBookCoverUri || this.partialCoverData.length === 0) {
-                this.send({ type: "error", message: "No cover data to save", count: 0 });
+                this.send({ type: "error", message: "没有封面数据可保存", count: 0 });
                 return;
             }
             
@@ -418,8 +442,14 @@ export default class interconnfile {
             this.partialCoverData = [];
             this.totalCoverChunks = 0;
             this.currentBookCoverUri = null;
-            this.send({ type: "error", message: `Complete cover transfer failed: ${error.message || 'unknown error'}`, count: 0 });
-            this.callback({ msg: "error", error: `Complete cover transfer failed: ${error.message || 'unknown error'}` });
+            const errorMsg = error.message || '未知错误';
+            let displayMsg = `完成封面传输失败: ${errorMsg}`;
+            if (errorMsg.includes('space') || errorMsg.includes('disk') || errorMsg.includes('full') || 
+                errorMsg.includes('storage') || errorMsg.includes('1300') || errorMsg.includes('202')) {
+                displayMsg = "存储空间不足";
+            }
+            this.send({ type: "error", message: displayMsg, count: 0 });
+            this.callback({ msg: "error", error: displayMsg });
         }
     }
 
@@ -520,7 +550,7 @@ export default class interconnfile {
                 });
             } else {
                 if (this.currentSavingChapterIndex !== chapterData.index) {
-                    this.send({ type: "error", message: "chunk chapter index mismatch", count: this.receivedChapters });
+                    this.send({ type: "error", message: "章节分块索引不匹配", count: this.receivedChapters });
                     return;
                 }
                 await runAsyncFunc(file.writeArrayBuffer, {
@@ -548,8 +578,14 @@ export default class interconnfile {
                 await this.send({ type: "next_chunk" });
             }
         } catch (error) {
-            this.send({ type: "error", message: `Save chapter failed: ${error.message || 'unknown error'}`, count: this.receivedChapters });
-            this.callback({ msg: "error", progress: error.message });
+            const errorMsg = error.message || '未知错误';
+            let displayMsg = `保存章节失败: ${errorMsg}`;
+            if (errorMsg.includes('space') || errorMsg.includes('disk') || errorMsg.includes('full') || 
+                errorMsg.includes('storage') || errorMsg.includes('1300') || errorMsg.includes('202')) {
+                displayMsg = "存储空间不足";
+            }
+            this.send({ type: "error", message: displayMsg, count: this.receivedChapters });
+            this.callback({ msg: "error", progress: displayMsg });
         }
     }
 
@@ -587,8 +623,14 @@ export default class interconnfile {
             });
             
         } catch (error) {
-            this.send({ type: "error", message: `Complete chapter transfer failed: ${error.message || 'unknown error'}`, count: this.receivedChapters });
-            this.callback({ msg: "error", error: `Complete chapter transfer failed: ${error.message || 'unknown error'}` });
+            const errorMsg = error.message || '未知错误';
+            let displayMsg = `完成章节传输失败: ${errorMsg}`;
+            if (errorMsg.includes('space') || errorMsg.includes('disk') || errorMsg.includes('full') || 
+                errorMsg.includes('storage') || errorMsg.includes('1300') || errorMsg.includes('202')) {
+                displayMsg = "存储空间不足";
+            }
+            this.send({ type: "error", message: displayMsg, count: this.receivedChapters });
+            this.callback({ msg: "error", error: displayMsg });
         }
     }
     

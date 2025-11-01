@@ -10,6 +10,10 @@
 				<text class="item-title">文件名</text>
 				<marquee class="item-value" scrollamount="12">{{fileName}}</marquee>
 			</list-item>
+			<list-item class="item" type="info" if="{{author}}">
+				<text class="item-title">作者</text>
+				<marquee class="item-value" scrollamount="12">{{author}}</marquee>
+			</list-item>
 			<list-item class="item" type="info">
 				<text class="item-title">文件大小</text>
 				<text class="item-value">{{fileSize}}</text>
@@ -17,6 +21,18 @@
 			<list-item class="item" type="info">
 				<text class="item-title">总字数</text>
 				<text class="item-value">{{wordCount}}</text>
+			</list-item>
+			<list-item class="item" type="info" if="{{bookStatus}}">
+				<text class="item-title">状态</text>
+				<text class="item-value">{{bookStatus}}</text>
+			</list-item>
+			<list-item class="item" type="info" if="{{category}}">
+				<text class="item-title">分类</text>
+				<text class="item-value">{{category}}</text>
+			</list-item>
+			<list-item class="item" type="info" if="{{summary}}" style="height: auto; min-height: 112px;">
+				<text class="item-title">简介</text>
+				<text class="item-value" style="lines: 5; text-overflow: ellipsis;">{{summary}}</text>
 			</list-item>
 		</list>
 
@@ -52,7 +68,11 @@ export default {
 		nowTime: "00:00",
 		timer: null,
 		hasCover: false,
-		coverPath: ''
+		coverPath: '',
+		author: '',
+		summary: '',
+		bookStatus: '',
+		category: ''
 	},
 	protected: {
 		cPath: '',
@@ -93,6 +113,10 @@ export default {
 					if (that.hasCover) {
 						that.coverPath = coverUri;
 					}
+					that.author = info.author || '';
+					that.summary = info.summary || '';
+					that.bookStatus = info.bookStatus || '';
+					that.category = info.category || '';
 				} catch (e) {
 					that.fileName = that.name;
 					that.wordCount = '解析失败';
