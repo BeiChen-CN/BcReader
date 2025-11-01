@@ -1,4 +1,8 @@
 import interconn from './interconn.js';
+import { versionCode } from "../manifest.json";
+import router from '@system.router';
+
+const MIN_PHONE_VERSION = 40410;
 //握握手，握握双手
 const type = "__hs__"
 const TIMEOUT = 3000;
@@ -17,7 +21,18 @@ export default class InterHandshake extends interconn {
             const { tag, ...payload } = JSON.parse(data);
             this.callbacks[tag](payload);
         }
-        this.addListener(type, ({ count }) => {
+        this.addListener(type, ({ count, version }) => {
+            if ((version && version < MIN_PHONE_VERSION) || !version) {
+                return router.replace({
+                    uri: 'pages/confirm',
+                    params: {
+                        action: 'versionError',
+                        title: '版本不兼容',
+                        confirmText: '客户端版本过低',
+                        subText: '请将手机APP更新到最新版本再使用',
+                    }
+                });
+            }
             if (count > 0) {
                 if (this.promise) this.resolve(this.resolve = null)
                 else {
@@ -25,7 +40,7 @@ export default class InterHandshake extends interconn {
                     this.callback()
                 }
             }
-            if (count++ < 2) super.send(type, { count });
+            if (count++ < 2) super.send(type, { count, version: versionCode });
         })
         this.addEventListener((e) => {
             if (e !== "open") {
@@ -57,7 +72,7 @@ export default class InterHandshake extends interconn {
                 resolve()
                 clearTimeout(timeout)
             }
-            super.send(type, { count: 0 })
+            super.send(type, { count: 0, version: versionCode })
         })
     }
 }
