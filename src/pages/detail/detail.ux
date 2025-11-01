@@ -104,7 +104,10 @@
 		clickCount: 0,
 		clickTimeout: null,
 		chapterProgress: 0,
-		showProgressBar: true
+		showProgressBar: true,
+		gestureMode: 'single',
+		gestureClickCount: 0,
+		gestureClickTimeout: null,
 	  },
 	  protected: {
 		name: '',
@@ -166,6 +169,7 @@
 		storage.get({ key: 'EBOOK_SWIPE', success: (data) => { if (data) this.swipe = data } });
 		storage.get({ key: 'EBOOK_AUTO', success: (data) => { if(!data)return; const { speed, enable } = JSON.parse(data); if(enable)this.auto = speed; } });
 		storage.get({ key: 'EBOOK_SHOW_PROGRESS_BAR', success: (data) => { if (data !== '') this.showProgressBar = data === 'true'; } });
+		storage.get({ key: 'EBOOK_GESTURE', success: (data) => { if (data) this.gestureMode = data; }, fail: () => { this.gestureMode = 'single'; } });
 	},
 	updateScrollHeight() {
 		this.scrollHeight = 480 - this.verticalMargin * 2;
@@ -691,6 +695,10 @@
 			clearTimeout(this.clickTimeout);
 			this.clickTimeout = null;
 		}
+		if (this.gestureClickTimeout) {
+			clearTimeout(this.gestureClickTimeout);
+			this.gestureClickTimeout = null;
+		}
 		
 		
 		try {
@@ -724,6 +732,10 @@
 		if (this.clickTimeout) {
 			clearTimeout(this.clickTimeout);
 			this.clickTimeout = null;
+		}
+		if (this.gestureClickTimeout) {
+			clearTimeout(this.gestureClickTimeout);
+			this.gestureClickTimeout = null;
 		}
 		if (autoInterval) { 
 			clearInterval(autoInterval); 
@@ -769,9 +781,7 @@
 		app.terminate();
 	},
   	onTxtClick(event) {
-		if (this.wait) {
-			return;
-		}
+		if (this.wait) return;
 
 		if (this.teacherScreenEnabled) {
 			this.clickCount++;
@@ -793,13 +803,45 @@
 			}, 500);
 		}
 
-		if (this.swipe === 'column') { this.showSetting = !this.showSetting; } 
-		else {
-			if (this.showSetting) { this.showSetting = false; } 
-			else {
-				if (event.offsetY <= 158) { this.lastPage(); } 
-				else if (event.offsetY <= 322) { this.showSetting = !this.showSetting; } 
-				else { this.nextPage(); }
+		const handleUIToggle = () => {
+			this.showSetting = !this.showSetting;
+		}
+
+		if (this.gestureMode === 'double') {
+			this.gestureClickCount++;
+			if (this.gestureClickTimeout) {
+				clearTimeout(this.gestureClickTimeout);
+				this.gestureClickTimeout = null;
+			}
+			if (this.gestureClickCount === 2) {
+				this.gestureClickCount = 0;
+				this.gestureClickTimeout = null;
+				handleUIToggle();
+			} else {
+				this.gestureClickTimeout = setTimeout(() => {
+					this.gestureClickCount = 0;
+					this.gestureClickTimeout = null;
+					if (this.swipe !== 'column') {
+						if (this.showSetting) {
+							this.showSetting = false;
+						} else {
+							if (event.offsetY <= 158) { this.lastPage(); }
+							else if (event.offsetY > 322) { this.nextPage(); }
+						}
+					}
+				}, 300);
+			}
+		} else { // single click mode
+			if (this.swipe === 'column') {
+				handleUIToggle();
+			} else {
+				if (this.showSetting) {
+					handleUIToggle();
+				} else {
+					if (event.offsetY <= 158) { this.lastPage(); }
+					else if (event.offsetY <= 322) { handleUIToggle(); }
+					else { this.nextPage(); }
+				}
 			}
 		}
 	},

@@ -11,10 +11,10 @@ export default class interconnfile {
     currentBookDir = "";
     totalChapters = 0;
     receivedChapters = 0;
-    partialChapterContent = [];
     currentSavingChapterIndex = -1;
     currentChapterMeta = null;
     isCoverOnly = false;
+    syncedChapterIndices = new Set();
     
     pendingChapterMetas = [];
     BATCH_WRITE_SIZE = 10;
@@ -256,6 +256,7 @@ export default class interconnfile {
                 }
 
                 await runAsyncFunc(file.writeText, { uri: listUri, text: '' });
+                this.syncedChapterIndices = new Set();
             } else {
                 
                 try {
@@ -271,11 +272,21 @@ export default class interconnfile {
                 try {
                     const listData = await runAsyncFunc(file.readText, { uri: listUri });
                     const existingChapters = listData.text.split('\n').filter(Boolean);
-                    this.receivedChapters = existingChapters.length;
+                    this.syncedChapterIndices = new Set();
+                    for (const line of existingChapters) {
+                        try {
+                            const meta = JSON.parse(line);
+                            this.syncedChapterIndices.add(meta.index);
+                        } catch (e) {
+                            console.error('Failed to parse chapter meta from list.txt:', line);
+                        }
+                    }
+                    this.receivedChapters = this.syncedChapterIndices.size;
                 } catch (e) {
                     
                     await runAsyncFunc(file.writeText, { uri: listUri, text: '' });
                     this.receivedChapters = 0;
+                    this.syncedChapterIndices = new Set();
                 }
             }
 
@@ -496,29 +507,27 @@ export default class interconnfile {
 
             const isFirstChunk = chapterData.chunkNum === 0;
             const isLastChunk = chapterData.chunkNum === chapterData.totalChunks - 1;
+            const chapterFileName = `${chapterData.index}.txt`;
+            const chapterUri = `${this.baseUri}${this.currentBookDir}/content/${chapterFileName}`;
 
             if (isFirstChunk) {
-                
-                if (count < this.receivedChapters) {
-                    await this.send({ type: "next", message: "duplicate chapter", count: this.receivedChapters });
-                    return;
-                }
-                
-                if (count > this.receivedChapters) {
-                    this.receivedChapters = count;
-                }
-                if (count !== this.receivedChapters) {
-                    this.send({ type: "next", message: "package count error", count: this.receivedChapters });
-                    return;
-                }
-                this.partialChapterContent = [chapterData.content];
                 this.currentSavingChapterIndex = chapterData.index;
+
+                await runAsyncFunc(file.writeArrayBuffer, {
+                    uri: chapterUri,
+                    buffer: str2abWrite(chapterData.content),
+                    append: false,
+                });
             } else {
                 if (this.currentSavingChapterIndex !== chapterData.index) {
                     this.send({ type: "error", message: "chunk chapter index mismatch", count: this.receivedChapters });
                     return;
                 }
-                this.partialChapterContent.push(chapterData.content);
+                await runAsyncFunc(file.writeArrayBuffer, {
+                    uri: chapterUri,
+                    buffer: str2abWrite(chapterData.content),
+                    append: true,
+                });
             }
             
             const chunkProgress = (chapterData.chunkNum + 1) / chapterData.totalChunks;
@@ -526,19 +535,6 @@ export default class interconnfile {
             this.callback({ msg: "next", progress: overallProgress, filename: this.currentBookName });
 
             if (isLastChunk) {
-                const chapterFileName = `${chapterData.index}.txt`;
-                const chapterUri = `${this.baseUri}${this.currentBookDir}/content/${chapterFileName}`;
-
-                
-                const fullContent = this.partialChapterContent.join('');
-                await runAsyncFunc(file.writeArrayBuffer, {
-                    uri: chapterUri,
-                    buffer: str2abWrite(fullContent)
-                });
-
-                
-                this.partialChapterContent = [];
-
                 this.currentChapterMeta = {
                     index: chapterData.index,
                     name: chapterData.name,
@@ -546,7 +542,6 @@ export default class interconnfile {
                 };
 
                 await this.send({ type: "chapter_chunk_complete" });
-                
                 
                 if(count % 10 == 0) global.runGC();
             } else {
@@ -571,7 +566,8 @@ export default class interconnfile {
             
             this.currentChapterMeta = null;
             this.currentSavingChapterIndex = -1;
-            this.receivedChapters++;
+            this.syncedChapterIndices.add(count);
+            this.receivedChapters = this.syncedChapterIndices.size;
             
             const shouldFlush = (this.pendingChapterMetas.length >= this.BATCH_WRITE_SIZE) || 
                                (this.receivedChapters >= this.totalChapters);
@@ -602,19 +598,34 @@ export default class interconnfile {
         const listUri = `${this.baseUri}${this.currentBookDir}/list.txt`;
         
         try {
-            const metaLines = this.pendingChapterMetas.map(meta => JSON.stringify(meta)).join('\n') + '\n';
-            
-            let existingContent = '';
+            let chapters = {};
             try {
                 const listData = await runAsyncFunc(file.readText, { uri: listUri });
-                existingContent = listData.text;
+                const lines = listData.text.split('\n').filter(Boolean);
+                for (const line of lines) {
+                    try {
+                        const meta = JSON.parse(line);
+                        if (meta.index !== undefined) {
+                           chapters[meta.index] = meta;
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse chapter meta from list.txt:', line);
+                    }
+                }
             } catch (e) {
-                existingContent = '';
+                
             }
             
+            for (const meta of this.pendingChapterMetas) {
+                chapters[meta.index] = meta;
+            }
+
+            const sortedMetas = Object.values(chapters).sort((a, b) => a.index - b.index);
+            const metaLines = sortedMetas.map(meta => JSON.stringify(meta)).join('\n') + '\n';
+
             await runAsyncFunc(file.writeText, {
                 uri: listUri,
-                text: existingContent + metaLines
+                text: metaLines
             });
             
             this.pendingChapterMetas = [];
@@ -633,7 +644,6 @@ export default class interconnfile {
             this.partialCoverData = [];
             this.totalCoverChunks = 0;
             this.currentBookCoverUri = null;
-            this.partialChapterContent = [];
             this.currentSavingChapterIndex = -1;
             this.currentChapterMeta = null;
             this.pendingChapterMetas = [];

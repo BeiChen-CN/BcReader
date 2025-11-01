@@ -22,62 +22,13 @@
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
 		  </list-item>
-		  <list-item class="item" @click="routerTo('screenBrightness')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext">屏幕亮度</text>
-				  <text class="itemtext2">应用内屏幕亮度</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('opacity')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext">字体亮度</text>
-				  <text class="itemtext2">设置阅读字体亮度</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('fontSetting')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext">字号</text>
-				  <text class="itemtext2">设置阅读字体大小</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('marginSetting')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext">垂直边距</text>
-				  <text class="itemtext2">调整屏幕留白</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('swipe')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext">滑动翻页</text>
-				  <text class="itemtext2">管理滑动翻页选项</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('autoRead')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext">自动翻页</text>
-				  <text class="itemtext2">设置自动翻页选项</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('teacherScreen')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext">老师屏</text>
-				  <text class="itemtext2">快速退出应用</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
-		  </list-item>
-		  <list-item class="item" @click="toggleProgressBar" type="item">
-			  <div class="item-content">
-				  <text class="itemtext">章节进度条</text>
-				  <text class="itemtext2">显示阅读进度条</text>
-			  </div>
-			  <img src="{{showProgressBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 40px;"/>
-		  </list-item>
+		  <list-item class="item" @click="routerTo('more')" type="item">
+			<div class="item-content">
+				<text class="itemtext">全局设置</text>
+				<text class="itemtext2">打开全局设置</text>
+			</div>
+			<img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
+		</list-item>
 		  <list-item class="item" @click="del" type="item">
 			  <div class="item-content">
 				  <text class="itemtext">删除书籍</text>
@@ -101,7 +52,7 @@
 		{{nowTime}}
 	  </text>
 	  <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-		  设置
+		  菜单
 	  </text>
 	</div>
   </template>
@@ -117,8 +68,7 @@
   export default {
 	private: {
 		nowTime: "00:00",
-		timer: null,
-		showProgressBar: true
+		timer: null
 	},
 	protected: {
 		name: ''
@@ -138,12 +88,6 @@
 	  this.timer = setInterval(() => {
 		this.updateTime();
 	  }, 1000);
-	  this.loadSettings();
-	},
-	loadSettings() {
-		storage.get({ key: 'EBOOK_SHOW_PROGRESS_BAR', success: (data) => { 
-			if (data !== '') this.showProgressBar = data === 'true'; 
-		}});
 	},
 	onDestroy(){
 		clearInterval(this.timer);
@@ -186,16 +130,6 @@
 	},
 	exit(){
 		app.terminate();
-	},
-	toggleProgressBar() {
-		this.showProgressBar = !this.showProgressBar;
-		storage.set({
-			key: 'EBOOK_SHOW_PROGRESS_BAR',
-			value: this.showProgressBar.toString(),
-			success: () => {
-				prompt.showToast({ message: this.showProgressBar ? '已开启章节进度条' : '已关闭章节进度条' });
-			}
-		});
 	}
   }
   </script>
