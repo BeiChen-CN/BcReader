@@ -14,7 +14,7 @@ export default {
     onInit() {
         file.mkdir({
             uri: 'internal://files/books/',
-            success: function() {
+            complete: function() {
                 file.mkdir({
                     uri: 'internal://files/books/storage-api/'
                 });

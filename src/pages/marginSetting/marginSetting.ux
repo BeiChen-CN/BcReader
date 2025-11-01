@@ -39,7 +39,7 @@ import app from '@system.app'
 
 export default {
   private: {
-	verticalMargin: 0,
+	verticalMargin: 10,
 	opacity: 100,
 	nowTime: "00:00",
 	timer: null
@@ -87,7 +87,7 @@ export default {
 	  })
   },
   reset() {
-	this.verticalMargin = 0;
+	this.verticalMargin = 10;
 	storage.set({
 		key: "EBOOK_VERTICAL_MARGIN",
 		value: this.verticalMargin.toString(),
