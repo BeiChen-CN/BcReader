@@ -8,11 +8,11 @@
 			
 			<list-item class="item" type="info">
 				<text class="item-title">文件名</text>
-				<marquee class="item-value" scrollamount="12">{{fileName}}</marquee>
+				<marquee class="item-value" scrollamount="50">{{fileName}}</marquee>
 			</list-item>
 			<list-item class="item" type="info" if="{{author}}">
 				<text class="item-title">作者</text>
-				<marquee class="item-value" scrollamount="12">{{author}}</marquee>
+				<marquee class="item-value" scrollamount="50">{{author}}</marquee>
 			</list-item>
 			<list-item class="item" type="info">
 				<text class="item-title">文件大小</text>
