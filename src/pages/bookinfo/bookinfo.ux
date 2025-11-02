@@ -19,6 +19,10 @@
 				<text class="item-value">{{fileSize}}</text>
 			</list-item>
 			<list-item class="item" type="info">
+				<text class="item-title">同步进度</text>
+				<text class="item-value">{{syncProgress}}</text>
+			</list-item>
+			<list-item class="item" type="info">
 				<text class="item-title">总字数</text>
 				<text class="item-value">{{wordCount}}</text>
 			</list-item>
@@ -72,7 +76,8 @@ export default {
 		author: '',
 		summary: '',
 		bookStatus: '',
-		category: ''
+		category: '',
+		syncProgress: '计算中...'
 	},
 	protected: {
 		cPath: '',
@@ -99,7 +104,9 @@ export default {
 	async loadFileInfo() {
 		const that = this;
 		const bookDirUri = `internal://files/books/${this.name}/`;
+		const bookContentDirUri = `internal://files/books/${this.name}/content/`;
 		const bookInfoUri = `internal://files/books/${this.name}/book_info.json`;
+		const listUri = `internal://files/books/${this.name}/list.txt`;
 		const coverUri = `internal://files/books/${this.name}/cover.jpg`;
 
 		file.readText({
@@ -117,21 +124,25 @@ export default {
 					that.summary = info.summary || '';
 					that.bookStatus = info.bookStatus || '';
 					that.category = info.category || '';
+
+					that.calculateSyncProgress(info.chapterCount, listUri);
 				} catch (e) {
 					that.fileName = that.name;
 					that.wordCount = '解析失败';
+					that.syncProgress = '未知';
 				}
 			},
 			fail: function(data, code) {
 				that.fileName = that.name;
 				that.wordCount = '加载失败';
+				that.syncProgress = '未知';
 			}
 		});
 
 
 		this.fileSize = '计算中...';
 		try {
-			const listResult = await runAsyncFunc(file.list, { uri: bookDirUri });
+			const listResult = await runAsyncFunc(file.list, { uri: bookContentDirUri });
 			let totalSize = 0;
 			if (listResult.fileList) {
 				for (const f of listResult.fileList) {
@@ -143,6 +154,21 @@ export default {
 			this.fileSize = this.formatFileSize(totalSize);
 		} catch (e) {
 			this.fileSize = '计算失败';
+		}
+	},
+	async calculateSyncProgress(totalChapters, listUri) {
+		if (typeof totalChapters !== 'number' || totalChapters <= 0) {
+			this.syncProgress = '无需同步';
+			return;
+		}
+
+		try {
+			const listData = await runAsyncFunc(file.readText, { uri: listUri });
+			const syncedChapters = listData.text.split('\n').filter(Boolean).length;
+			const progress = Math.floor((syncedChapters / totalChapters) * 100);
+			this.syncProgress = `${progress}% (${syncedChapters}/${totalChapters}章)`;
+		} catch (e) {
+			this.syncProgress = `0% (0/${totalChapters}章)`;
 		}
 	},
 	formatFileSize(bytes) {

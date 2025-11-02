@@ -20,7 +20,7 @@
 		</div>
 	</div>
 	
-	<number style="position: absolute;bottom:6px" max="50" min="5" step="5" value="{{progressBarHeight}}" @change="changeHeight" name="调整高度"></number>
+	<number style="position: absolute;bottom:6px" max="50" min="5" step="1" value="{{progressBarHeight}}" @change="changeHeight" name="调整高度"></number>
 
 	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
 	<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
