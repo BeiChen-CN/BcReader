@@ -239,6 +239,17 @@ export default class interconnfile {
             const contentUri = bookUri + '/content';
             const bookshelfUri = this.baseUri + 'bookshelf.json';
 
+            try {
+                const bookInfoData = await runAsyncFunc(file.readText, { uri: bookInfoUri });
+                const bookInfo = JSON.parse(bookInfoData.text);
+                if (bookInfo.hasCover && !hasCover) {
+                    hasCover = true;
+                }
+            } catch (e) {
+
+            }
+
+
             if (startFrom === 0) {
                 let progress = null;
                 try {
@@ -247,12 +258,25 @@ export default class interconnfile {
                     progress = data.text;
                 } catch(e) { /* no progress file, that's ok */ }
 
+                let coverRestored = false;
+                const tempCoverUri = this.baseUri + 'temp_cover.jpg';
+                try {
+                    await runAsyncFunc(file.move, { srcUri: coverUri, dstUri: tempCoverUri });
+                    coverRestored = true;
+                } catch(e) {}
+
                 try { await runAsyncFunc(file.rmdir, { uri: bookUri, recursive: true }); } catch (e) {}
                 await runAsyncFunc(file.mkdir, { uri: bookUri });
                 
                 if (progress) {
                     const progressUri = bookUri + '/progress.json';
                     await runAsyncFunc(file.writeText, { uri: progressUri, text: progress });
+                }
+
+                if (coverRestored) {
+                    try {
+                        await runAsyncFunc(file.move, { srcUri: tempCoverUri, dstUri: coverUri });
+                    } catch(e) {}
                 }
 
                 await runAsyncFunc(file.writeText, { uri: listUri, text: '' });

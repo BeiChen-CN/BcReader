@@ -6,12 +6,19 @@
 
 	  <text if="{{fileList.length == 0}}" style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">书架空空</text>
 
-	  <list class="list">
+      <list class="list" if="{{shelfStyle === 'list'}}">
 		  <list-item for="{{fileList}}" class="item" @click="selectFile($item)" type="nook">
 			  <marquee scrollamount="12" class="itemtext">{{$item.name}}</marquee>
 			  <text class="itemtext2">{{$item.chapterCount}}章 · 进度 {{$item.progress || 0}}%</text>
 		  </list-item>
 	  </list>
+
+      <list class="grid-list" if="{{shelfStyle === 'cover'}}">
+          <list-item for="{{fileList}}" class="grid-item" @click="selectFile($item)" type="nook">
+              <img class="cover-image" src="internal://files/books/{{$item.dirName}}/cover.jpg" />
+              <marquee scrollamount="12" class="cover-title">{{$item.name}}</marquee>
+          </list-item>
+      </list>
 
     <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
     <img static src="/common/images/back.png" @click="exit" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
@@ -42,7 +49,8 @@ export default {
     fileList: [],
     debugOutput: "初始化中...",
     nowTime: "00:00",
-    timer: null
+    timer: null,
+    shelfStyle: 'list'
   },
   exit(){
 	  app.terminate();
@@ -67,7 +75,23 @@ export default {
 	  clearInterval(this.timer);
   },
   onShow() {
-    this.loadFileList();
+    this.loadSettingsAndFiles();
+  },
+  loadSettingsAndFiles() {
+      const that = this;
+      storage.get({
+          key: 'EBOOK_SHELF_STYLE',
+          success: (data) => {
+              if (data) that.shelfStyle = data;
+              else that.shelfStyle = 'list';
+          },
+          fail: () => {
+              that.shelfStyle = 'list';
+          },
+          complete: () => {
+              that.loadFileList();
+          }
+      });
   },
   loadFileList() {
     const that = this;
@@ -152,4 +176,40 @@ export default {
 	lines: 1;
 }
 
+</style>
+<style>
+.grid-list {
+    width: 336px;
+	height: 480px;
+	position: absolute;
+	top:0px;
+	left:0px;
+    padding: 86px 6px;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.grid-item {
+    width: 100px;
+    height: 160px;
+    flex-direction: column;
+    align-items: center;
+    margin: 3px;
+}
+
+.cover-image {
+    width: 90px;
+    height: 120px;
+    background-color: #333;
+}
+
+.cover-title {
+    width: 90px;
+    font-size: 20px;
+    color: white;
+    text-align: center;
+    lines: 2;
+    text-overflow: ellipsis;
+    margin-top: 5px;
+}
 </style>

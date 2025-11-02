@@ -25,9 +25,8 @@
 		  <list-item type="item" class="item" @click="backToFirst">
 			  <div class="item-content">
 				  <text class="itemtext">回到第一段</text>
-				  <text class="itemtext2">跳转到第一章开头</text>
+				  <text class="itemtext2">跳转到本章开头</text>
 			  </div>
-			  <img src="/common/images/reset.png" style="width:40px;height: 40px;"/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('more')" type="item">
 			<div class="item-content">
@@ -136,15 +135,7 @@
 	},
 	async backToFirst(){
 		try {
-			const allChapters = await chapterManager.loadChapterList(this.name);
-			if (!allChapters || allChapters.length === 0) {
-				prompt.showToast({ message: '无法加载章节列表', duration: 2000 });
-				return;
-			}
-			
-			const firstChapterIndex = allChapters[0].index;
 			const progress = await bookStorage.get(this.name);
-			progress.chapterIndex = firstChapterIndex;
 			progress.offsetInChapter = 0;
 			progress.scrollOffset = 0;
 			await bookStorage.set(this.name, progress);

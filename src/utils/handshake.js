@@ -5,7 +5,7 @@ import router from '@system.router';
 const MIN_PHONE_VERSION = 40410;
 //握握手，握握双手
 const type = "__hs__"
-const TIMEOUT = 3000;
+const TIMEOUT = 15000;
 
 export default class InterHandshake extends interconn {
     /** @type {Promise<void>} */
