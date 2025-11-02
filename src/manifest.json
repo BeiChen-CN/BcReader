@@ -1,8 +1,8 @@
 {
   "package": "com.bandbbs.ebook.plus",
   "name": "电子书",
-  "versionName": "4.2.0",
-  "versionCode": 251102,
+  "versionName": "4.2.1",
+  "versionCode": 251103,
   "minPlatformVersion": 1100,
   "icon": "/common/logo.png",
   "simulationVersion": "default",
@@ -129,6 +129,9 @@
       },
       "pages/progressBarSetting": {
         "component": "progressBarSetting"
+      },
+      "pages/shelfStyle": {
+        "component": "shelfStyle"
       }
     }
   },

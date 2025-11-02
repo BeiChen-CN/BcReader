@@ -13,10 +13,13 @@
 		  </list-item>
 	  </list>
 
-      <list class="grid-list" if="{{shelfStyle === 'cover'}}">
-          <list-item for="{{fileList}}" class="grid-item" @click="selectFile($item)" type="nook">
+      <list class="list" if="{{shelfStyle === 'cover'}}">
+          <list-item for="{{fileList}}" class="item cover-item" @click="selectFile($item)" type="nook">
               <img class="cover-image" src="internal://files/books/{{$item.dirName}}/cover.jpg" />
-              <marquee scrollamount="12" class="cover-title">{{$item.name}}</marquee>
+              <div class="cover-content">
+                  <marquee scrollamount="12" class="itemtext">{{$item.name}}</marquee>
+                  <text class="itemtext2">{{$item.chapterCount}}章 · 进度 {{$item.progress || 0}}%</text>
+              </div>
           </list-item>
       </list>
 
@@ -157,6 +160,27 @@ export default {
   align-items: flex-start;
 }
 
+.cover-item {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.cover-image {
+    width: 64px;
+    height: 84px;
+    background-color: #333;
+    margin-right: 16px;
+}
+
+.cover-content {
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: flex-start;
+    flex: 1;
+    height: 100%;
+}
+
 .itemtext {
 	font-size: 32px;
 	line-height:40px;
@@ -176,40 +200,4 @@ export default {
 	lines: 1;
 }
 
-</style>
-<style>
-.grid-list {
-    width: 336px;
-	height: 480px;
-	position: absolute;
-	top:0px;
-	left:0px;
-    padding: 86px 6px;
-    flex-direction: row;
-    flex-wrap: wrap;
-}
-
-.grid-item {
-    width: 100px;
-    height: 160px;
-    flex-direction: column;
-    align-items: center;
-    margin: 3px;
-}
-
-.cover-image {
-    width: 90px;
-    height: 120px;
-    background-color: #333;
-}
-
-.cover-title {
-    width: 90px;
-    font-size: 20px;
-    color: white;
-    text-align: center;
-    lines: 2;
-    text-overflow: ellipsis;
-    margin-top: 5px;
-}
 </style>
