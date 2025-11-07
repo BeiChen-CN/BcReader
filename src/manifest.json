@@ -147,6 +147,9 @@
       },
       "pages/tutorial": {
         "component": "tutorial"
+      },
+      "pages/shelfPageSizeSetting": {
+        "component": "shelfPageSizeSetting"
       }
     }
   },
