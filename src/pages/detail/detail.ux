@@ -9,9 +9,13 @@
 		@scrollbottom="onScrollBottom"
 		@click="onTxtClick"
 		onlongpress="onTxtLongPress"
+		@touchstart="onTouchStart"
+		@touchmove="onTouchMove"
+		@touchend="onTouchEnd"
+		bounces="{{(isAtChapterStart || isAtChapterEnd) && (chapterSwitchStyle == 'boundary')}}"
 		>
 		<div id="contentContainer" style="position: absolute; width:336px; flex-direction: column;">
-			<div if="{{isAtChapterStart && !showSetting && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToPrevChapter">
+			<div if="{{chapterSwitchStyle == 'button' && isAtChapterStart && !showSetting && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToPrevChapter">
 				<text style="color: #aaa; font-size: 28px; font-weight: bold;">上一章</text>
 			</div>
 		  <div id="page1" style="flex-direction: column; width: 100%; flex-shrink: 0;">
@@ -20,7 +24,7 @@
 		  <div id="page2" if="{{page2}}" style="flex-direction: column; width: 100%; flex-shrink: 0;">
 			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page2.lines.join('\n') }}</text>
 		  </div>
-			<div if="{{isAtChapterEnd && !showSetting && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToNextChapter">
+			<div if="{{chapterSwitchStyle == 'button' && isAtChapterEnd && !showSetting && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToNextChapter">
 				<text style="color: #aaa; font-size: 28px; font-weight: bold;">下一章</text>
 			</div>
 		</div>
@@ -112,6 +116,11 @@
 		gestureClickTimeout: null,
 		chapterSwitchHeight: 80,
 		chapterSwitchSensitivity: 50,
+		chapterSwitchStyle: 'button',
+		touchStartY: 0,
+		overscrollDistance: 0,
+		isTouching: false,
+		bounces: false
 	  },
 	  protected: {
 		name: '',
@@ -177,6 +186,7 @@
 		storage.get({ key: 'EBOOK_GESTURE', success: (data) => { if (data) this.gestureMode = data; }, fail: () => { this.gestureMode = 'single'; } });
 		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_HEIGHT', success: (data) => { if (data) this.chapterSwitchHeight = parseInt(data); } });
 		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_SENSITIVITY', success: (data) => { if (data) this.chapterSwitchSensitivity = parseInt(data); } });
+		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_STYLE', success: (data) => { if (data) this.chapterSwitchStyle = data; }, fail: () => { this.chapterSwitchStyle = 'button'; } });
 	},
 	updateScrollHeight() {
 		this.scrollHeight = 480 - this.verticalMargin * 2;
@@ -477,6 +487,40 @@
 				that.wait = false;
 			}
 		});
+	},
+	onTouchStart(e) {
+		this.isTouching = true;
+		this.touchStartY = e.touches[0].clientY;
+		this.overscrollDistance = 0;
+	},
+	onTouchMove(e) {
+		if (!this.isTouching || this.chapterSwitchStyle !== 'boundary') return;
+		
+		const currentY = e.touches[0].clientY;
+		const deltaY = currentY - this.touchStartY;
+
+		if (this.isAtChapterStart && deltaY > 0) {
+			this.overscrollDistance = deltaY;
+		} else if (this.isAtChapterEnd && deltaY < 0) {
+			this.overscrollDistance = -deltaY;
+		} else {
+			this.overscrollDistance = 0;
+		}
+	},
+	onTouchEnd(e) {
+		if (!this.isTouching) return;
+		this.isTouching = false;
+		
+		if (this.chapterSwitchStyle === 'boundary' && this.overscrollDistance > this.chapterSwitchSensitivity) {
+			if (this.isAtChapterStart) {
+				this.goToPrevChapter();
+			} else if (this.isAtChapterEnd) {
+				this.goToNextChapter();
+			}
+		}
+		
+		this.overscrollDistance = 0;
+		this.touchStartY = 0;
 	},
 	goToPrevChapter() {
 		if (this.wait) return;

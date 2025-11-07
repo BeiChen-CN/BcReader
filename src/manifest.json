@@ -138,6 +138,9 @@
       },
       "pages/chapterSwitchSetting": {
         "component": "chapterSwitchSetting"
+      },
+      "pages/chapterSwitchStyle": {
+        "component": "chapterSwitchStyle"
       }
     }
   },

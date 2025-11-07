@@ -1,11 +1,8 @@
 <template>
 	<div class="page">
-    <scroll scroll-y="{{true}}" style="position: absolute;width: 336px;height: 480px;">
+    <scroll scroll-y="{{true}}" bounces="{{true}}" style="position: absolute;width: 336px;height: 480px;">
       <img src="/common/images/about_img.png" style="width: 100%;"/>
 
-      <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-        {{bigTitle}}
-      </text>
       <text style="position: absolute;left: 26px;top: 102px;width: 282px;height: 48px;font-size: 36px;font-weight: bold;color: #FFFFFF;">
         弦{{appName}}
       </text>
@@ -40,7 +37,6 @@
 	// 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
 	private: {
     nowTime:':',
-	  bigTitle:'关于',
     appName:'弦电子书',
     appVer:'1.0.0',
     displayVersion:'1.0.0',
