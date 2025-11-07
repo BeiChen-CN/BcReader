@@ -88,42 +88,6 @@
         width: 336px;
         height: 480px;
     }
-    .header {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 336px;
-        height: 102px;
-    }
-    .back-icon {
-        position: absolute;
-        left: 6px;
-        top: 6px;
-        width: 72px;
-        height: 72px;
-    }
-    .header-center {
-        position: absolute;
-        left: 78px;
-        top: 7px;
-        width: 180px;
-        flex-direction: column;
-        align-items: center;
-    }
-    .time {
-        line-height: 32px;
-        font-weight: bold;
-        font-size: 24px;
-        color: rgba(255,255,255,0.6);
-        text-align: center;
-    }
-    .title {
-        line-height: 42px;
-        font-weight: bold;
-        font-size: 32px;
-        color: white;
-        text-align: center;
-    }
     .content-container {
         position: absolute;
         width: 336px;

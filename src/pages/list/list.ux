@@ -21,7 +21,7 @@
     <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
       {{nowTime}}
     </text>
-    <marquee scrollamount="12" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+    <marquee text-offset="25" scrollamount="12" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
       {{bookTitle}}
     </marquee>
   </div>
