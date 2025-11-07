@@ -63,7 +63,7 @@ export default {
     this.updateTime();
     this.timer = setInterval(() => { this.updateTime(); }, 1000);
     this.loadBookInfo();
-    this.loadChapterList();
+    this.initChapterList();
   },
   onDestroy() {
     if (this.timer) {
@@ -91,58 +91,36 @@ export default {
       }
     });
   },
-  async loadChapterList() {
+  async initChapterList() {
     if (this.loading) return;
     this.loading = true;
-    
+
     try {
-      
       const progress = await bookStorage.get(this.name);
+      const chapterIndex = progress.chapterIndex !== null ? progress.chapterIndex : -1;
+      
+      const result = await chapterManager.findChapterPage(this.name, chapterIndex, PAGE_SIZE);
+      
+      this.visibleChapters = result.chapters;
+      this.currentPage = result.currentPage;
+      this.totalPages = result.totalPages;
+      this.totalChapters = result.totalChapters;
       if (progress.chapterIndex !== null) {
         this.currentChapterIndex = progress.chapterIndex;
       }
-      
-      
-      const allChapters = await chapterManager.loadChapterList(this.name);
-      this.totalChapters = allChapters.length;
-      
-      
-      this.totalPages = Math.ceil(allChapters.length / PAGE_SIZE) || 1;
-      if (this.currentChapterIndex >= 0) {
-        
-        const currentIndex = allChapters.findIndex(ch => ch.index === this.currentChapterIndex);
-        if (currentIndex >= 0) {
-          this.currentPage = Math.floor(currentIndex / PAGE_SIZE);
-        } else {
-          this.currentPage = 0;
-        }
-      } else {
-        this.currentPage = 0;
-      }
-      
-      
-      if (this.currentPage >= this.totalPages) {
-        this.currentPage = this.totalPages - 1;
-      }
-      if (this.currentPage < 0) {
-        this.currentPage = 0;
-      }
-      
-      
-      const start = this.currentPage * PAGE_SIZE;
-      const end = start + PAGE_SIZE;
-      this.visibleChapters = allChapters.slice(start, end);
+
     } catch (error) {
       prompt.showToast({ message: `章节列表加载失败` });
       this.visibleChapters = [];
       this.totalPages = 1;
+      this.currentPage = 0;
     } finally {
       this.loading = false;
     }
   },
   async loadPage(page) {
     if (this.loading) return;
-    
+    this.loading = true;
     
     try {
       const result = await chapterManager.getChapterPage(this.name, page, PAGE_SIZE);
@@ -152,15 +130,17 @@ export default {
       this.totalChapters = result.totalChapters;
     } catch (error) {
       prompt.showToast({ message: '加载失败' });
+    } finally {
+      this.loading = false;
     }
   },
   prevPage() {
-    if (this.currentPage > 0) {
+    if (this.currentPage > 0 && !this.loading) {
         this.loadPage(this.currentPage - 1);
     }
   },
   nextPage() {
-    if (this.currentPage < this.totalPages - 1) {
+    if (this.currentPage < this.totalPages - 1 && !this.loading) {
         this.loadPage(this.currentPage + 1);
     }
   },
