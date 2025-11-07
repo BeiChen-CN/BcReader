@@ -48,7 +48,7 @@
         <img show="{{showSetting}}" src="/common/images/add_bookmark.png" @click="addBookmark" @longpress="gotoBookmarks" style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;"/>
 		
 		<div if="{{showProgressBar && !showSetting}}" class="progress-bar-container" style="height: {{progressBarHeight}}px;">
-			<progress class="p1" percent="{{chapterProgress}}" style="width: 100%;color: #E1DDDD;stroke-width: {{progressBarHeight}}px;layer-color: #00000000;"></progress>
+			<progress percent="{{chapterProgress}}" style="left: 30px;width: 276px;color: #E1DDDD;stroke-width: {{progressBarHeight}}px;layer-color: #00000000;"></progress>
 		</div>
 	</div>
   </template>
