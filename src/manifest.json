@@ -135,6 +135,9 @@
       },
       "pages/textReader": {
         "component": "textReader"
+      },
+      "pages/chapterSwitchSetting": {
+        "component": "chapterSwitchSetting"
       }
     }
   },
