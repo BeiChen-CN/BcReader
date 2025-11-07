@@ -67,8 +67,8 @@
 <script>
 import router from '@system.router'
 import file from '@system.file'
-import prompt from '@system.prompt'
 import runAsyncFunc from '../../utils/runAsyncFunc.js'
+import storage from '../../common/storage.js'
 
 export default {
 	private: {
@@ -86,7 +86,8 @@ export default {
 		summary: '',
 		bookStatus: '',
 		category: '',
-		syncProgress: '计算中...'
+		syncProgress: '计算中...',
+        timeFormat: '24h'
 	},
 	protected: {
 		cPath: '',
@@ -96,12 +97,29 @@ export default {
 		const date = new Date();
 		let hours = date.getHours();
 		let minutes = date.getMinutes();
-		hours = hours < 10 ? '0' + hours : hours;
-		minutes = minutes < 10 ? '0' + minutes : minutes;
-		this.nowTime = `${hours}:${minutes}`;
+        if (this.timeFormat === '12h') {
+            let ampm = hours >= 12 ? '下午' : '上午';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            this.nowTime = `${ampm} ${hours}:${minutes}`;
+        } else {
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            this.nowTime = `${hours}:${minutes}`;
+        }
 	},
 	onInit() {
-		this.updateTime();
+        storage.get({
+            key: 'EBOOK_TIME_FORMAT',
+            success: (data) => {
+                if(data) this.timeFormat = data;
+                this.updateTime();
+            },
+            fail: () => {
+                this.updateTime();
+            }
+        });
 		this.timer = setInterval(() => {
 			this.updateTime();
 		}, 1000);

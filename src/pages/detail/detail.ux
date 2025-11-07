@@ -68,7 +68,7 @@
 	import brightness from '@system.brightness'
 	import app from '@system.app'
 
-	var allSize = 0;
+	let allSize = 0;
     let autoInterval = null;
 
 	export default {
@@ -126,7 +126,9 @@
 		touchEndX: 0,
 		isInitialized: false,
 		longPressTimeout: null,
-		isProcessingClick: false
+		isProcessingClick: false,
+		autoReadDistance: 100,
+        timeFormat: '24h'
 	  },
 	  protected: {
 		name: '',
@@ -137,9 +139,17 @@
 		const date = new Date();
 		let hours = date.getHours();
 		let minutes = date.getMinutes();
-		hours = hours < 10 ? '0' + hours : hours;
-		minutes = minutes < 10 ? '0' + minutes : minutes;
-		this.nowTime = `${hours}:${minutes}`;
+        if (this.timeFormat === '12h') {
+            let ampm = hours >= 12 ? '下午' : '上午';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            this.nowTime = `${ampm} ${hours}:${minutes}`;
+        } else {
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            this.nowTime = `${hours}:${minutes}`;
+        }
 	 },
 	updatePageNumber(){
 		this.currentPage = this.currentChapterIndexInAll + 1;
@@ -194,8 +204,16 @@
 			{ key: 'EBOOK_CHAPTER_SWITCH_HEIGHT', type: 'int', prop: 'chapterSwitchHeight' },
 			{ key: 'EBOOK_CHAPTER_SWITCH_SENSITIVITY', type: 'int', prop: 'chapterSwitchSensitivity' },
 			{ key: 'EBOOK_SWIPE_SENSITIVITY', type: 'int', prop: 'swipeSensitivity' },
-			{ key: 'EBOOK_CHAPTER_SWITCH_STYLE', type: 'string', prop: 'chapterSwitchStyle', defaultValue: 'button' }
+			{ key: 'EBOOK_CHAPTER_SWITCH_STYLE', type: 'string', prop: 'chapterSwitchStyle', defaultValue: 'button' },
+			{ key: 'EBOOK_AUTO_READ_DISTANCE', type: 'int', prop: 'autoReadDistance', defaultValue: 100 }
 		];
+
+        storage.get({
+            key: 'EBOOK_TIME_FORMAT',
+            success: (data) => {
+                if(data) this.timeFormat = data;
+            }
+        });
 	
 		let index = 0;
 		const loadNextSetting = () => {
@@ -393,7 +411,7 @@
 
 		let readLength = actualLength;
 		if (isPotentiallyPartial) {
-			readLength += 400; // Read extra 400 bytes
+			readLength += 300;
 			if (readOffset + readLength > allSize) {
 				readLength = allSize - readOffset;
 			}
@@ -418,14 +436,18 @@
 					return;
 				}
 				
-				const lastNewlineIndex = str.lastIndexOf('\n');
+				let cutLength = actualLength / 2;
+				if(cutLength > str.length) cutLength = str.length;
+
+				const chunk = str.substring(0, cutLength);
+				const lastNewlineIndex = chunk.lastIndexOf('\n');
+				
 				if (lastNewlineIndex > 0) {
-					const finalStr = str.substring(0, lastNewlineIndex + 1);
+					const finalStr = chunk.substring(0, lastNewlineIndex + 1);
 					const bytesToReport = finalStr.length * 2;
 					cb(finalStr, bytesToReport);
 				} else {
-					// No newline in the read chunk, just return the original desired length part
-					cb(str.substring(0, actualLength / 2), actualLength);
+					cb(chunk, actualLength);
 				}
 			} catch (e) {
 				var str = '';
@@ -436,13 +458,19 @@
 					cb(str, actualLength);
 					return;
 				}
-				const lastNewlineIndex = str.lastIndexOf('\n');
+
+				let cutLength = actualLength / 2;
+				if(cutLength > str.length) cutLength = str.length;
+
+				const chunk = str.substring(0, cutLength);
+				const lastNewlineIndex = chunk.lastIndexOf('\n');
+
 				if (lastNewlineIndex > 0) {
-					const finalStr = str.substring(0, lastNewlineIndex + 1);
+					const finalStr = chunk.substring(0, lastNewlineIndex + 1);
 					const bytesToReport = finalStr.length * 2;
 					cb(finalStr, bytesToReport);
 				} else {
-					cb(str.substring(0, actualLength / 2), actualLength);
+					cb(chunk, actualLength);
 				}
 			}
 		  },
@@ -1074,8 +1102,8 @@
 			brightness.setKeepScreenOn({ keepScreenOn: true });
 		}
 	},
-	lastPage() { this.$element("scrollId").scrollBy({ top: - this.pageHeigh, behavior: 'smooth' }); },
-  	nextPage() { this.$element("scrollId").scrollBy({ top: this.pageHeigh, behavior: 'smooth' }); },
+	lastPage() { this.$element("scrollId").scrollBy({ top: - (this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); },
+  	nextPage() { this.$element("scrollId").scrollBy({ top: (this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); },
 	toggleKeepScreenOn() { this.isKeepScreenOn = !this.isKeepScreenOn; brightness.setKeepScreenOn({ keepScreenOn: this.isKeepScreenOn }); prompt.showToast({ message: this.isKeepScreenOn ? '已开启屏幕常亮' : '已关闭屏幕常亮' }); },
 	async addBookmark() {
 		if (this.isProcessingClick) return;

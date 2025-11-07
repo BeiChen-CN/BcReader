@@ -1,26 +1,11 @@
 import file from '@system.file';
 
-const chapterCache = {};
-
-/**
- * 清除指定书籍的章节缓存
- * @param {string} bookName - 书籍目录名
- */
-function clearCacheForBook(bookName) {
-    if (chapterCache[bookName]) {
-        delete chapterCache[bookName];
-    }
-}
-
 /**
  * 解析章节列表
  * @param {string} bookName - 书籍目录名
  * @returns {Promise<Array>} 章节数组
  */
 async function loadChapterList(bookName) {
-    if (chapterCache[bookName]) {
-        return chapterCache[bookName];
-    }
     const listUri = `internal://files/books/${bookName}/list.txt`;
     
     try {
@@ -33,7 +18,6 @@ async function loadChapterList(bookName) {
         });
         
         const chapters = parseChapterList(data.text);
-        chapterCache[bookName] = chapters;
         
         return chapters;
     } catch (error) {
@@ -175,7 +159,6 @@ export default {
     getChapterByIndex,
     getChapterInfo,
     getChapterByArrayIndex,
-    findChapterPage,
-    clearCacheForBook
+    findChapterPage
 };
 

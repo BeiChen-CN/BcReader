@@ -150,6 +150,12 @@
       },
       "pages/shelfPageSizeSetting": {
         "component": "shelfPageSizeSetting"
+      },
+      "pages/autoReadDistanceSetting": {
+        "component": "autoReadDistanceSetting"
+      },
+      "pages/timeFormatSetting": {
+        "component": "timeFormatSetting"
       }
     }
   },

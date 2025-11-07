@@ -93,6 +93,20 @@
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
 		  </list-item>
+		  <list-item class="item" @click="routerTo('autoReadDistanceSetting')" type="item">
+			<div class="item-content">
+				<text class="itemtext">翻页距离</text>
+				<text class="itemtext2">自动翻页距离</text>
+			</div>
+			<img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
+	  	</list-item>
+		  <list-item class="item" @click="routerTo('timeFormatSetting')" type="item">
+			<div class="item-content">
+				<text class="itemtext">时间格式</text>
+				<text class="itemtext2">时间显示方式</text>
+			</div>
+			<img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
+	  	</list-item>
 		  <list-item class="item" @click="routerTo('teacherScreen')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext">老师屏</text>
@@ -176,7 +190,8 @@
 	  nowTime: "00:00",
 	  timer: null,
 	  showProgressBar: true,
-	  chapterSwitchStyle: 'boundary'
+	  chapterSwitchStyle: 'boundary',
+    timeFormat: '24h'
 	},
 	protected: {
 	  cPath: '',
@@ -188,13 +203,31 @@
 	  let hours = date.getHours();
 	  let minutes = date.getMinutes();
   
-	  hours = hours < 10 ? '0' + hours : hours;
-	  minutes = minutes < 10 ? '0' + minutes : minutes;
-  
-	  this.nowTime = `${hours}:${minutes}`;
+    if (this.timeFormat === '12h') {
+        let ampm = hours >= 12 ? '下午' : '上午';
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        this.nowTime = `${ampm} ${hours}:${minutes}`;
+    } else {
+        hours = hours < 10 ? '0' + hours : hours;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        this.nowTime = `${hours}:${minutes}`;
+    }
 	},
 	onInit() {
-	  this.updateTime();
+    storage.get({
+        key: 'EBOOK_TIME_FORMAT',
+        success: (data) => {
+            if (data) {
+                this.timeFormat = data;
+            }
+            this.updateTime();
+        },
+        fail: () => {
+            this.updateTime();
+        }
+    });
 	  this.timer = setInterval(() => {
 		this.updateTime();
 	  }, 1000);
@@ -206,6 +239,9 @@
 		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_STYLE', success: (data) => { 
 			if (data) this.chapterSwitchStyle = data;
 		}});
+    storage.get({ key: 'EBOOK_TIME_FORMAT', success: (data) => {
+        if (data) this.timeFormat = data;
+    }});
 	},
 	onDestroy(){
 		clearInterval(this.timer);

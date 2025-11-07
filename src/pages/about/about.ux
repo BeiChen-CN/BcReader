@@ -26,6 +26,7 @@
   // import storage from '@system.storage' 
   // import prompt from '@system.prompt' 
   import app from '@system.app' 
+  import storage from '../../common/storage.js'
   // import file from '@system.file' 
   
   // import { hmUI } from '../../common/utils.js'
@@ -41,13 +42,14 @@
     appVer:'1.0.0',
     displayVersion:'1.0.0',
     versionType:'',
-    timer:null
+    timer:null,
+    timeFormat: '24h'
 	},
 	protected: {
   
 	},
 	onInit() {
-    this.updateTime();
+    this.loadTimeFormat();
 		const that = this;
     this.timer = setInterval(function(){
       that.updateTime();
@@ -65,16 +67,35 @@
 	back(){
 		router.back();
 	},
+  loadTimeFormat() {
+    storage.get({
+        key: 'EBOOK_TIME_FORMAT',
+        success: (data) => {
+            if (data) {
+                this.timeFormat = data;
+            }
+            this.updateTime();
+        },
+        fail: () => {
+            this.updateTime();
+        }
+    });
+  },
   updateTime() {
     const date = new Date();
     let hours = date.getHours();
     let minutes = date.getMinutes();
-
-    // 格式化小时和分钟为两位数
-    hours = hours < 10 ? '0' + hours : hours;
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-
-    this.nowTime = `${hours}:${minutes}`;
+    if (this.timeFormat === '12h') {
+        let ampm = hours >= 12 ? '下午' : '上午';
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        this.nowTime = `${ampm} ${hours}:${minutes}`;
+    } else {
+        hours = hours < 10 ? '0' + hours : hours;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        this.nowTime = `${hours}:${minutes}`;
+    }
   },
   parseVersion() {
     const version = this.appVer;

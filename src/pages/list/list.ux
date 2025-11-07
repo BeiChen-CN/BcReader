@@ -33,6 +33,7 @@ import file from '@system.file';
 import prompt from '@system.prompt';
 import bookStorage from '../../common/bookStorage.js';
 import chapterManager from '../../common/chapterManager.js';
+import storage from '../../common/storage.js';
 
 const PAGE_SIZE = 8;
 
@@ -47,7 +48,8 @@ export default {
     timer: null,
     bookTitle: "",
     loading: false,
-    isNavigating: false
+    isNavigating: false,
+    timeFormat: '24h'
   },
   protected: {
     name: ''
@@ -56,12 +58,31 @@ export default {
     const date = new Date();
     let hours = date.getHours();
     let minutes = date.getMinutes();
-    hours = hours < 10 ? '0' + hours : hours;
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-    this.nowTime = `${hours}:${minutes}`;
+    if (this.timeFormat === '12h') {
+        let ampm = hours >= 12 ? '下午' : '上午';
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        this.nowTime = `${ampm} ${hours}:${minutes}`;
+    } else {
+        hours = hours < 10 ? '0' + hours : hours;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        this.nowTime = `${hours}:${minutes}`;
+    }
   },
   onInit() {
-    this.updateTime();
+    storage.get({
+        key: 'EBOOK_TIME_FORMAT',
+        success: (data) => {
+            if (data) {
+                this.timeFormat = data;
+            }
+            this.updateTime();
+        },
+        fail: () => {
+            this.updateTime();
+        }
+    });
     this.timer = setInterval(() => { this.updateTime(); }, 1000);
     this.loadBookInfo();
     this.initChapterList();
