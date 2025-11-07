@@ -1,7 +1,7 @@
 <template>
 	<div class="page">
   
-	  <img src="/common/images/about.png" style="position: absolute;left: 0px;top: 0px;"/>
+	  <img src="/common/images/about_img.png" style="position: absolute;left: 0px;top: 0px;"/>
 	  <img src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
     <!-- <img static src="/common/images/info.png" @click="routeAbout" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/> -->
     <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
@@ -13,8 +13,11 @@
     <text style="position: absolute;left: 26px;top: 102px;width: 282px;height: 48px;font-size: 36px;font-weight: bold;color: #FFFFFF;">
       弦{{appName}}
     </text>
-    <text style="position: absolute;left: 26px;top: 154px;width: 204px;height: 48px;font-size: 36px;font-weight: bold;color: rgba(255, 255, 255, 0.6);">
-      {{appVer}}
+    <text style="position: absolute;left: 26px;top: 144px;width: 204px;height: 48px;font-size: 36px;font-weight: bold;color: rgba(255, 255, 255, 0.6);">
+      {{displayVersion}}
+    </text>
+    <text style="position: absolute;left: 26px;top: 186px;width: 282px;height: 36px;font-size: 24px;font-weight: bold;color: rgba(255, 255, 255, 0.4);">
+      {{versionType}}
     </text>
 	</div>
   </template>
@@ -39,6 +42,8 @@
 	  bigTitle:'关于',
     appName:'弦电子书',
     appVer:'1.0.0',
+    displayVersion:'1.0.0',
+    versionType:'',
     timer:null
 	},
 	protected: {
@@ -52,6 +57,7 @@
     }, 60000);
     this.appName=app.getInfo().name;
     this.appVer=app.getInfo().versionName;
+    this.parseVersion();
 	},
   onShow(){
 	  this.updateTime();
@@ -72,6 +78,52 @@
     minutes = minutes < 10 ? '0' + minutes : minutes;
 
     this.nowTime = `${hours}:${minutes}`;
+  },
+  parseVersion() {
+    const version = this.appVer;
+    
+    const parts = version.split('.');
+    let mainVersion = '';
+    let versionTypeCode = '';
+    
+    if (parts.length >= 3) {
+      // 提取主版本号
+      mainVersion = parts.slice(0, 3).join('.');
+      
+      // 版本类型后缀
+      if (parts.length > 3) {
+        versionTypeCode = parts[3];
+      } else if (parts[2].includes('RW') || parts[2].includes('BAND')) {
+        const thirdPart = parts[2];
+        if (thirdPart.includes('RW')) {
+          mainVersion = thirdPart.replace('RW', '');
+          versionTypeCode = 'RW';
+        } else if (thirdPart.includes('BAND10')) {
+          mainVersion = thirdPart.replace('BAND10', '');
+          versionTypeCode = 'BAND10';
+        } else if (thirdPart.includes('BAND')) {
+          mainVersion = thirdPart.replace('BAND', '');
+          versionTypeCode = 'BAND';
+        }
+      }
+    } else {
+      mainVersion = version;
+    }
+    
+    this.displayVersion = mainVersion;
+    
+    switch(versionTypeCode) {
+      case 'RW':
+        this.versionType = '红米手表版';
+        break;
+      case 'BAND10':
+        this.versionType = '米环10版';
+        break;
+      default:
+      case 'BAND':
+        this.versionType = '米环Pro版';
+        break;
+    }
   }
   
   }
@@ -87,4 +139,3 @@
   /* 更多信息样式 */
   
   </style>
-  
