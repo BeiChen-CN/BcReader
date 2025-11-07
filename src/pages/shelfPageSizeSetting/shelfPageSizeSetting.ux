@@ -5,10 +5,10 @@
 	<div class="info-panel">
 		<text class="info-title">书架每页数量</text>
 		<text class="info-value">{{shelfPageSize}}</text>
-		<text class="info-desc">调整在书架上每页显示的书籍数量</text>
+		<text class="info-desc">调整在书架上每页显示的书籍数量，由于性能原因，该值请不要过大。</text>
 	</div>
 	
-	<number style="position: absolute;bottom:6px" max="20" min="2" step="2" value="{{shelfPageSize}}" @change="changeSize" name="调整数量"></number>
+	<number style="position: absolute;bottom:6px" max="15" min="2" step="1" value="{{shelfPageSize}}" @change="changeSize" name="调整数量"></number>
 
 	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
 	<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>

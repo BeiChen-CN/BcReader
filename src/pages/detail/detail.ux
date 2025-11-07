@@ -123,7 +123,8 @@
 		isTouching: false,
 		bounces: false,
 		touchStartX: 0,
-		touchEndX: 0
+		touchEndX: 0,
+		isInitialized: false
 	  },
 	  protected: {
 		name: '',
@@ -145,8 +146,6 @@
 	onInit(){
 		this.updateTime();
 		this.timer = setInterval(() => { this.updateTime(); }, 1000);
-		this.loadBook();
-		this.loadSettings();
 		globalThis.isKeepScreenOn = this.isKeepScreenOn;
 	},
 	async onShow(){
@@ -164,7 +163,8 @@
 				this.teacherScreenEnabled = data === 'true';
 			}
 		});
-		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber) {
+		const isChapterJump = globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber;
+        if (!this.isInitialized || isChapterJump) {
             if(globalThis.justJumpedFromChapter) {
 			    this.chapterIndex = globalThis.newChapterIndex;
 			    this.chapterName = globalThis.newChapterName;
@@ -172,33 +172,73 @@
 			    delete globalThis.newChapterName;
             }
 			await this.loadBook();
-		}
+            this.isInitialized = true;
+        }
 	},
 	loadSettings() {
-		storage.get({ key: 'EBOOK_TXTSZPAGE', success: (data) => { if (data) this.txtSizePage = parseInt(data); } });
-		storage.get({ key: 'EBOOK_VERTICAL_MARGIN', success: (data) => { 
-			if (data) {
-				this.verticalMargin = parseInt(data);
+		const settings = [
+			{ key: 'EBOOK_TXTSZPAGE', type: 'int', prop: 'txtSizePage' },
+			{ key: 'EBOOK_VERTICAL_MARGIN', type: 'int', prop: 'verticalMargin', callback: this.updateScrollHeight },
+			{ key: 'EBOOK_FONT', type: 'int', prop: 'fontSize', callback: () => { 
+				this.lineHeight = parseInt((-0.01)*(this.fontSize**2) + 1.62*this.fontSize - 3.23);
 				this.updateScrollHeight();
-			}
-		}});
-		storage.get({ key: 'EBOOK_FONT',
-		  success: (data) => {
-			if(data){ this.fontSize = parseInt(data); }
-			this.lineHeight = parseInt((-0.01)*(this.fontSize**2) + 1.62*this.fontSize - 3.23);
-			this.updateScrollHeight();
-		  }
-		});
-		storage.get({ key: 'EBOOK_OPACITY', success: (data) => { if (data) this.opacity = parseInt(data) } });
-		storage.get({ key: 'EBOOK_SWIPE', success: (data) => { if (data) this.swipe = data } });
-		storage.get({ key: 'EBOOK_AUTO', success: (data) => { if(!data)return; const { speed, enable } = JSON.parse(data); if(enable)this.auto = speed; } });
-		storage.get({ key: 'EBOOK_SHOW_PROGRESS_BAR', success: (data) => { if (data !== '') this.showProgressBar = data === 'true'; } });
-		storage.get({ key: 'EBOOK_PROGRESS_BAR_HEIGHT', success: (data) => { if (data) this.progressBarHeight = parseInt(data); } });
-		storage.get({ key: 'EBOOK_GESTURE', success: (data) => { if (data) this.gestureMode = data; }, fail: () => { this.gestureMode = 'single'; } });
-		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_HEIGHT', success: (data) => { if (data) this.chapterSwitchHeight = parseInt(data); } });
-		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_SENSITIVITY', success: (data) => { if (data) this.chapterSwitchSensitivity = parseInt(data); } });
-		storage.get({ key: 'EBOOK_SWIPE_SENSITIVITY', success: (data) => { if (data) this.swipeSensitivity = parseInt(data); } });
-		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_STYLE', success: (data) => { if (data) this.chapterSwitchStyle = data; }, fail: () => { this.chapterSwitchStyle = 'button'; } });
+			}},
+			{ key: 'EBOOK_OPACITY', type: 'int', prop: 'opacity' },
+			{ key: 'EBOOK_SWIPE', type: 'string', prop: 'swipe' },
+			{ key: 'EBOOK_AUTO', type: 'json', prop: 'auto', process: (data) => { if (data && data.enable) return data.speed; }},
+			{ key: 'EBOOK_SHOW_PROGRESS_BAR', type: 'bool', prop: 'showProgressBar' },
+			{ key: 'EBOOK_PROGRESS_BAR_HEIGHT', type: 'int', prop: 'progressBarHeight' },
+			{ key: 'EBOOK_GESTURE', type: 'string', prop: 'gestureMode', defaultValue: 'single' },
+			{ key: 'EBOOK_CHAPTER_SWITCH_HEIGHT', type: 'int', prop: 'chapterSwitchHeight' },
+			{ key: 'EBOOK_CHAPTER_SWITCH_SENSITIVITY', type: 'int', prop: 'chapterSwitchSensitivity' },
+			{ key: 'EBOOK_SWIPE_SENSITIVITY', type: 'int', prop: 'swipeSensitivity' },
+			{ key: 'EBOOK_CHAPTER_SWITCH_STYLE', type: 'string', prop: 'chapterSwitchStyle', defaultValue: 'button' }
+		];
+	
+		let index = 0;
+		const loadNextSetting = () => {
+			if (index >= settings.length) return;
+	
+			const setting = settings[index];
+			storage.get({
+				key: setting.key,
+				success: (data) => {
+					if (data !== null && data !== '') {
+						switch (setting.type) {
+							case 'int':
+								this[setting.prop] = parseInt(data);
+								break;
+							case 'bool':
+								this[setting.prop] = data === 'true';
+								break;
+							case 'json':
+								const parsedData = JSON.parse(data);
+								const processedData = setting.process ? setting.process(parsedData) : parsedData;
+								if (processedData) this[setting.prop] = processedData;
+								break;
+							default:
+								this[setting.prop] = data;
+								break;
+						}
+					} else if (setting.defaultValue) {
+						this[setting.prop] = setting.defaultValue;
+					}
+					if (setting.callback) setting.callback();
+				},
+				fail: () => {
+					if (setting.defaultValue) {
+						this[setting.prop] = setting.defaultValue;
+						if (setting.callback) setting.callback();
+					}
+				},
+				complete: () => {
+					index++;
+					loadNextSetting();
+				}
+			});
+		};
+	
+		loadNextSetting();
 	},
 	updateScrollHeight() {
 		this.scrollHeight = 480 - this.verticalMargin * 2;
