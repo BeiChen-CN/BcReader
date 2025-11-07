@@ -97,6 +97,9 @@
       "pages/swipe": {
         "component": "swipe"
       },
+      "pages/chapterSwitchSensitivity": {
+        "component": "chapterSwitchSensitivity"
+      },
       "pages/gestureSetting": {
         "component": "gestureSetting"
       },
