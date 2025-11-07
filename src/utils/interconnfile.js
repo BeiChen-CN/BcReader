@@ -290,15 +290,25 @@ export default class interconnfile {
                 
                 try {
                     const listData = await runAsyncFunc(file.readText, { uri: listUri });
-                    const existingChapters = listData.text.split('\n').filter(Boolean);
+                    const existingChaptersLines = listData.text.split('\n').filter(Boolean);
                     this.syncedChapterIndices = new Set();
-                    for (const line of existingChapters) {
+                    const chapterMetas = new Map();
+                    for (const line of existingChaptersLines) {
                         try {
                             const meta = JSON.parse(line);
-                            this.syncedChapterIndices.add(meta.index);
+                            chapterMetas.set(meta.index, meta);
                         } catch (e) {
                             console.error('Failed to parse chapter meta from list.txt:', line);
                         }
+                    }
+
+                    if (existingChaptersLines.length !== chapterMetas.size) {
+                        const cleanedMetaLines = Array.from(chapterMetas.values()).map(meta => JSON.stringify(meta));
+                        await runAsyncFunc(file.writeText, { uri: listUri, text: cleanedMetaLines.join('\n') + '\n' });
+                    }
+
+                    for (const index of chapterMetas.keys()) {
+                        this.syncedChapterIndices.add(index);
                     }
                     this.receivedChapters = this.syncedChapterIndices.size;
                 } catch (e) {

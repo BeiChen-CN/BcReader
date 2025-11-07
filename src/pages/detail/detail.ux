@@ -341,10 +341,24 @@
 		if(readOffset >= allSize){ cb('', 0); return; }
 		var length = this.txtSizePage * 2;
 		if(readOffset < 0){ length += readOffset; readOffset = 0; }
-		if((readOffset + length) >= allSize){ length = allSize - readOffset; }
+		
+		let actualLength = length;
+		if((readOffset + actualLength) >= allSize){ 
+			actualLength = allSize - readOffset; 
+		}
+
+		const isPotentiallyPartial = (readOffset + actualLength) < allSize;
+
+		let readLength = actualLength;
+		if (isPotentiallyPartial) {
+			readLength += 400; // Read extra 400 bytes
+			if (readOffset + readLength > allSize) {
+				readLength = allSize - readOffset;
+			}
+		}
 		
 		file.readArrayBuffer({
-		  uri: this.cPath, position: readOffset, length: length,
+		  uri: this.cPath, position: readOffset, length: readLength,
 		  success: function(data){
 			if (!data.buffer || data.buffer.length === 0) {
 				cb('', 0);
@@ -356,13 +370,38 @@
 					charCodes[j] = (data.buffer[i+1] << 8) | data.buffer[i];
 				}
 				const str = String.fromCharCode.apply(null, charCodes);
-				cb(str, length);
+				
+				if (!isPotentiallyPartial) {
+					cb(str, actualLength);
+					return;
+				}
+				
+				const lastNewlineIndex = str.lastIndexOf('\n');
+				if (lastNewlineIndex > 0) {
+					const finalStr = str.substring(0, lastNewlineIndex + 1);
+					const bytesToReport = finalStr.length * 2;
+					cb(finalStr, bytesToReport);
+				} else {
+					// No newline in the read chunk, just return the original desired length part
+					cb(str.substring(0, actualLength / 2), actualLength);
+				}
 			} catch (e) {
 				var str = '';
 				for(var i = 0; i < data.buffer.length; i += 2){
 				  str += String.fromCharCode(data.buffer[i+1]*256 + data.buffer[i]);
 				}
-				cb(str, length);
+				if (!isPotentiallyPartial) {
+					cb(str, actualLength);
+					return;
+				}
+				const lastNewlineIndex = str.lastIndexOf('\n');
+				if (lastNewlineIndex > 0) {
+					const finalStr = str.substring(0, lastNewlineIndex + 1);
+					const bytesToReport = finalStr.length * 2;
+					cb(finalStr, bytesToReport);
+				} else {
+					cb(str.substring(0, actualLength / 2), actualLength);
+				}
 			}
 		  },
 		  fail: function(){ cb('', 0); }
