@@ -5,14 +5,14 @@
 		<list-item class="item {{onSelect==1?'item2':''}}" @click="select('1')" type="item">
 			<div class="item-content">
 				<text class="itemtext">左右滑动</text>
-				<text class="itemtext2">通过左右滑动切换章节</text>
+				<text class="itemtext2">左滑切换章节</text>
 			</div>
 			<img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{onSelect==1}}"/>
 		</list-item>
 		  <list-item class="item {{onSelect==2?'item2':''}}" @click="select('2')" type="item">
 			<div class="item-content">
 				<text class="itemtext">按钮换章</text>
-				<text class="itemtext2">通过屏幕上的按钮切换章节</text>
+				<text class="itemtext2">通过按钮切换章节</text>
 			</div>
 			  <img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{onSelect==2}}"/>
 		  </list-item>
@@ -26,6 +26,8 @@
 		  </list-item>
 
 	  </list>
+	  
+	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
 	  <text style="position: absolute;top:-100px;left:0px;">{{txtNum}}</text>
 
 		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>

@@ -144,6 +144,9 @@
       },
       "pages/swipeSensitivity": {
         "component": "swipeSensitivity"
+      },
+      "pages/tutorial": {
+        "component": "tutorial"
       }
     }
   },
