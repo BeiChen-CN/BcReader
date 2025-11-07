@@ -51,6 +51,13 @@
 			</div>
 			<img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
 		</list-item>
+		<list-item class="item" @click="routerTo('swipeSensitivity')" type="item" if="{{chapterSwitchStyle == 'swipe'}}">
+			<div class="item-content">
+				<text class="itemtext">换章灵敏度</text>
+				<text class="itemtext2">左右滑动灵敏度</text>
+			</div>
+			<img src="/common/images/enter.png" style="width:40px;height: 40px;"/>
+		</list-item>
 		  <list-item class="item" @click="routerTo('swipe')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext">滑动翻页</text>

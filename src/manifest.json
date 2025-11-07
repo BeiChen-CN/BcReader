@@ -141,6 +141,9 @@
       },
       "pages/chapterSwitchStyle": {
         "component": "chapterSwitchStyle"
+      },
+      "pages/swipeSensitivity": {
+        "component": "swipeSensitivity"
       }
     }
   },

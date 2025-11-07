@@ -116,11 +116,14 @@
 		gestureClickTimeout: null,
 		chapterSwitchHeight: 80,
 		chapterSwitchSensitivity: 50,
+		swipeSensitivity: 80,
 		chapterSwitchStyle: 'button',
 		touchStartY: 0,
 		overscrollDistance: 0,
 		isTouching: false,
-		bounces: false
+		bounces: false,
+		touchStartX: 0,
+		touchEndX: 0
 	  },
 	  protected: {
 		name: '',
@@ -144,9 +147,17 @@
 		this.timer = setInterval(() => { this.updateTime(); }, 1000);
 		this.loadBook();
 		this.loadSettings();
+		globalThis.isKeepScreenOn = this.isKeepScreenOn;
 	},
 	async onShow(){
 		this.loadSettings();
+		if (typeof globalThis.isKeepScreenOn !== 'undefined') {
+			if (this.isKeepScreenOn !== globalThis.isKeepScreenOn) {
+				this.isKeepScreenOn = globalThis.isKeepScreenOn;
+				brightness.setKeepScreenOn({ keepScreenOn: this.isKeepScreenOn });
+				prompt.showToast({ message: this.isKeepScreenOn ? '已开启屏幕常亮' : '已关闭屏幕常亮' });
+			}
+		}
 		storage.get({
 			key: 'EBOOK_TEACHER_SCREEN_ENABLED',
 			success: (data) => {
@@ -186,6 +197,7 @@
 		storage.get({ key: 'EBOOK_GESTURE', success: (data) => { if (data) this.gestureMode = data; }, fail: () => { this.gestureMode = 'single'; } });
 		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_HEIGHT', success: (data) => { if (data) this.chapterSwitchHeight = parseInt(data); } });
 		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_SENSITIVITY', success: (data) => { if (data) this.chapterSwitchSensitivity = parseInt(data); } });
+		storage.get({ key: 'EBOOK_SWIPE_SENSITIVITY', success: (data) => { if (data) this.swipeSensitivity = parseInt(data); } });
 		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_STYLE', success: (data) => { if (data) this.chapterSwitchStyle = data; }, fail: () => { this.chapterSwitchStyle = 'button'; } });
 	},
 	updateScrollHeight() {
@@ -492,35 +504,56 @@
 		this.isTouching = true;
 		this.touchStartY = e.touches[0].clientY;
 		this.overscrollDistance = 0;
+		if (this.chapterSwitchStyle === 'swipe') {
+			this.touchStartX = e.touches[0].clientX;
+			this.touchEndX = e.touches[0].clientX;
+		}
 	},
 	onTouchMove(e) {
-		if (!this.isTouching || this.chapterSwitchStyle !== 'boundary') return;
-		
-		const currentY = e.touches[0].clientY;
-		const deltaY = currentY - this.touchStartY;
+		if (!this.isTouching) return;
 
-		if (this.isAtChapterStart && deltaY > 0) {
-			this.overscrollDistance = deltaY;
-		} else if (this.isAtChapterEnd && deltaY < 0) {
-			this.overscrollDistance = -deltaY;
-		} else {
-			this.overscrollDistance = 0;
+		if (this.chapterSwitchStyle === 'boundary') {
+			const currentY = e.touches[0].clientY;
+			const deltaY = currentY - this.touchStartY;
+
+			if (this.isAtChapterStart && deltaY > 0) {
+				this.overscrollDistance = deltaY;
+			} else if (this.isAtChapterEnd && deltaY < 0) {
+				this.overscrollDistance = -deltaY;
+			} else {
+				this.overscrollDistance = 0;
+			}
+		} else if (this.chapterSwitchStyle === 'swipe') {
+			this.touchEndX = e.touches[0].clientX;
 		}
 	},
 	onTouchEnd(e) {
 		if (!this.isTouching) return;
 		this.isTouching = false;
 		
-		if (this.chapterSwitchStyle === 'boundary' && this.overscrollDistance > this.chapterSwitchSensitivity) {
-			if (this.isAtChapterStart) {
-				this.goToPrevChapter();
-			} else if (this.isAtChapterEnd) {
-				this.goToNextChapter();
+		if (this.chapterSwitchStyle === 'boundary') {
+			if (this.overscrollDistance > this.chapterSwitchSensitivity) {
+				if (this.isAtChapterStart) {
+					this.goToPrevChapter();
+				} else if (this.isAtChapterEnd) {
+					this.goToNextChapter();
+				}
 			}
+			this.overscrollDistance = 0;
+			this.touchStartY = 0;
+		} else if (this.chapterSwitchStyle === 'swipe') {
+			if (this.touchStartX === 0) return;
+			const deltaX = this.touchEndX - this.touchStartX;
+			if (Math.abs(deltaX) > this.swipeSensitivity) {
+				if (deltaX > 0) {
+					this.goToPrevChapter();
+				} else {
+					this.goToNextChapter();
+				}
+			}
+			this.touchStartX = 0;
+			this.touchEndX = 0;
 		}
-		
-		this.overscrollDistance = 0;
-		this.touchStartY = 0;
 	},
 	goToPrevChapter() {
 		if (this.wait) return;
@@ -837,6 +870,7 @@
 	},
 	gotoSetting(){
 		this.saveData(true);
+		globalThis.isKeepScreenOn = this.isKeepScreenOn;
 		router.push({
 			uri: '/pages/detailsetting',
 			params: { name: this.name }
