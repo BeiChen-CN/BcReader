@@ -19,10 +19,10 @@
 				<text style="color: #aaa; font-size: 28px; font-weight: bold;">上一章</text>
 			</div>
 		  <div id="page1" style="flex-direction: column; width: 100%; flex-shrink: 0;">
-			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page1.lines.join('\n') }}</text>
+			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page1.text }}</text>
 		  </div>
 		  <div id="page2" if="{{page2}}" style="flex-direction: column; width: 100%; flex-shrink: 0;">
-			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page2.lines.join('\n') }}</text>
+			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page2.text }}</text>
 		  </div>
 			<div if="{{chapterSwitchStyle == 'button' && isAtChapterEnd && !showSetting && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToNextChapter">
 				<text style="color: #aaa; font-size: 28px; font-weight: bold;">下一章</text>
@@ -82,7 +82,7 @@
 		showSetting: true,
 		loadingNext: false,
 		loadingPrev: false,
-		page1: { lines: ["加载中..."], offset: 0, length: 0 },
+		page1: { text: "加载中...", offset: 0, length: 0 },
 		page2: null,
 		currentFileOffset: 0,
 		opacity: 100,
@@ -277,7 +277,7 @@
 		const chapterInfo = await chapterManager.getChapterInfo(this.name, chapterToLoadIndex);
 
 		if (!chapterInfo || !chapterInfo.chapter) {
-			this.page1 = { lines: ["本书没有内容"], offset: 0, length: 0 };
+			this.page1 = { text: "本书没有内容", offset: 0, length: 0 };
 			return;
 		}
 
@@ -311,15 +311,15 @@
 		}
 		
 		if (this.page1) {
-			this.page1.lines = null;
+			this.page1.text = null;
 			this.page1 = null;
 		}
 		if (this.page2) {
-			this.page2.lines = null;
+			this.page2.text = null;
 			this.page2 = null;
 		}
 		
-		this.page1 = { lines: [], offset: 0, length: 0 };
+		this.page1 = { text: "", offset: 0, length: 0 };
 		this.page2 = null;
 		
 		this.isAtChapterStart = false;
@@ -346,7 +346,7 @@
 		var that = this;
 		this.wait = true;
 		this.readFileText(this.currentFileOffset, function(str, bytesRead){
-		  that.page1 = { lines: str.split('\n'), offset: that.currentFileOffset, length: bytesRead };
+		  that.page1 = { text: str, offset: that.currentFileOffset, length: bytesRead };
 		  that.loadNextSegmentNoScroll();
 		  that.updateChapterProgress();
 		});
@@ -363,7 +363,7 @@
 	
 		that.readFileText(newOffset, function(str, bytesRead){
 			if(str){
-				that.page2 = { lines: str.split('\n'), offset: newOffset, length: bytesRead };
+				that.page2 = { text: str, offset: newOffset, length: bytesRead };
 			} else {
 				that.page2 = null;
 			}
@@ -502,7 +502,7 @@
 		this.readFileText(newOffset, function (str, bytesRead) {
 			that.loadingNext = false;
 			if(str){
-				const nextPageData = { lines: str.split('\n'), offset: newOffset, length: bytesRead };
+				const nextPageData = { text: str, offset: newOffset, length: bytesRead };
 				that.shiftPagesForward(nextPageData);
 			} else {
 				that.wait = false;
@@ -518,7 +518,7 @@
 				
 				
 				if (that.page1 && that.page1 !== that.page2) {
-					that.page1.lines = null;
+					that.page1.text = null;
 				}
 				
 				that.page1 = that.page2 || that.page1;
@@ -553,11 +553,11 @@
 		this.readFileText(newOffset, function (str, bytesRead) {
 			that.loadingPrev = false;
 			if(str){
-				const prevPageData = { lines: str.split('\n'), offset: newOffset, length: bytesRead };
+				const prevPageData = { text: str, offset: newOffset, length: bytesRead };
 				
 				
 				if (that.page2) {
-					that.page2.lines = null;
+					that.page2.text = null;
 				}
 				
 				that.page2 = that.page1;
@@ -664,7 +664,7 @@
             offset1 = 0;
             offset2 = -1;
         } else if (offset1 === offset2) {
-            this.page1 = { lines: [""], offset: 0, length: 0 };
+            this.page1 = { text: "", offset: 0, length: 0 };
             this.page2 = null;
             this.isAtChapterEnd = true;
             this.isAtChapterStart = true;
@@ -675,7 +675,7 @@
         this.currentFileOffset = offset1;
 
         this.readFileText(offset1, function(str1, bytesRead1) {
-            that.page1 = { lines: str1.split('\n'), offset: offset1, length: bytesRead1 };
+            that.page1 = { text: str1, offset: offset1, length: bytesRead1 };
 
             if (offset2 === -1 || offset2 >= allSize) {
                 that.page2 = null;
@@ -686,7 +686,7 @@
 
             that.readFileText(offset2, function(str2, bytesRead2) {
                 if (str2) {
-                    that.page2 = { lines: str2.split('\n'), offset: offset2, length: bytesRead2 };
+                    that.page2 = { text: str2, offset: offset2, length: bytesRead2 };
                 } else {
                     that.page2 = null;
                 }
@@ -746,7 +746,7 @@
 		this.currentScrollTop = 0;
 		
 		this.loadChapter(nextChapterIndex, () => {
-			this.page1 = { lines: ["加载中..."], offset: 0, length: 0 };
+			this.page1 = { text: "加载中...", offset: 0, length: 0 };
 			this.page2 = null;
 			this.loadInitialSegments();
 			this.isAtChapterStart = false;
@@ -1092,6 +1092,7 @@
 		const chapter = await chapterManager.getChapterByArrayIndex(this.name, this.currentChapterIndexInAll);
         if (!chapter) {
             prompt.showToast({ message: '无法添加书签，章节信息错误' });
+			this.isProcessingClick = false;
             return;
         }
 
