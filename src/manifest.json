@@ -132,6 +132,9 @@
       },
       "pages/shelfStyle": {
         "component": "shelfStyle"
+      },
+      "pages/textReader": {
+        "component": "textReader"
       }
     }
   },
