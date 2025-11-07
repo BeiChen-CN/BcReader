@@ -46,7 +46,8 @@ export default {
     nowTime: "00:00",
     timer: null,
     bookTitle: "",
-    loading: false
+    loading: false,
+    isNavigating: false
   },
   protected: {
     name: ''
@@ -65,6 +66,9 @@ export default {
     this.loadBookInfo();
     this.initChapterList();
   },
+  onShow() {
+    this.isNavigating = false;
+  },
   onDestroy() {
     if (this.timer) {
       clearInterval(this.timer);
@@ -72,6 +76,10 @@ export default {
     }
     
     this.visibleChapters = null;
+
+    if (typeof global !== 'undefined' && typeof global.runGC === 'function') {
+      global.runGC();
+    }
   },
   loadBookInfo() {
     const that = this;
@@ -145,6 +153,9 @@ export default {
     }
   },
   selectChapter(chapter) {
+    if (this.isNavigating) return;
+    this.isNavigating = true;
+
     globalThis.justJumpedFromChapter = true;
     globalThis.newChapterIndex = chapter.index;
     globalThis.newChapterName = chapter.name;

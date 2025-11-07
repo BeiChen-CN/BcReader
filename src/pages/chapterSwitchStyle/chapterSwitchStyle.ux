@@ -107,7 +107,6 @@
 	  })
 	},
 	onBackPress(){
-		//console.log('onBackPress');
 		// this.resetList();
 	},
 

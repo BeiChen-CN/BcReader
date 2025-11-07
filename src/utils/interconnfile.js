@@ -43,7 +43,7 @@ export default class interconnfile {
                 case "cancel":
                     if (this.pendingChapterMetas && this.pendingChapterMetas.length > 0) {
                         await this.flushPendingChapterMetas().catch(e => {
-                            console.error('Failed to flush pending metas on cancel:', e);
+                            // console.error('Failed to flush pending metas on cancel:', e);
                         });
                     }
                     this.send({ type: "cancel" });
@@ -69,7 +69,7 @@ export default class interconnfile {
             if (event !== 'open') {
                 if (this.pendingChapterMetas && this.pendingChapterMetas.length > 0) {
                     this.flushPendingChapterMetas().catch(e => {
-                        console.error('Failed to flush pending metas on disconnect:', e);
+                        // console.error('Failed to flush pending metas on disconnect:', e);
                     });
                 }
                 this.currentBookName = "";
@@ -196,7 +196,7 @@ export default class interconnfile {
             
             this.currentBookCoverUri = coverUri;
             
-            console.log(`Cover-only transfer initialized: ${coverUri}`);
+            // console.log(`Cover-only transfer initialized: ${coverUri}`);
             this.send({ type: "cover_ready" });
         } catch (error) {
             this.send({ type: "error", message: `Start cover transfer failed: ${error.message || 'unknown error'}`, count: 0 });
@@ -298,7 +298,7 @@ export default class interconnfile {
                             const meta = JSON.parse(line);
                             chapterMetas.set(meta.index, meta);
                         } catch (e) {
-                            console.error('Failed to parse chapter meta from list.txt:', line);
+                            // console.error('Failed to parse chapter meta from list.txt:', line);
                         }
                     }
 
@@ -329,7 +329,7 @@ export default class interconnfile {
             
             if (hasCover) {
                 this.currentBookCoverUri = coverUri;
-                console.log(`Cover transfer initialized: ${coverUri}`);
+                // console.log(`Cover transfer initialized: ${coverUri}`);
             }
 
             const bookInfo = { 
@@ -380,7 +380,7 @@ export default class interconnfile {
     async saveCoverChunk({ chunkIndex, totalChunks, data }) {
         try {
             if (!this.currentBookCoverUri) {
-                console.error('Cover URI not initialized');
+                // console.error('Cover URI not initialized');
                 this.send({ type: "error", message: "封面传输未初始化", count: 0 });
                 return;
             }
@@ -412,7 +412,7 @@ export default class interconnfile {
                 return;
             }
             
-            console.log(`Cover image saved successfully.`);
+            // console.log(`Cover image saved successfully.`);
             
             await this.updateCoverStatus(true);
             
@@ -426,7 +426,7 @@ export default class interconnfile {
                 this.currentBookDir = "";
             }
         } catch (error) {
-            console.error('Failed to complete cover transfer:', error);
+            // console.error('Failed to complete cover transfer:', error);
             this.currentBookCoverUri = null;
             const errorMsg = error.message || '未知错误';
             let displayMsg = `完成封面传输失败: ${errorMsg}`;
@@ -464,7 +464,7 @@ export default class interconnfile {
                 await runAsyncFunc(file.writeText, { uri: bookshelfUri, text: JSON.stringify(bookshelf) });
             }
         } catch (e) {
-            console.error('Failed to update cover status:', e);
+            // console.error('Failed to update cover status:', e);
         }
     }
 
@@ -493,7 +493,7 @@ export default class interconnfile {
             
             
             if (encoded1 === -1 || encoded2 === -1) {
-                console.error('Invalid base64 character found');
+                // console.error('Invalid base64 character found');
                 continue;
             }
             
@@ -646,7 +646,7 @@ export default class interconnfile {
             });
             this.pendingChapterMetas = [];
         } catch (error) {
-            console.error('Failed to flush chapter metas:', error);
+            // console.error('Failed to flush chapter metas:', error);
             throw error;
         }
     }
@@ -672,7 +672,7 @@ export default class interconnfile {
             
             this.callback({ msg: "success" });
         } catch (error) {
-            console.error('Failed to handle transfer complete:', error);
+            // console.error('Failed to handle transfer complete:', error);
             this.send({ type: "error", message: `Handle transfer complete failed: ${error.message || 'unknown error'}`, count: 0 });
         }
     }

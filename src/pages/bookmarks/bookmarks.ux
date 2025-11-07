@@ -49,7 +49,8 @@ export default {
     currentPage: 0,
     totalPages: 1,
     nowTime: "00:00",
-    timer: null
+    timer: null,
+    isNavigating: false
   },
   protected: {
     name: ''
@@ -69,6 +70,7 @@ export default {
     }, 1000);
   },
   onShow() {
+    this.isNavigating = false;
     this.loadBookmarks();
   },
   onDestroy() {
@@ -99,6 +101,9 @@ export default {
     }
   },
   async jumpTo(index) {
+    if (this.isNavigating) return;
+    this.isNavigating = true;
+
     const realIndex = this.currentPage * PAGE_SIZE + index;
     const bookmark = this.allBookmarks[realIndex];
     const progress = await bookStorage.get(this.name);
@@ -114,6 +119,7 @@ export default {
       router.back();
     } catch (e) {
       prompt.showToast({ message: '跳转失败', duration: 2000 });
+      this.isNavigating = false;
     }
   },
   deleteBookmark(index) {

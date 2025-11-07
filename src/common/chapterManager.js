@@ -21,7 +21,7 @@ async function loadChapterList(bookName) {
         
         return chapters;
     } catch (error) {
-        console.error(`Failed to load chapter list for ${bookName}:`, error);
+        // console.error(`Failed to load chapter list for ${bookName}:`, error);
         throw error;
     }
 }

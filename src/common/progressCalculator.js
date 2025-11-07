@@ -52,7 +52,7 @@ async function calculateAndSaveProgressMeta(bookName) {
             });
         });
     } catch (e) {
-        console.error(`Failed to calculate progress meta for ${bookName}:`, e);
+        // console.error(`Failed to calculate progress meta for ${bookName}:`, e);
     }
 }
 

@@ -95,12 +95,12 @@
 			that.updateScene();
 		  },
 		  fail: function(data, code) {
-			////console.log(`handling fail, code = ${code}`)
+			
 		  }
 	  })
 	},
 	onBackPress(){
-		//console.log('onBackPress');
+		
 		// this.resetList();
 	},
 

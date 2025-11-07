@@ -124,7 +124,9 @@
 		bounces: false,
 		touchStartX: 0,
 		touchEndX: 0,
-		isInitialized: false
+		isInitialized: false,
+		longPressTimeout: null,
+		isProcessingClick: false
 	  },
 	  protected: {
 		name: '',
@@ -774,7 +776,7 @@
 			const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 500));
 			await Promise.race([savePromise, timeoutPromise]);
 		} catch (e) {
-			console.error('Save failed:', e);
+			// console.error('Save failed:', e);
 		}
 	},
 	async _performSaveInternal() {
@@ -897,6 +899,10 @@
 			clearTimeout(this.gestureClickTimeout);
 			this.gestureClickTimeout = null;
 		}
+		if (this.longPressTimeout) {
+			clearTimeout(this.longPressTimeout);
+			this.longPressTimeout = null;
+		}
 		
 		
 		try {
@@ -918,6 +924,10 @@
 		
 		
 		brightness.setKeepScreenOn({ keepScreenOn: false }); 
+
+		if (typeof global !== 'undefined' && typeof global.runGC === 'function') {
+			global.runGC();
+		}
 	},
 	onBackPress(){ this.back(); return true; },
 	back(){
@@ -934,6 +944,10 @@
 			clearTimeout(this.gestureClickTimeout);
 			this.gestureClickTimeout = null;
 		}
+		if (this.longPressTimeout) {
+			clearTimeout(this.longPressTimeout);
+			this.longPressTimeout = null;
+		}
 		if (autoInterval) { 
 			clearInterval(autoInterval); 
 			autoInterval = null; 
@@ -948,12 +962,15 @@
 		}, 100);
 	},
 	gotoSetting(){
+		if (this.isProcessingClick) return;
+		this.isProcessingClick = true;
 		this.saveData(true);
 		globalThis.isKeepScreenOn = this.isKeepScreenOn;
 		router.push({
 			uri: '/pages/detailsetting',
 			params: { name: this.name }
 		});
+		setTimeout(() => { this.isProcessingClick = false; }, 500);
 	},
 	async exitAppForTeacherScreen() {
 		
@@ -1061,7 +1078,11 @@
   	nextPage() { this.$element("scrollId").scrollBy({ top: this.pageHeigh, behavior: 'smooth' }); },
 	toggleKeepScreenOn() { this.isKeepScreenOn = !this.isKeepScreenOn; brightness.setKeepScreenOn({ keepScreenOn: this.isKeepScreenOn }); prompt.showToast({ message: this.isKeepScreenOn ? '已开启屏幕常亮' : '已关闭屏幕常亮' }); },
 	async addBookmark() {
+		if (this.isProcessingClick) return;
+		this.isProcessingClick = true;
+
 		if (this.longPressTriggered) {
+			this.isProcessingClick = false;
 			return;
 		}
 		
@@ -1096,14 +1117,23 @@
 		} catch (e) {
 			prompt.showToast({ message: '添加书签失败' });
 		}
+		this.isProcessingClick = false;
 	},
 	gotoBookmarks() { 
+		if (this.isProcessingClick) return;
+		this.isProcessingClick = true;
+
 		this.longPressTriggered = true;
-		setTimeout(() => {
+		if (this.longPressTimeout) {
+			clearTimeout(this.longPressTimeout);
+		}
+		this.longPressTimeout = setTimeout(() => {
 			this.longPressTriggered = false;
+			this.longPressTimeout = null;
 		}, 300);
 		this.saveData(true); 
 		router.push({ uri: '/pages/bookmarks', params: { name: this.name } }); 
+		setTimeout(() => { this.isProcessingClick = false; }, 500);
 	},
 	async updateChapterProgress() {
 		if (!this.showProgressBar) {
