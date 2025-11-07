@@ -20,9 +20,6 @@ export default class interconnfile {
     BATCH_WRITE_SIZE = 10;
 
     constructor({ addListener, send, setEventListener }) {
-        this.partialCoverData = [];
-        this.totalCoverChunks = 0;
-        
         const onmessage = async (data) => {
             const { stat, ...payload } = data;
             switch (stat) {
@@ -197,8 +194,6 @@ export default class interconnfile {
                 
             }
             
-            this.partialCoverData = [];
-            this.totalCoverChunks = 0;
             this.currentBookCoverUri = coverUri;
             
             console.log(`Cover-only transfer initialized: ${coverUri}`);
@@ -323,8 +318,6 @@ export default class interconnfile {
 
             
             if (hasCover) {
-                this.partialCoverData = [];
-                this.totalCoverChunks = 0;
                 this.currentBookCoverUri = coverUri;
                 console.log(`Cover transfer initialized: ${coverUri}`);
             }
@@ -376,40 +369,19 @@ export default class interconnfile {
 
     async saveCoverChunk({ chunkIndex, totalChunks, data }) {
         try {
-            
             if (!this.currentBookCoverUri) {
                 console.error('Cover URI not initialized');
                 this.send({ type: "error", message: "封面传输未初始化", count: 0 });
                 return;
             }
-            
-            
-            if (chunkIndex === 0 || this.totalCoverChunks === 0 || this.totalCoverChunks !== totalChunks) {
-                this.partialCoverData = [];
-                this.totalCoverChunks = totalChunks;
-                console.log(`Starting/Restarting cover image transfer: ${totalChunks} chunks`);
+            const coverBytes = this.base64ToArrayBuffer(data);
+            if (coverBytes.byteLength > 0) {
+                await runAsyncFunc(file.writeArrayBuffer, {
+                    uri: this.currentBookCoverUri,
+                    buffer: new Uint8Array(coverBytes),
+                    append: chunkIndex > 0,
+                });
             }
-            
-            
-            const expectedIndex = this.partialCoverData.length;
-            if (chunkIndex !== expectedIndex) {
-                console.error(`Cover chunk index mismatch: expected ${expectedIndex}, got ${chunkIndex}`);
-                
-                if (chunkIndex === 0) {
-                    console.log('Restarting cover transfer from chunk 0');
-                    this.partialCoverData = [];
-                    this.totalCoverChunks = totalChunks;
-                } else {
-                    this.partialCoverData = [];
-                    this.totalCoverChunks = 0;
-                    this.currentBookCoverUri = null;
-                    this.send({ type: "error", message: "封面分块索引不匹配", count: 0 });
-                    return;
-                }
-            }
-            
-            this.partialCoverData.push(data);
-            
             await this.send({ type: "cover_chunk_received" });
         } catch (error) {
             const errorMsg = error.message || '未知错误';
@@ -425,35 +397,17 @@ export default class interconnfile {
 
     async completeCoverTransfer() {
         try {
-            if (!this.currentBookCoverUri || this.partialCoverData.length === 0) {
+            if (!this.currentBookCoverUri) {
                 this.send({ type: "error", message: "没有封面数据可保存", count: 0 });
                 return;
             }
             
-            console.log(`Saving cover image: ${this.partialCoverData.length} chunks`);
-            
-            const fullCoverBase64 = this.partialCoverData.join('');
-            
-            this.partialCoverData = [];
-            this.totalCoverChunks = 0;
-            
-            const coverBytes = this.base64ToArrayBuffer(fullCoverBase64);
-            
-            await runAsyncFunc(file.writeArrayBuffer, { 
-                uri: this.currentBookCoverUri, 
-                buffer: new Uint8Array(coverBytes)
-            });
-            
-            console.log(`Cover image saved successfully: ${coverBytes.byteLength} bytes`);
+            console.log(`Cover image saved successfully.`);
             
             await this.updateCoverStatus(true);
             
             this.currentBookCoverUri = null;
         
-            if (typeof global !== 'undefined' && typeof global.runGC === 'function') {
-                global.runGC();
-            }
-            
             this.send({ type: "cover_saved" });
             
             if (this.isCoverOnly) {
@@ -463,8 +417,6 @@ export default class interconnfile {
             }
         } catch (error) {
             console.error('Failed to complete cover transfer:', error);
-            this.partialCoverData = [];
-            this.totalCoverChunks = 0;
             this.currentBookCoverUri = null;
             const errorMsg = error.message || '未知错误';
             let displayMsg = `完成封面传输失败: ${errorMsg}`;
@@ -554,32 +506,44 @@ export default class interconnfile {
         return arraybuffer;
     }
 
+    _strToUtf8Ab(str) {
+        var s = unescape(encodeURIComponent(str));
+        var b = new Uint8Array(s.length);
+        for (var i = 0; i < s.length; i++) {
+            b[i] = s.charCodeAt(i);
+        }
+        return b;
+    }
+
     async saveChapter(payload) {
         try {
             const { count, data } = payload;
-            const chapterData = JSON.parse(data);
+            let chapterData = JSON.parse(data);
 
             const isFirstChunk = chapterData.chunkNum === 0;
             const isLastChunk = chapterData.chunkNum === chapterData.totalChunks - 1;
             const chapterFileName = `${chapterData.index}.txt`;
             const chapterUri = `${this.baseUri}${this.currentBookDir}/content/${chapterFileName}`;
 
+            const buffer = str2abWrite(chapterData.content);
+
             if (isFirstChunk) {
                 this.currentSavingChapterIndex = chapterData.index;
 
                 await runAsyncFunc(file.writeArrayBuffer, {
                     uri: chapterUri,
-                    buffer: str2abWrite(chapterData.content),
+                    buffer: buffer,
                     append: false,
                 });
             } else {
                 if (this.currentSavingChapterIndex !== chapterData.index) {
                     this.send({ type: "error", message: "章节分块索引不匹配", count: this.receivedChapters });
+                    chapterData = null;
                     return;
                 }
                 await runAsyncFunc(file.writeArrayBuffer, {
                     uri: chapterUri,
-                    buffer: str2abWrite(chapterData.content),
+                    buffer: buffer,
                     append: true,
                 });
             }
@@ -597,10 +561,11 @@ export default class interconnfile {
 
                 await this.send({ type: "chapter_chunk_complete" });
                 
-                if(count % 10 == 0) global.runGC();
+                if(count % 50 == 0) global.runGC();
             } else {
                 await this.send({ type: "next_chunk" });
             }
+            chapterData = null;
         } catch (error) {
             const errorMsg = error.message || '未知错误';
             let displayMsg = `保存章节失败: ${errorMsg}`;
@@ -660,40 +625,15 @@ export default class interconnfile {
     
     async flushPendingChapterMetas() {
         if (this.pendingChapterMetas.length === 0) return;
-        
         const listUri = `${this.baseUri}${this.currentBookDir}/list.txt`;
-        
         try {
-            let chapters = {};
-            try {
-                const listData = await runAsyncFunc(file.readText, { uri: listUri });
-                const lines = listData.text.split('\n').filter(Boolean);
-                for (const line of lines) {
-                    try {
-                        const meta = JSON.parse(line);
-                        if (meta.index !== undefined) {
-                           chapters[meta.index] = meta;
-                        }
-                    } catch (e) {
-                        console.error('Failed to parse chapter meta from list.txt:', line);
-                    }
-                }
-            } catch (e) {
-                
-            }
-            
-            for (const meta of this.pendingChapterMetas) {
-                chapters[meta.index] = meta;
-            }
-
-            const sortedMetas = Object.values(chapters).sort((a, b) => a.index - b.index);
-            const metaLines = sortedMetas.map(meta => JSON.stringify(meta)).join('\n') + '\n';
-
-            await runAsyncFunc(file.writeText, {
+            const metaLines = this.pendingChapterMetas.map(meta => JSON.stringify(meta)).join('\n') + '\n';
+            const buffer = this._strToUtf8Ab(metaLines);
+            await runAsyncFunc(file.writeArrayBuffer, {
                 uri: listUri,
-                text: metaLines
+                buffer: buffer,
+                append: true,
             });
-            
             this.pendingChapterMetas = [];
         } catch (error) {
             console.error('Failed to flush chapter metas:', error);
@@ -707,8 +647,6 @@ export default class interconnfile {
                 await this.flushPendingChapterMetas();
             }
             
-            this.partialCoverData = [];
-            this.totalCoverChunks = 0;
             this.currentBookCoverUri = null;
             this.currentSavingChapterIndex = -1;
             this.currentChapterMeta = null;
