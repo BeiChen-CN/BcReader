@@ -15,11 +15,11 @@
 
       <list class="list" if="{{shelfStyle === 'cover'}}">
           <list-item for="{{fileList}}" class="item cover-item" @click="selectFile($item)" type="nook">
-              <img class="cover-image" src="internal://files/books/{{$item.dirName}}/cover.jpg" />
-              <div class="cover-content">
-                  <marquee scrollamount="30" class="itemtext">{{$item.name}}</marquee>
-                  <marquee scrollamount="40" class="itemtext2">{{$item.chapterCount}}章 · 进度 {{$item.progress || 0}}%</marquee>
-              </div>
+            <img if="{{$item.hasCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/cover.jpg" />
+            <div class="cover-content">
+              <marquee scrollamount="30" class="itemtext">{{$item.name}}</marquee>
+              <marquee scrollamount="40" class="itemtext2">{{$item.chapterCount}}章 · 进度 {{$item.progress || 0}}%</marquee>
+            </div>
           </list-item>
       </list>
 
@@ -53,7 +53,8 @@ export default {
     debugOutput: "初始化中...",
     nowTime: "00:00",
     timer: null,
-    shelfStyle: 'list'
+    shelfStyle: 'list',
+    isNavigating: false
   },
   exit(){
 	  app.terminate();
@@ -78,6 +79,7 @@ export default {
 	  clearInterval(this.timer);
   },
   onShow() {
+    this.isNavigating = false;
     this.loadSettingsAndFiles();
   },
   loadSettingsAndFiles() {
@@ -115,6 +117,11 @@ export default {
   },
 
   selectFile(item) {
+    if (this.isNavigating) {
+        return;
+    }
+    this.isNavigating = true;
+
     router.push({
         uri: '/pages/detail',
         params: {
