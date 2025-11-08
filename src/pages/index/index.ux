@@ -8,8 +8,8 @@
 
       <list class="list" if="{{shelfStyle === 'list'}}">
 		  <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
-			  <marquee scrollamount="22" class="itemtext" >{{$item.name}}</marquee>
-			  <marquee scrollamount="40" class="itemtext2">{{roundToDecimal((($item.lastReadChapterIndex + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{$item.lastReadChapterIndex + 1}} / {{$item.chapterCount}} 章</marquee>
+			  <marquee scrollamount="22" text-offset="25" class="itemtext" >{{$item.name}}</marquee>
+			  <marquee scrollamount="40" text-offset="25" class="itemtext2">{{roundToDecimal((($item.lastReadChapterIndex + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{$item.lastReadChapterIndex + 1}} / {{$item.chapterCount}} 章</marquee>
 		  </list-item>
           <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
             <div class="pagination-controls">
@@ -24,8 +24,8 @@
           <list-item for="{{visibleBooks}}" class="item cover-item" @click="selectFile($item)" type="nook">
             <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/cover.jpg" />
             <div class="cover-content">
-              <marquee scrollamount="30" class="itemtext" >{{$item.name}}</marquee>
-              <marquee scrollamount="40" class="itemtext2" >{{roundToDecimal((($item.lastReadChapterIndex + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{$item.lastReadChapterIndex + 1}} / {{$item.chapterCount}} 章</marquee>
+              <marquee text-offset="25" scrollamount="30" class="itemtext" >{{$item.name}}</marquee>
+              <marquee text-offset="25" scrollamount="40" class="itemtext2" >{{roundToDecimal((($item.lastReadChapterIndex + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{$item.lastReadChapterIndex + 1}} / {{$item.chapterCount}} 章</marquee>
             </div>
           </list-item>
           <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
