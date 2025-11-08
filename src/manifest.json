@@ -177,6 +177,9 @@
       },
       "pages/progressSavingSetting": {
         "component": "progressSavingSetting"
+      },
+      "pages/timeSetting": {
+        "component": "timeSetting"
       }
     }
   },
