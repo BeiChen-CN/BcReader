@@ -8,7 +8,7 @@
 
       <list class="list" if="{{shelfStyle === 'list'}}">
 		  <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
-			  <marquee scrollamount="22" class="itemtext" text-offset="25">{{$item.name}}</marquee>
+			  <marquee scrollamount="22" class="itemtext" >{{$item.name}}</marquee>
 			  <text class="itemtext2">{{$item.chapterCount}}章 · 进度 {{$item.progress || 0}}%</text>
 		  </list-item>
           <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
@@ -24,8 +24,8 @@
           <list-item for="{{visibleBooks}}" class="item cover-item" @click="selectFile($item)" type="nook">
             <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/cover.jpg" />
             <div class="cover-content">
-              <marquee scrollamount="30" class="itemtext" text-offset="25">{{$item.name}}</marquee>
-              <marquee scrollamount="40" class="itemtext2" text-offset="25">{{$item.chapterCount}}章 · 进度 {{$item.progress || 0}}%</marquee>
+              <marquee scrollamount="30" class="itemtext" >{{$item.name}}</marquee>
+              <marquee scrollamount="40" class="itemtext2" >{{$item.chapterCount}}章 · 进度 {{$item.progress || 0}}%</marquee>
             </div>
           </list-item>
           <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
