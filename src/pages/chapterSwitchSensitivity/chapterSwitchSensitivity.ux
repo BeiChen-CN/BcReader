@@ -13,7 +13,7 @@
 			<div class="info-panel">
 				<text static class="info-title">滑动灵敏度</text>
 				<text class="info-value">{{ chapterSwitchSensitivity }}</text>
-				<text static class="info-desc">越界滑动切换章节的灵敏度</text>
+				<text static class="info-desc">滑动多长的距离触发换章</text>
 			</div>
 		</div>
 
