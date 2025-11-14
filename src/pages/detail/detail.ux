@@ -457,9 +457,17 @@
 		setTimeout(() => {
 			this.scrollTopValue = this.savedScrollOffset;
 			this.currentScrollTop = this.savedScrollOffset;
-			this.wait = false;
-			this.updateChapterProgress();
-			this.saveData(true);
+			this.$element("contentContainer").getBoundingClientRect({
+				success: (rect) => {
+					this.contentHeight = rect.height;
+					this.updateChapterProgress();
+					this.wait = false;
+					this.saveData(true);
+				},
+				fail: () => {
+					this.wait = false;
+				}
+			});
 		}, 50);
 	},
 	readFileText(readOffset, cb){
@@ -733,14 +741,12 @@
             this.page1 = { text: str, offset: readOffset, length: bytesRead };
             this.isAtChapterEnd = true;
             this.isAtChapterStart = (readOffset === 0);
-
-            this.updateContentHeight();
             
             setTimeout(() => {
                 this.$element("contentContainer").getBoundingClientRect({
                     success: (rect) => {
-                        const contentHeight = rect.height;
-                        const scrollPos = contentHeight - this.scrollHeight;
+                        this.contentHeight = rect.height;
+                        const scrollPos = this.contentHeight - this.scrollHeight;
                         this.scrollTopValue = scrollPos > 0 ? scrollPos : 0;
                         this.currentScrollTop = this.scrollTopValue;
                         this.wait = false;
@@ -1125,4 +1131,5 @@
 	font-weight: bold;
 }
 </style>
+
 
