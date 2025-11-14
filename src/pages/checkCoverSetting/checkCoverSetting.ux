@@ -82,7 +82,7 @@
     left: 6px;
     top: 86px;
     width: 324px;
-    height: 308px;
+    height: 348px;
     border-radius: 36px;
     flex-direction: column;
     border: 3px solid #262626;
