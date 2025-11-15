@@ -42,14 +42,24 @@
       </list>
 
       <list class="list" if="{{displayMode === 'category'}}">
-        <list-item if="{{selectedCategory}}" class="item" @click="backToCategoryList" type="nook" style="background-color: #333;height: 72px;">
+        <list-item if="{{selectedCategory}}" class="item" @click="backToCategoryList" type="nook" style="height: 72px;">
           <text class="itemtext">← 返回分类列表</text>
         </list-item>
-        <list-item for="{{visibleBooks}}" class="item" @click="handleCategoryItemClick($item)" type="nook">
-          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" text-offset="25" class="itemtext" >{{$item.name}}</marquee>
-          <text else class="itemtext" >{{$item.name}}</text>
-          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="40" text-offset="25" class="itemtext2">{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{$item.isCategory ? ('共 ' + $item.bookCount + ' 本') : (roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0) + '% · 看到 ' + (($item.progress.chapterIndex || 0) + 1) + ' / ' + $item.chapterCount + ' 章'}}</marquee>
-          <text else class="itemtext2">{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{$item.isCategory ? ('共 ' + $item.bookCount + ' 本') : (roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0) + '% · 看到 ' + (($item.progress.chapterIndex || 0) + 1) + ' / ' + $item.chapterCount + ' 章'}}</text>
+        <list-item for="{{visibleBooks}}" class="item {{shelfStyle === 'cover' && $item.hasRealCover ? 'cover-item' : ''}}" @click="handleCategoryItemClick($item)" type="nook">
+          <img if="{{shelfStyle === 'cover' && $item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
+          <div class="{{shelfStyle === 'cover' ? 'cover-content' : 'category-item-content'}}">
+              <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" text-offset="25" class="itemtext" >{{$item.name}}</marquee>
+              <text else class="itemtext" >{{$item.name}}</text>
+              <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="40" text-offset="25" class="itemtext2" >{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{(($item.progress.chapterIndex || 0) + 1)}} / {{$item.chapterCount}} 章</marquee>
+              <text else class="itemtext2">{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{$item.isCategory ? ('共 ' + $item.bookCount + ' 本') : (roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0) + '% · 看到 ' + (($item.progress.chapterIndex || 0) + 1) + ' / ' + $item.chapterCount + ' 章'}}</text>
+          </div>
+        </list-item>
+        <list-item type="pagination" class="pagination-container" if="{{totalPages > 1 && displayMode === 'category'}}">
+          <div class="pagination-controls">
+            <img src="/common/images/pre.png" if="{{currentPage > 0}}" @click="prevPage" class="pagination-button"/>
+            <text class="pagination-text">{{currentPage + 1}} / {{totalPages}}</text>
+            <img src="/common/images/next.png" if="{{currentPage < totalPages - 1}}" @click="nextPage" class="pagination-button"/>
+          </div>
         </list-item>
       </list>
 
@@ -188,7 +198,11 @@ export default {
         this.lastReadBook = lastReadBook;
       }
     }
-  },
+        
+    this.allBooks.forEach(book => {
+        book.hasRealCover = !!(book.hasCover && book.coverFileName);
+    });
+	},
   updateCategories() {
     const categorySet = new Set();
     this.allBooks.forEach(book => {
@@ -250,11 +264,6 @@ export default {
       const end = start + this.pageSize;
       this.visibleBooks = this.allBooks.slice(start, end);
       this.currentPage = safePage;
-      if (this.shelfStyle === 'cover') {
-        this.visibleBooks.forEach(book => {
-            book.hasRealCover = !!(book.hasCover && book.coverFileName);
-        });
-      }
     } else {
       this.visibleBooks = [];
       this.currentPage = 0;
@@ -347,6 +356,15 @@ export default {
     overflow: hidden;
 }
 
+.category-item-content {
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: flex-start;
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+}
+
 .itemtext {
 	font-size: 32px;
 	line-height:40px;
@@ -389,3 +407,4 @@ export default {
     color: white;
 }
 </style>
+
