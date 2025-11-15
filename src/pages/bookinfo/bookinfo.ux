@@ -46,6 +46,10 @@
 				<text class="item-title" static>分类</text>
 				<text class="item-value">{{category}}</text>
 			</list-item>
+			<list-item class="item" type="info" if="{{localCategory}}">
+				<text class="item-title" static>本地分类</text>
+				<text class="item-value">{{localCategory}}</text>
+			</list-item>
 			<list-item class="item" type="summary" if="{{summary}}" @click="showSummary">
 				<text class="item-title" static>书籍简介</text>
 				<text class="item-value" style="color: rgba(255,255,255,0.8);" static>点击查看 →</text>
@@ -86,6 +90,7 @@ export default {
 		summary: '',
 		bookStatus: '',
 		category: '',
+		localCategory: '',
 		syncProgress: '计算中...',
         timeFormat: '24h'
 	},
@@ -166,6 +171,7 @@ export default {
 					that.summary = info.summary || '';
 					that.bookStatus = info.bookStatus || '';
 					that.category = info.category || '';
+					that.localCategory = info.localCategory || '';
 
 					await that.calculateSyncProgress();
                     await that.calculateStorage(bookDirUri, bookContentDirUri, bookInfoUri, indexesUri, lindexUri, coverUri);

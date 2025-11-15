@@ -156,9 +156,10 @@
 	  height: 480px;
 	  background-color: #000000;
   }
-.item2 {
-	background-color: #0D6EFF;
-}
+  
+	.item2 {
+		background-color: #0D6EFF;
+	}
 
   .list {
 	width: 336px;

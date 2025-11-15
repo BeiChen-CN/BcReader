@@ -192,6 +192,9 @@
       },
       "pages/shelfMarqueeSetting": {
         "component": "shelfMarqueeSetting"
+      },
+      "pages/homeDisplaySetting": {
+        "component": "homeDisplaySetting"
       }
     }
   },

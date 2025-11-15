@@ -6,7 +6,7 @@
 
 	  <text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">书架空空</text>
 
-      <list class="list" if="{{shelfStyle === 'list'}}">
+      <list class="list" if="{{shelfStyle === 'list' && displayMode === 'all'}}">
 		  <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
 			  <marquee if="{{shelfMarqueeEnabled}}" scrollamount="22" text-offset="25" class="itemtext" >{{$item.name}}</marquee>
               <text else class="itemtext" >{{$item.name}}</text>
@@ -22,7 +22,7 @@
           </list-item>
 	  </list>
 
-      <list class="list" if="{{shelfStyle === 'cover'}}">
+      <list class="list" if="{{shelfStyle === 'cover' && displayMode === 'all'}}">
           <list-item for="{{visibleBooks}}" class="item cover-item" @click="selectFile($item)" type="nook">
             <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
             <div class="cover-content">
@@ -32,13 +32,25 @@
               <text else class="itemtext2" >{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{(($item.progress.chapterIndex || 0) + 1)}} / {{$item.chapterCount}} 章</text>
             </div>
           </list-item>
-          <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
+          <list-item type="pagination" class="pagination-container" if="{{totalPages > 1 && displayMode === 'all'}}">
             <div class="pagination-controls">
               <img src="/common/images/pre.png" if="{{currentPage > 0}}" @click="prevPage" class="pagination-button"/>
               <text class="pagination-text">{{currentPage + 1}} / {{totalPages}}</text>
               <img src="/common/images/next.png" if="{{currentPage < totalPages - 1}}" @click="nextPage" class="pagination-button"/>
             </div>
           </list-item>
+      </list>
+
+      <list class="list" if="{{displayMode === 'category'}}">
+        <list-item if="{{selectedCategory}}" class="item" @click="backToCategoryList" type="nook" style="background-color: #333;height: 72px;">
+          <text class="itemtext">← 返回分类列表</text>
+        </list-item>
+        <list-item for="{{visibleBooks}}" class="item" @click="handleCategoryItemClick($item)" type="nook">
+          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" text-offset="25" class="itemtext" >{{$item.name}}</marquee>
+          <text else class="itemtext" >{{$item.name}}</text>
+          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="40" text-offset="25" class="itemtext2">{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{$item.isCategory ? ('共 ' + $item.bookCount + ' 本') : (roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0) + '% · 看到 ' + (($item.progress.chapterIndex || 0) + 1) + ' / ' + $item.chapterCount + ' 章'}}</marquee>
+          <text else class="itemtext2">{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{$item.isCategory ? ('共 ' + $item.bookCount + ' 本') : (roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0) + '% · 看到 ' + (($item.progress.chapterIndex || 0) + 1) + ' / ' + $item.chapterCount + ' 章'}}</text>
+        </list-item>
       </list>
 
     <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
@@ -58,7 +70,6 @@
 
 <script>
 import router from '@system.router';
-import file from '@system.file';
 import bookStorage from '../../common/bookStorage.js'
 import storage from '../../common/storage.js';
 import app from '@system.app';
@@ -75,7 +86,12 @@ export default {
     totalPages: 1,
     pageSize: 6,
     lastReadOnTop: true,
-    shelfMarqueeEnabled: false
+    shelfMarqueeEnabled: false,
+    displayMode: 'all',
+    categories: [],
+    selectedCategory: null,
+    categoryBooks: [],
+    lastReadBook: null
   },
   exit(){
 	  app.terminate();
@@ -124,27 +140,36 @@ export default {
     });
   },
   async loadSettingsAndFiles() {
-    const [pageSize, shelfStyle, lastReadOnTop, shelfMarqueeEnabled] = await Promise.all([
+    const [pageSize, shelfStyle, lastReadOnTop, shelfMarqueeEnabled, displayMode] = await Promise.all([
       this.getStorage('EBOOK_SHELF_PAGE_SIZE', '6'),
       this.getStorage('EBOOK_SHELF_STYLE', 'list'),
       this.getStorage('EBOOK_TOP_LAST_READ', 'true'),
-      this.getStorage('EBOOK_SHELF_MARQUEE_ENABLED', 'false')
+      this.getStorage('EBOOK_SHELF_MARQUEE_ENABLED', 'false'),
+      this.getStorage('EBOOK_HOME_DISPLAY_MODE', 'all')
     ]);
 
     this.pageSize = parseInt(pageSize);
     this.shelfStyle = shelfStyle;
     this.lastReadOnTop = lastReadOnTop === 'true';
     this.shelfMarqueeEnabled = shelfMarqueeEnabled === 'true';
+    this.displayMode = displayMode || 'all';
 
     this.loadFileList();
   },
   async loadFileList() {
     this.allBooks = await bookStorage.getBooks();
     this.processBooks();
-    this.loadPage(this.currentPage);
+    
+    if (this.displayMode === 'category') {
+      this.updateCategories();
+      this.updateCategoryView();
+    } else {
+      this.loadPage(this.currentPage);
+    }
   },
   processBooks() {
-    if (this.lastReadOnTop && this.allBooks.length > 1) {
+    this.lastReadBook = null;
+    if (this.lastReadOnTop && this.allBooks.length > 0) {
       let lastReadIndex = -1;
       let latestTimestamp = 0;
       
@@ -160,7 +185,57 @@ export default {
         const lastReadBook = this.allBooks.splice(lastReadIndex, 1)[0];
         lastReadBook.isLastRead = true;
         this.allBooks.unshift(lastReadBook);
+        this.lastReadBook = lastReadBook;
       }
+    }
+  },
+  updateCategories() {
+    const categorySet = new Set();
+    this.allBooks.forEach(book => {
+      if (book.localCategory) {
+        categorySet.add(book.localCategory);
+      }
+    });
+    this.categories = Array.from(categorySet).sort();
+  },
+  updateCategoryView() {
+    if (this.selectedCategory) {
+      
+      this.categoryBooks = this.allBooks.filter(book => book.localCategory === this.selectedCategory);
+      this.visibleBooks = this.categoryBooks;
+    } else {
+      
+      const categoryItems = this.categories.map(cat => ({
+        isCategory: true,
+        categoryName: cat,
+        name: cat,
+        bookCount: this.allBooks.filter(b => b.localCategory === cat).length
+      }));
+      
+      
+      if (this.lastReadBook) {
+        this.visibleBooks = [this.lastReadBook, ...categoryItems];
+      } else {
+        this.visibleBooks = categoryItems;
+      }
+    }
+  },
+  selectCategory(categoryName) {
+    if (typeof categoryName === 'object' && categoryName.categoryName) {
+      categoryName = categoryName.categoryName;
+    }
+    this.selectedCategory = categoryName;
+    this.updateCategoryView();
+  },
+  backToCategoryList() {
+    this.selectedCategory = null;
+    this.updateCategoryView();
+  },
+  handleCategoryItemClick(item) {
+    if (item.isCategory) {
+      this.selectCategory(item.categoryName);
+    } else {
+      this.selectFile(item);
     }
   },
   roundToDecimal(num, decimalPlaces) {
@@ -196,7 +271,7 @@ export default {
     }
   },
   async selectFile(item) {
-    if (this.isNavigating) {
+    if (this.isNavigating || item.isCategory) {
         return;
     }
     this.isNavigating = true;

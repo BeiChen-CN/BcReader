@@ -252,7 +252,7 @@ export default class interconnfile {
         }
     }
 
-    async startTransfer({ filename, total, wordCount, startFrom = 0, hasCover = false, author = null, summary = null, bookStatus = null, category = null }) {
+    async startTransfer({ filename, total, wordCount, startFrom = 0, hasCover = false, author = null, summary = null, bookStatus = null, category = null, localCategory = null }) {
         try {
             if (!filename || !filename.trim()) {
                 this.send({ type: "error", message: "文件名为空或无效", count: 0 });
@@ -328,7 +328,8 @@ export default class interconnfile {
                     wordCount: wordCount,
                     hasCover: hasCover,
                     coverFileName: coverFileName,
-                    progress: existingProgress || { chapterIndex: 0, offsetInChapter: 0, scrollOffset: 0, bookmarks: [] }
+                    progress: existingProgress || { chapterIndex: 0, offsetInChapter: 0, scrollOffset: 0, bookmarks: [] },
+                    localCategory: localCategory
                 };
                 bookshelfAfterClear.push(newBookEntry);
                 await bookStorage.updateBooks(bookshelfAfterClear);
@@ -400,7 +401,8 @@ export default class interconnfile {
                 author: author,
                 summary: summary,
                 bookStatus: bookStatus,
-                category: category
+                category: category,
+                localCategory: localCategory
             };
             await runAsyncFunc(file.writeText, { uri: bookInfoUri, text: JSON.stringify(bookInfo) });
             

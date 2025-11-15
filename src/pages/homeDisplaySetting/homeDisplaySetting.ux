@@ -1,43 +1,21 @@
 <template>
     <div class="page" style="flex-direction: column;">
         <list class="list">
-            <list-item class="item" @click="routerTo('shelfStyle')" type="item">
+            <list-item class="item {{displayMode === 'all'?'item2':''}}" @click="selectDisplayMode('all')" type="item">
                 <div class="item-content">
-                    <text class="itemtext" static>书架样式</text>
-                    <text class="itemtext2" static>列表或封面视图</text>
+                    <text class="itemtext" static>展示全部书籍</text>
+                    <text class="itemtext2" static>显示所有书籍</text>
                 </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
+                <img if="{{displayMode === 'all'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
             </list-item>
-            <list-item class="item" @click="routerTo('shelfPageSizeSetting')" type="item">
+            <list-item class="item {{displayMode === 'category'?'item2':''}}" @click="selectDisplayMode('category')" type="item">
                 <div class="item-content">
-                    <text class="itemtext" static>书架每页数量</text>
-                    <text class="itemtext2" static>调整书架分页数量</text>
+                    <text class="itemtext" static>展示分类列表</text>
+                    <text class="itemtext2" static>显示分类列表</text>
                 </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
-            </list-item>
-            <list-item class="item" @click="routerTo('lastReadSetting')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>置顶上次阅读</text>
-                    <text class="itemtext2" static>显示上次阅读</text>
-                </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
-            </list-item>
-            <list-item class="item" @click="routerTo('shelfMarqueeSetting')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>书架跑马灯</text>
-                    <text class="itemtext2" static>滚动显示长文本</text>
-                </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
-            </list-item>
-            <list-item class="item" @click="routerTo('homeDisplaySetting')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>首页展示方式</text>
-                    <text class="itemtext2" static>选择首页显示方式</text>
-                </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
+                <img if="{{displayMode === 'category'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
             </list-item>
         </list>
-
 
         <img static src="/common/images/hd.png"
             style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
@@ -49,7 +27,7 @@
         </text>
         <text static
             style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-            书架设置
+            展示方式
         </text>
     </div>
 </template>
@@ -58,11 +36,11 @@
     import router from '@system.router'
     import storage from '../../common/storage.js'
 
-
     export default {
         private: {
             nowTime: "00:00",
             timer: null,
+            displayMode: 'all',
             timeFormat: '24h'
         },
         updateTime() {
@@ -98,6 +76,18 @@
             this.timer = setInterval(() => {
                 this.updateTime();
             }, 1000);
+            
+            storage.get({
+                key: 'EBOOK_HOME_DISPLAY_MODE',
+                success: (data) => {
+                    if (data) {
+                        this.displayMode = data;
+                    }
+                },
+                fail: () => {
+                    this.displayMode = 'all';
+                }
+            });
         },
         onDestroy() {
             if (this.timer) {
@@ -105,10 +95,15 @@
                 this.timer = null;
             }
         },
-        routerTo(url) {
-            router.push({
-                uri: '/pages/' + url
-            })
+        selectDisplayMode(mode) {
+            this.displayMode = mode;
+            storage.set({
+                key: 'EBOOK_HOME_DISPLAY_MODE',
+                value: mode,
+                success: () => {
+                    
+                }
+            });
         },
         back() {
             router.back();
@@ -162,11 +157,15 @@
         lines: 1;
     }
 
-
     .item-content {
         height: 100%;
         flex: 1;
         flex-direction: column;
         justify-content: space-between;
     }
+
+    .item2 {
+        background-color: #0D6EFF;
+    }
 </style>
+
