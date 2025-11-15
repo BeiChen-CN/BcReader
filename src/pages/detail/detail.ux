@@ -373,6 +373,7 @@
 		
 		this._shouldScrollToTop = shouldScrollToTop;
 		this._fromBookmark = fromBookmark;
+		this._bookmarkOffsetInChapter = fromBookmark ? offsetInChapter : null;
 
 		this.loadChapter(chapterArrayIndex, () => {
 			this.loadInitialSegments();
@@ -505,20 +506,43 @@
 				this.finalizeScrollRestore();
 			} else {
 				
-				if (this._fromBookmark && this.currentFileOffset > 0) {
+				if (this._fromBookmark && this._bookmarkOffsetInChapter !== null && this._bookmarkOffsetInChapter > 0) {
 					
 					this.$element("page1").getBoundingClientRect({
 						success: (page1Rect) => {
 							
-							const charsBeforeOffset = this.currentFileOffset / 2;
-							const avgCharWidth = this.fontSize * 0.6; 
-							const charsPerLine = Math.floor(336 / avgCharWidth);
-							const linesBeforeOffset = Math.ceil(charsBeforeOffset / charsPerLine);
-							const estimatedHeightBefore = linesBeforeOffset * this.lineHeight;
+							const bookmarkOffset = this._bookmarkOffsetInChapter;
+							const page1StartOffset = this.page1.offset;
+							const page1EndOffset = page1StartOffset + this.page1.length;
 							
-							const totalScroll = estimatedHeightBefore + this.savedScrollOffset;
-							this.scrollTopValue = Math.max(0, Math.floor(totalScroll));
-							this.currentScrollTop = Math.max(0, Math.floor(totalScroll));
+							if (bookmarkOffset >= page1StartOffset && bookmarkOffset < page1EndOffset) {
+								
+								const offsetInPage1 = bookmarkOffset - page1StartOffset;
+								const charsInPage1 = offsetInPage1 / 2;
+								const avgCharWidth = this.fontSize * 0.6; 
+								const charsPerLine = Math.floor(336 / avgCharWidth);
+								const linesInPage1 = Math.ceil(charsInPage1 / charsPerLine);
+								const heightInPage1 = linesInPage1 * this.lineHeight;
+								
+								const totalScroll = heightInPage1 + this.savedScrollOffset;
+								this.scrollTopValue = Math.max(0, Math.floor(totalScroll));
+								this.currentScrollTop = Math.max(0, Math.floor(totalScroll));
+							} else if (bookmarkOffset < page1StartOffset) {
+								
+								this.scrollTopValue = Math.max(0, Math.floor(this.savedScrollOffset));
+								this.currentScrollTop = Math.max(0, Math.floor(this.savedScrollOffset));
+							} else {
+								
+								const charsBeforeOffset = bookmarkOffset / 2;
+								const avgCharWidth = this.fontSize * 0.6; 
+								const charsPerLine = Math.floor(336 / avgCharWidth);
+								const linesBeforeOffset = Math.ceil(charsBeforeOffset / charsPerLine);
+								const estimatedHeightBefore = linesBeforeOffset * this.lineHeight;
+								
+								const totalScroll = estimatedHeightBefore + this.savedScrollOffset;
+								this.scrollTopValue = Math.max(0, Math.floor(totalScroll));
+								this.currentScrollTop = Math.max(0, Math.floor(totalScroll));
+							}
 							
 							this.finalizeScrollRestore();
 						},
@@ -547,12 +571,14 @@
 				
 				this._shouldScrollToTop = false;
 				this._fromBookmark = false;
+				this._bookmarkOffsetInChapter = null;
 				this.saveData(true);
 			},
 			fail: () => {
 				this.wait = false;
 				this._shouldScrollToTop = false;
 				this._fromBookmark = false;
+				this._bookmarkOffsetInChapter = null;
 			}
 		});
 	},
