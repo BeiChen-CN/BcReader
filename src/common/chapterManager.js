@@ -8,18 +8,12 @@ const CACHE_EXPIRY = 5 * 60 * 1000;
 const CHAPTERS_PER_FILE = 100;
 
 async function checkVersion(bookName) {
-    const oldListUri = `internal://files/books/${bookName}/list.txt`;
     const newListUri = `internal://files/books/${bookName}/lindex.txt`;
     try {
         await runAsyncFunc(file.access, { uri: newListUri });
         return 'new';
     } catch (e) {
-        try {
-            await runAsyncFunc(file.access, { uri: oldListUri });
-            return 'old';
-        } catch (err) {
-            return 'none';
-        }
+        return 'none';
     }
 }
 
@@ -81,7 +75,6 @@ async function loadChapterChunk(bookName, chunkIndex) {
         });
         return chapters;
     } catch (error) {
-        // console.error(`Failed to load chapter chunk ${chunkIndex} for ${bookName}:`, error);
         return [];
     }
 }
@@ -130,10 +123,6 @@ function clearCache(bookName) {
 
 async function getChapterPage(bookName, page = 0, pageSize = 8) {
     const version = await checkVersion(bookName);
-    if (version === 'old') {
-        await handleOldVersion(bookName);
-        return { chapters: [], totalPages: 0, currentPage: 0, totalChapters: 0 };
-    }
     if (version === 'none') {
         return { chapters: [], totalPages: 0, currentPage: 0, totalChapters: 0 };
     }
@@ -192,9 +181,6 @@ async function getChapterByIndex(bookName, chapterIndex) {
 
 async function getTotalChapters(bookName) {
     const version = await checkVersion(bookName);
-    if (version === 'old') {
-        return 0;
-    }
     if (version === 'none') {
         return 0;
     }
@@ -208,9 +194,6 @@ async function getTotalChapters(bookName) {
 
 async function getSyncedChapters(bookName) {
     const version = await checkVersion(bookName);
-    if (version === 'old') {
-        return 0;
-    }
     if (version === 'none') {
         return 0;
     }

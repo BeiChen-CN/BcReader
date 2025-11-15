@@ -117,16 +117,19 @@ export default class interconnfile {
 
     generateDirName(filename) {
         let hash = 0;
+        if (filename.length === 0) return '00000000';
         for (let i = 0; i < filename.length; i++) {
             const char = filename.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
             hash = hash & hash;
         }
-        const hashStr = Math.abs(hash).toString(36);
-        
-        const sanitized = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const truncated = sanitized.substring(0, 30);
-        return `${truncated}_${hashStr}`;
+        const hex = (hash >>> 0).toString(16).padStart(8, '0');
+        return hex;
+    }
+
+    generateCoverFileName() {
+        const randomStr = Math.random().toString(36).substring(2, 10);
+        return `cover_${randomStr}.jpg`;
     }
 
     async getBookStatus({ filename }) {
@@ -140,7 +143,7 @@ export default class interconnfile {
         const sanitizedDirName = this.generateDirName(filename);
         const lindexUri = `${this.baseUri}${sanitizedDirName}/lindex.txt`;
         const indexesDirUri = `${this.baseUri}${sanitizedDirName}/indexes/`;
-        const coverUri = `${this.baseUri}${sanitizedDirName}/cover.jpg`;
+        const bookInfoUri = `${this.baseUri}${sanitizedDirName}/book_info.json`;
         let syncedChapterIndices = [];
         let hasCover = false;
 
@@ -178,8 +181,13 @@ export default class interconnfile {
         }
 
         try {
-            await runAsyncFunc(file.access, { uri: coverUri });
-            hasCover = true;
+            const bookInfoData = await runAsyncFunc(file.readText, { uri: bookInfoUri });
+            const bookInfo = JSON.parse(bookInfoData.text);
+            if (bookInfo.coverFileName) {
+                const coverUri = `${this.baseUri}${sanitizedDirName}/${bookInfo.coverFileName}`;
+                await runAsyncFunc(file.access, { uri: coverUri });
+                hasCover = true;
+            }
         } catch (e) {
             hasCover = false;
         }
@@ -212,14 +220,31 @@ export default class interconnfile {
                 await runAsyncFunc(file.mkdir, { uri: bookUri });
             }
             
-            
-            const coverUri = bookUri + '/cover.jpg';
+            const bookInfoUri = bookUri + '/book_info.json';
+            let bookInfo = {};
             try {
-                await runAsyncFunc(file.delete, { uri: coverUri });
-            } catch (e) {
+                const bookInfoData = await runAsyncFunc(file.readText, { uri: bookInfoUri });
+                bookInfo = JSON.parse(bookInfoData.text);
+                if (bookInfo.coverFileName) {
+                    const oldCoverUri = bookUri + '/' + bookInfo.coverFileName;
+                    await runAsyncFunc(file.delete, { uri: oldCoverUri });
+                }
+            } catch (e) {}
+    
+            const newCoverFileName = this.generateCoverFileName();
+            bookInfo.coverFileName = newCoverFileName;
+            bookInfo.hasCover = true;
+            await runAsyncFunc(file.writeText, { uri: bookInfoUri, text: JSON.stringify(bookInfo) });
+    
+            const bookshelf = await bookStorage.getBooks();
+            const bookIndex = bookshelf.findIndex(b => b.dirName === this.currentBookDir);
+            if (bookIndex > -1) {
+                bookshelf[bookIndex].coverFileName = newCoverFileName;
+                bookshelf[bookIndex].hasCover = true;
+                await bookStorage.updateBooks(bookshelf);
             }
             
-            this.currentBookCoverUri = coverUri;
+            this.currentBookCoverUri = bookUri + '/' + newCoverFileName;
             
             this.send({ type: "cover_ready" });
         } catch (error) {
@@ -258,17 +283,10 @@ export default class interconnfile {
             const bookInfoUri = bookUri + '/book_info.json';
             const lindexUri = bookUri + '/lindex.txt';
             const indexesUri = bookUri + '/indexes';
-            const coverUri = bookUri + '/cover.jpg';
             const contentUri = bookUri + '/content';
-
-            try {
-                const bookInfoData = await runAsyncFunc(file.readText, { uri: bookInfoUri });
-                const bookInfo = JSON.parse(bookInfoData.text);
-                if (bookInfo.hasCover && !hasCover) {
-                    hasCover = true;
-                }
-            } catch (e) {
-
+            let coverFileName = null;
+            if (hasCover) {
+                coverFileName = this.generateCoverFileName();
             }
 
             if (startFrom === 0) {
@@ -279,27 +297,9 @@ export default class interconnfile {
                     existingProgress = existingBook.progress;
                 }
 
-                
-                let coverData = null;
-                try {
-                    const coverArrayBuffer = await runAsyncFunc(file.readArrayBuffer, { uri: coverUri });
-                    coverData = new Uint8Array(coverArrayBuffer.buffer);
-                } catch(e) {}
-
                 try { await runAsyncFunc(file.rmdir, { uri: bookUri, recursive: true }); } catch (e) {}
                 await runAsyncFunc(file.mkdir, { uri: bookUri });
                 
-                
-                if (coverData) {
-                    try {
-                        await runAsyncFunc(file.writeArrayBuffer, {
-                            uri: coverUri,
-                            buffer: coverData,
-                            append: false,
-                        });
-                    } catch(e) {}
-                }
-
                 await runAsyncFunc(file.mkdir, { uri: indexesUri });
                 const numChunks = Math.ceil(total / this.CHAPTERS_PER_FILE);
                 this.lindexContent = `${total}\n0\n`;
@@ -327,6 +327,7 @@ export default class interconnfile {
                     chapterCount: total,
                     wordCount: wordCount,
                     hasCover: hasCover,
+                    coverFileName: coverFileName,
                     progress: existingProgress || { chapterIndex: 0, offsetInChapter: 0, scrollOffset: 0, bookmarks: [] }
                 };
                 bookshelfAfterClear.push(newBookEntry);
@@ -334,6 +335,15 @@ export default class interconnfile {
 
             } else {
                 try {
+                    const bookInfoData = await runAsyncFunc(file.readText, { uri: bookInfoUri });
+                    const bookInfo = JSON.parse(bookInfoData.text);
+                    if (bookInfo.coverFileName) {
+                        coverFileName = bookInfo.coverFileName;
+                    }
+                    if (bookInfo.hasCover && !hasCover) {
+                        hasCover = true;
+                    }
+
                     await runAsyncFunc(file.access, { uri: lindexUri });
                     const numChunks = Math.ceil(total / this.CHAPTERS_PER_FILE);
                     const indexSet = new Set();
@@ -377,8 +387,8 @@ export default class interconnfile {
             }
 
             
-            if (hasCover) {
-                this.currentBookCoverUri = coverUri;
+            if (hasCover && coverFileName) {
+                this.currentBookCoverUri = bookUri + '/' + coverFileName;
             }
 
             const bookInfo = { 
@@ -386,6 +396,7 @@ export default class interconnfile {
                 chapterCount: total, 
                 wordCount: wordCount, 
                 hasCover: hasCover,
+                coverFileName: coverFileName,
                 author: author,
                 summary: summary,
                 bookStatus: bookStatus,
@@ -454,8 +465,6 @@ export default class interconnfile {
                 return;
             }
             
-            await this.updateCoverStatus(true);
-            
             this.currentBookCoverUri = null;
         
             this.send({ type: "cover_saved" });
@@ -475,29 +484,6 @@ export default class interconnfile {
             }
             this.send({ type: "error", message: displayMsg, count: 0 });
             this.callback({ msg: "error", error: displayMsg });
-        }
-    }
-
-    async updateCoverStatus(hasCover) {
-        const bookInfoUri = `${this.baseUri}${this.currentBookDir}/book_info.json`;
-        
-        try {
-            let bookInfo = {};
-            try {
-                const bookInfoData = await runAsyncFunc(file.readText, { uri: bookInfoUri });
-                bookInfo = JSON.parse(bookInfoData.text);
-            } catch(e) { /* file might not exist */ }
-            bookInfo.hasCover = hasCover;
-            await runAsyncFunc(file.writeText, { uri: bookInfoUri, text: JSON.stringify(bookInfo) });
-            
-            const bookshelf = await bookStorage.getBooks();
-            const bookIndex = bookshelf.findIndex(b => b.dirName === this.currentBookDir);
-            if (bookIndex > -1) {
-                bookshelf[bookIndex].hasCover = hasCover;
-                await bookStorage.updateBooks(bookshelf);
-            }
-        } catch (e) {
-            
         }
     }
 

@@ -22,7 +22,7 @@
 
       <list class="list" if="{{shelfStyle === 'cover'}}">
           <list-item for="{{visibleBooks}}" class="item cover-item" @click="selectFile($item)" type="nook">
-            <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/cover.jpg" />
+            <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
             <div class="cover-content">
               <marquee text-offset="25" scrollamount="30" class="itemtext" >{{$item.name}}</marquee>
               <marquee text-offset="25" scrollamount="40" class="itemtext2" >{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{(($item.progress.chapterIndex || 0) + 1)}} / {{$item.chapterCount}} 章</marquee>
@@ -70,8 +70,7 @@ export default {
     currentPage: 0,
     totalPages: 1,
     pageSize: 6,
-    lastReadOnTop: true,
-    checkCover: false
+    lastReadOnTop: true
   },
   exit(){
 	  app.terminate();
@@ -120,17 +119,15 @@ export default {
     });
   },
   async loadSettingsAndFiles() {
-    const [pageSize, shelfStyle, lastReadOnTop, checkCover] = await Promise.all([
+    const [pageSize, shelfStyle, lastReadOnTop] = await Promise.all([
       this.getStorage('EBOOK_SHELF_PAGE_SIZE', '6'),
       this.getStorage('EBOOK_SHELF_STYLE', 'list'),
-      this.getStorage('EBOOK_TOP_LAST_READ', 'true'),
-      this.getStorage('EBOOK_CHECK_COVER', 'false')
+      this.getStorage('EBOOK_TOP_LAST_READ', 'true')
     ]);
 
     this.pageSize = parseInt(pageSize);
     this.shelfStyle = shelfStyle;
     this.lastReadOnTop = lastReadOnTop === 'true';
-    this.checkCover = checkCover === 'true';
 
     this.loadFileList();
   },
@@ -172,40 +169,14 @@ export default {
       this.visibleBooks = this.allBooks.slice(start, end);
       this.currentPage = safePage;
       if (this.shelfStyle === 'cover') {
-        this.checkCovers();
+        this.visibleBooks.forEach(book => {
+            book.hasRealCover = !!(book.hasCover && book.coverFileName);
+        });
       }
     } else {
       this.visibleBooks = [];
       this.currentPage = 0;
     }
-  },
-  checkCovers() {
-    this.visibleBooks.forEach((book, index) => {
-      if (!this.checkCover) {
-        if (!book.hasRealCover) {
-          const newBook = Object.assign({}, book, { hasRealCover: true });
-          this.visibleBooks.splice(index, 1, newBook);
-        }
-        return;
-      }
-
-      const coverPath = `internal://files/books/${book.dirName}/cover.jpg`;
-      file.access({
-        uri: coverPath,
-        success: () => {
-          if (!book.hasRealCover) {
-            const newBook = Object.assign({}, book, { hasRealCover: true });
-            this.visibleBooks.splice(index, 1, newBook);
-          }
-        },
-        fail: () => {
-          if (book.hasRealCover) {
-             const newBook = Object.assign({}, book, { hasRealCover: false });
-             this.visibleBooks.splice(index, 1, newBook);
-          }
-        }
-      });
-    });
   },
   prevPage() {
     if (this.currentPage > 0) {

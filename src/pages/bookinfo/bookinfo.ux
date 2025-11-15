@@ -145,9 +145,9 @@ export default {
 		const bookDirUri = `internal://files/books/${this.name}/`;
 		const bookContentDirUri = `${bookDirUri}content/`;
 		const bookInfoUri = `${bookDirUri}book_info.json`;
-		const coverUri = `${bookDirUri}cover.jpg`;
 		const indexesUri = `${bookDirUri}indexes/`;
 		const lindexUri = `${bookDirUri}lindex.txt`;
+		let coverUri = '';
 
 
 		file.readText({
@@ -158,8 +158,9 @@ export default {
 					that.fileName = info.name || that.name;
 					that.wordCount = info.wordCount ? `${info.wordCount} 字` : '未知';
 					that.hasCover = info.hasCover || false;
-					if (that.hasCover) {
-						that.coverPath = coverUri;
+					if (that.hasCover && info.coverFileName) {
+						that.coverPath = bookDirUri + info.coverFileName;
+                        coverUri = that.coverPath;
 					}
 					that.author = info.author || '';
 					that.summary = info.summary || '';
@@ -167,20 +168,23 @@ export default {
 					that.category = info.category || '';
 
 					await that.calculateSyncProgress();
+                    await that.calculateStorage(bookDirUri, bookContentDirUri, bookInfoUri, indexesUri, lindexUri, coverUri);
 				} catch (e) {
 					that.fileName = that.name;
 					that.wordCount = '解析失败';
 					that.syncProgress = '未知';
+                    that.totalStorage = '计算失败';
 				}
 			},
 			fail: function(data, code) {
 				that.fileName = that.name;
 				that.wordCount = '加载失败';
 				that.syncProgress = '未知';
+                that.totalStorage = '计算失败';
 			}
 		});
-
-
+	},
+    async calculateStorage(bookDirUri, bookContentDirUri, bookInfoUri, indexesUri, lindexUri, coverUri) {
 		this.totalStorage = '计算中...';
 		this.chapterStorage = '计算中...';
 		this.coverStorage = '计算中...';
@@ -199,14 +203,16 @@ export default {
 						}
 					}
 				}
-        listResult = null;
+                listResult = null;
 			} catch(e) { }
 			this.chapterStorage = this.formatFileSize(chapterSize);
 			totalSize += chapterSize;
 			try {
-				let coverInfo = await runAsyncFunc(file.get, { uri: coverUri });
-				coverSize = coverInfo.length;
-        coverInfo = null;
+                if (coverUri) {
+				    let coverInfo = await runAsyncFunc(file.get, { uri: coverUri });
+				    coverSize = coverInfo.length;
+                    coverInfo = null;
+                }
 			} catch (e) {
 				coverSize = 0;
 			}
@@ -215,7 +221,7 @@ export default {
 			try {
 				let bookInfo = await runAsyncFunc(file.get, { uri: bookInfoUri });
 				indexSize += bookInfo.length;
-        bookInfo = null;
+                bookInfo = null;
 			} catch (e) { }
 			try {
 				let lindexInfo = await runAsyncFunc(file.get, { uri: lindexUri });
@@ -240,13 +246,9 @@ export default {
 			this.coverStorage = '计算失败';
 			this.indexStorage = '计算失败';
 		}
-	},
+    },
 	async calculateSyncProgress() {
 		const version = await chapterManager.checkVersion(this.name);
-		if (version === 'old') {
-			this.syncProgress = '格式过旧，需重新同步';
-			return;
-		}
 		if (version === 'none') {
 			this.syncProgress = '无章节信息';
 			return;

@@ -189,9 +189,6 @@
       },
       "pages/lastReadSetting": {
         "component": "lastReadSetting"
-      },
-      "pages/checkCoverSetting": {
-        "component": "checkCoverSetting"
       }
     }
   },
