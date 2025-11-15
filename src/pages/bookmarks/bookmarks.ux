@@ -6,8 +6,10 @@
     <list class="list" if="{{allBookmarks.length > 0}}">
       <list-item for="{{visibleBookmarks}}" class="item" type="bookmark">
         <div class="text-content" @click="jumpTo($idx)">
-          <marquee class="itemtext" scrollamount="20" text-offset="25">{{$item.name}}</marquee>
-          <marquee class="itemtext2" scrollamount="50" text-offset="25">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</marquee>
+          <marquee if="{{bookmarkMarqueeEnabled}}" class="itemtext" scrollamount="20" text-offset="25">{{$item.name}}</marquee>
+          <text else class="itemtext">{{$item.name}}</text>
+          <marquee if="{{bookmarkMarqueeEnabled}}" class="itemtext2" scrollamount="50" text-offset="25">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</marquee>
+          <text else class="itemtext2">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</text>
         </div>
         <div class="button-container">
           <img static src="/common/images/edit.png" @click="editBookmark($idx)" style="width: 72px; height: 72px;" />
@@ -39,6 +41,7 @@
 import router from '@system.router'
 import prompt from '@system.prompt'
 import bookStorage from '../../common/bookStorage.js'
+import storage from '../../common/storage.js'
 
 const PAGE_SIZE = 8;
 
@@ -50,7 +53,8 @@ export default {
     totalPages: 1,
     nowTime: "00:00",
     timer: null,
-    isNavigating: false
+    isNavigating: false,
+    bookmarkMarqueeEnabled: false
   },
   protected: {
     name: ''
@@ -71,6 +75,16 @@ export default {
   },
   async onShow() {
     this.isNavigating = false;
+    
+    storage.get({
+      key: 'EBOOK_BOOKMARK_MARQUEE_ENABLED',
+      success: (data) => {
+        this.bookmarkMarqueeEnabled = data === 'true';
+      },
+      fail: () => {
+        this.bookmarkMarqueeEnabled = false;
+      }
+    });
     
     await this.loadBookmarks();
   },

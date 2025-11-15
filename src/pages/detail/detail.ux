@@ -47,9 +47,12 @@
 		<text show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 			{{nowTime}}
 		</text>
-		<marquee scrollamount="50" show="{{showSetting}}" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<marquee if="{{textReaderMarqueeEnabled}}" scrollamount="50" show="{{showSetting}}" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 			{{currentChapterName}}
 		</marquee>
+		<text else show="{{showSetting}}" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;lines: 1;">
+			{{currentChapterName}}
+		</text>
 		<text if="{{showProgressBar && showProgressBarPercent}}" class="progress-bar-percent" style="bottom: {{progressBarHeight + 1}}px;">{{Math.round(chapterProgress)}}%</text>
 
 		<img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 336px;height: 102px;" />
@@ -157,7 +160,8 @@
 		nostalgicPageIndex: 0,
 		nostalgicPages: [],
 		nostalgicFullContent: '',
-		nostalgicCharsPerPage: 0
+		nostalgicCharsPerPage: 0,
+		textReaderMarqueeEnabled: false
 	  },
 	  protected: {
 		name: '',
@@ -254,9 +258,10 @@
 			{ key: 'EBOOK_TIME_FORMAT', prop: 'timeFormat', type: 'string', default: '24h' },
             { key: 'EBOOK_PROGRESS_SAVE_MODE', prop: 'saveMode', type: 'string', default: 'exit' },
 			{ key: 'EBOOK_PROGRESS_SAVE_INTERVAL', prop: 'saveIntervalValue', type: 'int', default: 10 },
-            { key: 'EBOOK_ALWAYS_SHOW_TIME', prop: 'alwaysShowTime', type: 'bool', default: false },
+			{ key: 'EBOOK_ALWAYS_SHOW_TIME', prop: 'alwaysShowTime', type: 'bool', default: false },
 			{ key: 'EBOOK_ALWAYS_SHOW_TIME_SENSITIVITY', prop: 'alwaysShowTimeSensitivity', type: 'int', default: 200 },
-			{ key: 'EBOOK_READ_MODE', prop: 'readMode', type: 'string', default: 'scroll' }
+			{ key: 'EBOOK_READ_MODE', prop: 'readMode', type: 'string', default: 'scroll' },
+			{ key: 'EBOOK_TEXT_READER_MARQUEE_ENABLED', prop: 'textReaderMarqueeEnabled', type: 'bool', default: false }
 		];
 	
 		const promises = settingsConfig.map(s => getSetting(s.key, s.default));

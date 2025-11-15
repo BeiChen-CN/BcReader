@@ -190,8 +190,8 @@
       "pages/lastReadSetting": {
         "component": "lastReadSetting"
       },
-      "pages/shelfMarqueeSetting": {
-        "component": "shelfMarqueeSetting"
+      "pages/marqueeSetting": {
+        "component": "marqueeSetting"
       },
       "pages/homeDisplaySetting": {
         "component": "homeDisplaySetting"

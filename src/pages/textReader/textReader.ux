@@ -7,7 +7,8 @@
         </scroll>
         <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
         <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">{{nowTime}}</text>
-        <marquee text-offset="25" scrollamount="40" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{title}}</marquee>
+        <marquee if="{{detailMarqueeEnabled}}" text-offset="25" scrollamount="40" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{title}}</marquee>
+        <text else style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{title}}</text>
 		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
     </div>
 </template>
@@ -25,7 +26,8 @@
             fontSize: 26,
             opacity: 100,
             verticalMargin: 10,
-            lineHeight: 30
+            lineHeight: 30,
+            detailMarqueeEnabled: false
         },
         onInit() {
             this.title = this.pageTitle || '详情';
@@ -34,6 +36,9 @@
             this.timer = setInterval(() => {
                 this.updateTime();
             }, 1000);
+            this.loadSettings();
+        },
+        onShow() {
             this.loadSettings();
         },
         onDestroy() {
@@ -72,6 +77,15 @@
                     if (data) {
                         this.verticalMargin = parseInt(data);
                     }
+                }
+            });
+            storage.get({
+                key: 'EBOOK_DETAIL_MARQUEE_ENABLED',
+                success: (data) => {
+                    this.detailMarqueeEnabled = data === 'true';
+                },
+                fail: () => {
+                    this.detailMarqueeEnabled = false;
                 }
             });
         },

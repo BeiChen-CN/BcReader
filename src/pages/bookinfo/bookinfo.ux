@@ -7,11 +7,13 @@
 			
 			<list-item class="item" type="info">
 				<text class="item-title" static>文件名</text>
-				<marquee class="item-value" scrollamount="50" text-offset="25">{{fileName}}</marquee>
+				<marquee if="{{bookinfoMarqueeEnabled}}" class="item-value" scrollamount="50" text-offset="25">{{fileName}}</marquee>
+				<text else class="item-value">{{fileName}}</text>
 			</list-item>
 			<list-item class="item" type="info" if="{{author}}">
 				<text class="item-title" static>作者</text>
-				<marquee class="item-value" scrollamount="50" text-offset="25">{{author}}</marquee>
+				<marquee if="{{bookinfoMarqueeEnabled}}" class="item-value" scrollamount="50" text-offset="25">{{author}}</marquee>
+				<text else class="item-value">{{author}}</text>
 			</list-item>
 			<list-item class="item" type="info" style="height: 240px; flex-direction: column;">
 				<text class="item-title" static>占用空间</text>
@@ -92,7 +94,8 @@ export default {
 		category: '',
 		localCategory: '',
 		syncProgress: '计算中...',
-        timeFormat: '24h'
+        timeFormat: '24h',
+		bookinfoMarqueeEnabled: true
 	},
 	protected: {
 		cPath: '',
@@ -125,10 +128,30 @@ export default {
                 this.updateTime();
             }
         });
+		storage.get({
+			key: 'EBOOK_BOOKINFO_MARQUEE_ENABLED',
+			success: (data) => {
+				this.bookinfoMarqueeEnabled = data === 'true';
+			},
+			fail: () => {
+				this.bookinfoMarqueeEnabled = true;
+			}
+		});
 		this.timer = setInterval(() => {
 			this.updateTime();
 		}, 1000);
 		this.loadFileInfo();
+	},
+	onShow() {
+		storage.get({
+			key: 'EBOOK_BOOKINFO_MARQUEE_ENABLED',
+			success: (data) => {
+				this.bookinfoMarqueeEnabled = data === 'true';
+			},
+			fail: () => {
+				this.bookinfoMarqueeEnabled = true;
+			}
+		});
 	},
 	onDestroy() {
 		if (this.timer) {
