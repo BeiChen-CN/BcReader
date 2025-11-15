@@ -195,6 +195,9 @@
       },
       "pages/homeDisplaySetting": {
         "component": "homeDisplaySetting"
+      },
+      "pages/readModeSetting": {
+        "component": "readModeSetting"
       }
     }
   },

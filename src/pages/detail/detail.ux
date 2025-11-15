@@ -1,6 +1,7 @@
 <template>
 	<div class="page">
 	  <scroll id="scrollId"
+		if="{{readMode !== 'nostalgic'}}"
 		style="position: absolute; width: 336px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;"
 		scroll-y="{{true}}"
 		scroll-top="{{scrollTopValue}}"
@@ -29,6 +30,17 @@
 			</div>
 		</div>
 	  </scroll>
+	  <div if="{{readMode === 'nostalgic'}}" 
+		id="nostalgicContainer"
+		style="position: absolute; width: 336px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;"
+		@click="onNostalgicClick"
+		onlongpress="onTxtLongPress">
+		<div id="nostalgicContent" style="position: absolute; width:336px; height: {{scrollHeight}}px; flex-direction: column; justify-content: flex-start; pointer-events: none;">
+		  <div id="nostalgicPage" style="flex-direction: column; width: 100%; height: 100%; pointer-events: none;">
+			<text style="width: 336px; height: {{scrollHeight}}px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; overflow: hidden; pointer-events: none;">{{ nostalgicPageText }}</text>
+		  </div>
+		</div>
+	  </div>
 	  <img show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
 		<img show="{{showSetting}}" src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
 		<img show="{{showSetting}}" src="/common/images/more.png" @click="gotoSetting" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
@@ -139,7 +151,13 @@
 		alwaysShowTimeSensitivity: 50,
 		isNearTopForHd: false,
 		lastTxtSizePage: 400,
-		lastFontSize: 30
+		lastFontSize: 30,
+		readMode: 'scroll',
+		nostalgicPageText: '',
+		nostalgicPageIndex: 0,
+		nostalgicPages: [],
+		nostalgicFullContent: '',
+		nostalgicCharsPerPage: 0
 	  },
 	  protected: {
 		name: '',
@@ -235,9 +253,10 @@
 			{ key: 'EBOOK_PRELOAD_CHAPTER', prop: 'preloadChapter', type: 'bool', default: false },
 			{ key: 'EBOOK_TIME_FORMAT', prop: 'timeFormat', type: 'string', default: '24h' },
             { key: 'EBOOK_PROGRESS_SAVE_MODE', prop: 'saveMode', type: 'string', default: 'exit' },
-            { key: 'EBOOK_PROGRESS_SAVE_INTERVAL', prop: 'saveIntervalValue', type: 'int', default: 10 },
+			{ key: 'EBOOK_PROGRESS_SAVE_INTERVAL', prop: 'saveIntervalValue', type: 'int', default: 10 },
             { key: 'EBOOK_ALWAYS_SHOW_TIME', prop: 'alwaysShowTime', type: 'bool', default: false },
-			{ key: 'EBOOK_ALWAYS_SHOW_TIME_SENSITIVITY', prop: 'alwaysShowTimeSensitivity', type: 'int', default: 200 }
+			{ key: 'EBOOK_ALWAYS_SHOW_TIME_SENSITIVITY', prop: 'alwaysShowTimeSensitivity', type: 'int', default: 200 },
+			{ key: 'EBOOK_READ_MODE', prop: 'readMode', type: 'string', default: 'scroll' }
 		];
 	
 		const promises = settingsConfig.map(s => getSetting(s.key, s.default));
@@ -262,6 +281,13 @@
 	
 		this.lineHeight = parseInt((-0.01)*(this.fontSize**2) + 1.62*this.fontSize - 3.23);
 		this.updateScrollHeight();
+		if (this.readMode === 'nostalgic') {
+			this.calculateNostalgicCharsPerPage();
+			if (this.nostalgicFullContent) {
+				this.splitNostalgicContent();
+				this.updateNostalgicPage();
+			}
+		}
 	},
 	updateContentHeight() {
 		setTimeout(() => {
@@ -275,6 +301,38 @@
 	updateScrollHeight() {
 		this.scrollHeight = 480 - this.verticalMargin * 2;
 		this.pageHeigh = Math.floor(this.scrollHeight/this.lineHeight) * this.lineHeight;
+	},
+	calculateNostalgicCharsPerPage() {
+		const screenWidth = 336;
+		const screenHeight = this.scrollHeight;
+		
+		if (screenHeight <= 0 || this.lineHeight <= 0 || this.fontSize <= 0) {
+			this.nostalgicCharsPerPage = 100;
+			return;
+		}
+		
+		const linesPerPage = Math.floor(screenHeight / this.lineHeight);
+		if (linesPerPage <= 0) {
+			this.nostalgicCharsPerPage = 100;
+			return;
+		}
+		
+		const charWidth = this.fontSize;
+		const charsPerLine = Math.floor(screenWidth / charWidth);
+		
+		if (charsPerLine <= 0) {
+			this.nostalgicCharsPerPage = 100;
+			return;
+		}
+		
+		this.nostalgicCharsPerPage = linesPerPage * charsPerLine;
+		
+		if (this.nostalgicCharsPerPage <= 0) {
+			this.nostalgicCharsPerPage = 100;
+		}
+		if (this.nostalgicCharsPerPage > 10000) {
+			this.nostalgicCharsPerPage = 10000;
+		}
 	},
 	async loadBook() {
 		try {
@@ -376,16 +434,21 @@
 		this._bookmarkOffsetInChapter = fromBookmark ? offsetInChapter : null;
 
 		this.loadChapter(chapterArrayIndex, () => {
-			this.loadInitialSegments();
-			
-			if (fromChapterJump || shouldScrollToTop) {
-				this.isAtChapterStart = shouldScrollToTop;
-			} else if (this.currentFileOffset === 0 && this.savedScrollOffset < 10) {
-				this.isAtChapterStart = true;
+			if (this.readMode === 'nostalgic') {
+				this.wait = false;
+				this.loadNostalgicChapter(offsetInChapter);
 			} else {
-				this.isAtChapterStart = false;
+				this.loadInitialSegments();
+				
+				if (fromChapterJump || shouldScrollToTop) {
+					this.isAtChapterStart = shouldScrollToTop;
+				} else if (this.currentFileOffset === 0 && this.savedScrollOffset < 10) {
+					this.isAtChapterStart = true;
+				} else {
+					this.isAtChapterStart = false;
+				}
+				this.isNearTopForHd = this.currentFileOffset === 0 && this.savedScrollOffset < this.alwaysShowTimeSensitivity;
 			}
-			this.isNearTopForHd = this.currentFileOffset === 0 && this.savedScrollOffset < this.alwaysShowTimeSensitivity;
 		});
 	},
 	async loadChapter(chapterIdxInAll, callback) {
@@ -426,7 +489,7 @@
 			success: (data) => {
 				this.allSize = data.length;
 				this.updatePageNumber();
-                if (this.preloadChapter && this.allSize > 0) {
+                if (this.readMode === 'nostalgic' || (this.preloadChapter && this.allSize > 0)) {
                     file.readArrayBuffer({
                         uri: this.cPath,
                         success: (arrData) => {
@@ -440,14 +503,23 @@
                                       chars.push(String.fromCharCode(buffer[i+1]*256 + buffer[i]));
                                     }
                                     this.chapterContentCache = chars.join('');
+                                    if (this.readMode === 'nostalgic') {
+                                        this.nostalgicFullContent = this.chapterContentCache;
+                                    }
                                 }
                             } catch(e) {
                                 this.chapterContentCache = null;
+                                if (this.readMode === 'nostalgic') {
+                                    this.nostalgicFullContent = "";
+                                }
                             }
                             if(callback) callback();
                         },
                         fail: () => {
                             this.chapterContentCache = null;
+                            if (this.readMode === 'nostalgic') {
+                                this.nostalgicFullContent = "";
+                            }
                             if(callback) callback();
                         }
                     });
@@ -839,11 +911,15 @@
         this.currentScrollTop = 0;
 
         this.loadChapter(prevChapterIndex, () => {
-            this.page1 = { text: "加载中...", offset: 0, length: 0 };
-            this.page2 = null;
-            this.loadInitialSegments();
-            this.isAtChapterStart = true;
-            this.isNearTopForHd = true;
+            if (this.readMode === 'nostalgic') {
+                this.loadNostalgicChapter(-1);
+            } else {
+                this.page1 = { text: "加载中...", offset: 0, length: 0 };
+                this.page2 = null;
+                this.loadInitialSegments();
+                this.isAtChapterStart = true;
+                this.isNearTopForHd = true;
+            }
             this.chapterProgress = 0;
             this.saveData(true);
         });
@@ -906,11 +982,15 @@
 		this.currentScrollTop = 0;
 		
 		this.loadChapter(nextChapterIndex, () => {
-			this.page1 = { text: "加载中...", offset: 0, length: 0 };
-			this.page2 = null;
-			this.loadInitialSegments();
-			this.isAtChapterStart = false;
-			this.isNearTopForHd = true;
+			if (this.readMode === 'nostalgic') {
+				this.loadNostalgicChapter(0);
+			} else {
+				this.page1 = { text: "加载中...", offset: 0, length: 0 };
+				this.page2 = null;
+				this.loadInitialSegments();
+				this.isAtChapterStart = false;
+				this.isNearTopForHd = true;
+			}
 			this.chapterProgress = 0;
 			this.saveData(true);
 		});
@@ -940,8 +1020,20 @@
 			let progress = await bookStorage.get(this.name);
 			
 			progress.chapterIndex = this.currentChapterIndexInAll;
-			progress.offsetInChapter = Math.max(0, Math.floor(this.currentFileOffset || 0));
-			progress.scrollOffset = Math.max(0, Math.floor(this.currentScrollTop || 0));
+			
+			if (this.readMode === 'nostalgic') {
+				if (this.nostalgicPageIndex >= 0 && this.nostalgicPages.length > 0) {
+					const charOffset = this.nostalgicPageIndex * this.nostalgicCharsPerPage;
+					progress.offsetInChapter = Math.max(0, charOffset * 2);
+					progress.scrollOffset = 0;
+				} else {
+					progress.offsetInChapter = 0;
+					progress.scrollOffset = 0;
+				}
+			} else {
+				progress.offsetInChapter = Math.max(0, Math.floor(this.currentFileOffset || 0));
+				progress.scrollOffset = Math.max(0, Math.floor(this.currentScrollTop || 0));
+			}
 			
 			progress.txtSizePage = this.txtSizePage;
 			progress.fontSize = this.fontSize;
@@ -1080,6 +1172,232 @@
 		
 		app.terminate();
 	},
+	loadNostalgicChapter(offsetInChapter) {
+		if (!this.nostalgicFullContent) {
+			this.nostalgicPageText = "加载中...";
+			this.nostalgicPages = [];
+			this.nostalgicPageIndex = 0;
+			this.wait = false;
+			return;
+		}
+		
+		this.calculateNostalgicCharsPerPage();
+		this.splitNostalgicContent();
+		
+		if (offsetInChapter === -1) {
+			this.nostalgicPageIndex = Math.max(0, this.nostalgicPages.length - 1);
+		} else if (offsetInChapter > 0 && this.nostalgicFullContent.length > 0 && this.nostalgicCharsPerPage > 0) {
+			const charOffset = offsetInChapter / 2;
+			const targetPageIndex = Math.floor(charOffset / this.nostalgicCharsPerPage);
+			this.nostalgicPageIndex = Math.min(targetPageIndex, Math.max(0, this.nostalgicPages.length - 1));
+		} else {
+			this.nostalgicPageIndex = 0;
+		}
+		
+		this.updateNostalgicPage();
+		this.isAtChapterStart = this.nostalgicPageIndex === 0;
+		this.isAtChapterEnd = this.nostalgicPageIndex >= this.nostalgicPages.length - 1;
+		this.isNearTopForHd = this.nostalgicPageIndex === 0;
+		this.updateChapterProgress();
+		this.wait = false;
+	},
+	splitNostalgicContent() {
+		if (!this.nostalgicFullContent || this.nostalgicCharsPerPage <= 0) {
+			this.nostalgicPages = [];
+			return;
+		}
+		
+		const pages = [];
+		let start = 0;
+		const screenWidth = 336;
+		const screenHeight = this.scrollHeight;
+		const linesPerPage = Math.floor(screenHeight / this.lineHeight);
+		const charsPerLine = Math.floor(screenWidth / this.fontSize);
+		
+		if (linesPerPage <= 0 || charsPerLine <= 0) {
+			if (this.nostalgicFullContent.length > 0) {
+				this.nostalgicPages = [this.nostalgicFullContent];
+			} else {
+				this.nostalgicPages = [];
+			}
+			return;
+		}
+		
+		while (start < this.nostalgicFullContent.length) {
+			let currentLine = 0;
+			let currentLineChars = 0;
+			let end = start;
+			
+			while (end < this.nostalgicFullContent.length && currentLine < linesPerPage) {
+				const char = this.nostalgicFullContent[end];
+				
+				if (char === '\n') {
+					currentLine++;
+					currentLineChars = 0;
+					end++;
+				} else {
+					currentLineChars++;
+					if (currentLineChars >= charsPerLine) {
+						currentLine++;
+						currentLineChars = 0;
+					}
+					end++;
+				}
+			}
+			
+			if (end > this.nostalgicFullContent.length) {
+				end = this.nostalgicFullContent.length;
+			}
+			
+			if (this.preventParagraphSplitting && end < this.nostalgicFullContent.length) {
+				const lastNewline = this.nostalgicFullContent.lastIndexOf('\n', end);
+				if (lastNewline > start) {
+					end = lastNewline + 1;
+				}
+			}
+			
+			if (end <= start) {
+				end = Math.min(start + this.nostalgicCharsPerPage, this.nostalgicFullContent.length);
+			}
+			
+			const pageText = this.nostalgicFullContent.substring(start, end);
+			
+			if (pageText.length > 0) {
+				pages.push(pageText);
+			} else {
+				break;
+			}
+			
+			start = end;
+		}
+		
+		if (pages.length === 0 && this.nostalgicFullContent.length > 0) {
+			pages.push(this.nostalgicFullContent);
+		}
+		
+		this.nostalgicPages = pages;
+	},
+	updateNostalgicPage() {
+		if (this.nostalgicPages.length === 0) {
+			this.nostalgicPageText = "";
+			return;
+		}
+		
+		if (this.nostalgicPageIndex < 0) {
+			this.nostalgicPageIndex = 0;
+		}
+		if (this.nostalgicPageIndex >= this.nostalgicPages.length) {
+			this.nostalgicPageIndex = this.nostalgicPages.length - 1;
+		}
+		
+		this.nostalgicPageText = this.nostalgicPages[this.nostalgicPageIndex] || "";
+		this.isAtChapterStart = this.nostalgicPageIndex === 0;
+		this.isAtChapterEnd = this.nostalgicPageIndex >= this.nostalgicPages.length - 1;
+		this.updateChapterProgress();
+		this.saveData(true);
+	},
+	onNostalgicClick(event) {
+		if (this.wait) return;
+
+		if (this.teacherScreenEnabled) {
+			this.clickCount++;
+			if (this.clickTimeout) {
+				clearTimeout(this.clickTimeout);
+			}
+
+			if (this.clickCount >= 3) {
+				this.clickCount = 0;
+				clearTimeout(this.clickTimeout);
+				this.clickTimeout = null;
+				this.exitAppForTeacherScreen();
+				return;
+			}
+
+			this.clickTimeout = setTimeout(() => {
+				this.clickCount = 0;
+				this.clickTimeout = null;
+			}, 500);
+		}
+
+		const handleUIToggle = () => {
+			this.showSetting = !this.showSetting;
+		}
+
+		if (this.gestureMode === 'double') {
+			this.gestureClickCount++;
+			if (this.gestureClickTimeout) {
+				clearTimeout(this.gestureClickTimeout);
+				this.gestureClickTimeout = null;
+			}
+			if (this.gestureClickCount === 2) {
+				this.gestureClickCount = 0;
+				this.gestureClickTimeout = null;
+				handleUIToggle();
+			} else {
+				this.gestureClickTimeout = setTimeout(() => {
+					this.gestureClickCount = 0;
+					this.gestureClickTimeout = null;
+					if (!this.showSetting) {
+						const clickY = event.offsetY || (event.detail && event.detail.y) || 0;
+						const containerHeight = this.scrollHeight;
+						const topThird = containerHeight / 3;
+						const bottomThird = containerHeight * 2 / 3;
+						
+						if (clickY < topThird) {
+							if (this.isAtChapterStart && this.currentChapterIndexInAll > 0) {
+								this.goToPrevChapter();
+							} else {
+								this.nostalgicPrevPage();
+							}
+						} else if (clickY > bottomThird) {
+							if (this.isAtChapterEnd && this.currentChapterIndexInAll < this.totalChapters - 1) {
+								this.goToNextChapter();
+							} else {
+								this.nostalgicNextPage();
+							}
+						}
+					}
+				}, 300);
+			}
+		} else {
+			if (this.showSetting) {
+				handleUIToggle();
+			} else {
+				const clickY = event.offsetY || (event.detail && event.detail.y) || 0;
+				const containerHeight = this.scrollHeight;
+				const topThird = containerHeight / 3;
+				const bottomThird = containerHeight * 2 / 3;
+				
+				if (clickY < topThird) {
+					if (this.isAtChapterStart && this.currentChapterIndexInAll > 0) {
+						this.goToPrevChapter();
+					} else {
+						this.nostalgicPrevPage();
+					}
+				} else if (clickY > bottomThird) {
+					if (this.isAtChapterEnd && this.currentChapterIndexInAll < this.totalChapters - 1) {
+						this.goToNextChapter();
+					} else {
+						this.nostalgicNextPage();
+					}
+				} else {
+					handleUIToggle();
+				}
+			}
+		}
+	},
+	nostalgicNextPage() {
+		if (this.nostalgicPageIndex < this.nostalgicPages.length - 1) {
+			this.nostalgicPageIndex++;
+			this.updateNostalgicPage();
+		}
+	},
+	nostalgicPrevPage() {
+		if (this.nostalgicPageIndex > 0) {
+			this.nostalgicPageIndex--;
+			this.updateNostalgicPage();
+		}
+	},
   	onTxtClick(event) {
 		if (this.wait) return;
 
@@ -1145,14 +1463,22 @@
 			}
 		}
 	},
-	onTxtLongPress(event) {
+		onTxtLongPress(event) {
   		if (this.auto) {
 			if(this.autoInterval){ clearInterval(this.autoInterval); this.autoInterval = null; prompt.showToast({ message: '已关闭自动翻页' }); if (!this.isKeepScreenOn) { brightness.setKeepScreenOn({ keepScreenOn: false }); } return; }
 			this.autoInterval = setInterval(() => {
-				if (this.isAtChapterEnd) {
-					this.goToNextChapter();
+				if (this.readMode === 'nostalgic') {
+					if (this.isAtChapterEnd) {
+						this.goToNextChapter();
+					} else {
+						this.nostalgicNextPage();
+					}
 				} else {
-					this.nextPage();
+					if (this.isAtChapterEnd) {
+						this.goToNextChapter();
+					} else {
+						this.nextPage();
+					}
 				}
 			}, this.auto*1000);
 			prompt.showToast({ message: '已开启自动翻页' });
@@ -1232,17 +1558,26 @@
 			return;
 		}
 
-		if (this.allSize > 0) {
-			let totalScrolledBytes = this.currentFileOffset;
-            if (this.contentHeight > 0) {
-                const loadedContentBytes = this.page1.length + (this.page2 ? this.page2.length : 0);
-                const bytesPerPixel = loadedContentBytes / this.contentHeight;
-                totalScrolledBytes += this.currentScrollTop * bytesPerPixel;
-            }
-			const progress = (totalScrolledBytes / this.allSize) * 100;
-			this.chapterProgress = Math.min(100, Math.max(0, progress || 0));
+		if (this.readMode === 'nostalgic') {
+			if (this.nostalgicPages.length > 0 && this.nostalgicPageIndex >= 0) {
+				const progress = ((this.nostalgicPageIndex + 1) / this.nostalgicPages.length) * 100;
+				this.chapterProgress = Math.min(100, Math.max(0, progress || 0));
+			} else {
+				this.chapterProgress = 0;
+			}
 		} else {
-			this.chapterProgress = 0;
+			if (this.allSize > 0) {
+				let totalScrolledBytes = this.currentFileOffset;
+				if (this.contentHeight > 0) {
+					const loadedContentBytes = this.page1.length + (this.page2 ? this.page2.length : 0);
+					const bytesPerPixel = loadedContentBytes / this.contentHeight;
+					totalScrolledBytes += this.currentScrollTop * bytesPerPixel;
+				}
+				const progress = (totalScrolledBytes / this.allSize) * 100;
+				this.chapterProgress = Math.min(100, Math.max(0, progress || 0));
+			} else {
+				this.chapterProgress = 0;
+			}
 		}
 	}
 	}
