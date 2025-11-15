@@ -316,7 +316,6 @@
 			shouldScrollToTop = true;
 			globalThis.justJumpedFromChapter = false;
 		} else if (globalThis.justJumpedFromPageNumber) {
-			
 			chapterToLoadIndex = globalThis.justJumpedChapterIndex !== undefined ? globalThis.justJumpedChapterIndex : progress.chapterIndex;
 			offsetInChapter = 0;
 			scrollOffset = 0;
@@ -324,7 +323,6 @@
 			globalThis.justJumpedFromPageNumber = false;
 			delete globalThis.justJumpedChapterIndex;
 		} else if (globalThis.justJumpedFromBookmark) {
-			
 			chapterToLoadIndex = globalThis.justJumpedBookmarkChapterIndex !== undefined 
 				? globalThis.justJumpedBookmarkChapterIndex 
 				: progress.chapterIndex;
@@ -347,25 +345,19 @@
 		
 		
 		if (oldTxtSizePage !== this.txtSizePage || oldFontSize !== this.fontSize) {
-			
 			const fontSizeRatio = oldFontSize > 0 ? this.fontSize / oldFontSize : 1;
-			
 			const txtSizePageRatio = oldTxtSizePage > 0 ? this.txtSizePage / oldTxtSizePage : 1;
-			
-			
 			
 			if (txtSizePageRatio !== 1 && offsetInChapter > 0) {
 				offsetInChapter = Math.floor(offsetInChapter * txtSizePageRatio);
 			}
-			
-			
 			
 			if (fontSizeRatio !== 1 && scrollOffset > 0) {
 				scrollOffset = Math.floor(scrollOffset * fontSizeRatio);
 			}
 		}
 
-     progress = null;
+     	progress = null;
 
 		let chapterArrayIndex = chapterToLoadIndex;
 
@@ -379,7 +371,6 @@
 		this.scrollTopValue = scrollOffset;
 		this.currentScrollTop = scrollOffset;
 		
-		
 		this._shouldScrollToTop = shouldScrollToTop;
 		this._fromBookmark = fromBookmark;
 
@@ -387,10 +378,8 @@
 			this.loadInitialSegments();
 			
 			if (fromChapterJump || shouldScrollToTop) {
-				
 				this.isAtChapterStart = shouldScrollToTop;
 			} else if (this.currentFileOffset === 0 && this.savedScrollOffset < 10) {
-				
 				this.isAtChapterStart = true;
 			} else {
 				this.isAtChapterStart = false;
@@ -635,7 +624,6 @@
 		this.updateChapterProgress();
 		this.isAtChapterStart = this.currentFileOffset === 0 && this.currentScrollTop < 10;
 		this.isNearTopForHd = this.currentFileOffset === 0 && this.currentScrollTop < this.alwaysShowTimeSensitivity;
-		this.saveData();
 
 		if (this.contentHeight > this.scrollHeight) {
 			const isNearBottom = this.currentScrollTop >= (this.contentHeight - this.scrollHeight - this.chapterSwitchSensitivity);
@@ -923,12 +911,9 @@
 	async _performSave() {
 		if (!this.name || this.totalChapters === 0) return;
 		try {
-			const chapter = await chapterManager.getChapterByIndex(this.name, this.currentChapterIndexInAll);
-			if (!chapter || chapter.index === undefined) return;
-	
 			let progress = await bookStorage.get(this.name);
 			
-			progress.chapterIndex = chapter.index;
+			progress.chapterIndex = this.currentChapterIndexInAll;
 			progress.offsetInChapter = Math.max(0, Math.floor(this.currentFileOffset || 0));
 			progress.scrollOffset = Math.max(0, Math.floor(this.currentScrollTop || 0));
 			
@@ -1186,7 +1171,6 @@
 		bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
 		
 		try {
-			
 			await bookStorage.setBookmarks(this.name, bookmarks);
 			prompt.showToast({ message: '添加书签成功' });
 		} catch (e) {
