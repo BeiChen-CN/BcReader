@@ -69,25 +69,10 @@ export default {
       this.updateTime();
     }, 1000);
   },
-  onShow() {
+  async onShow() {
     this.isNavigating = false;
-    if (globalThis.bookmarkDeleted && globalThis.bookmarkDeleted.bookName === this.name) {
-        this.allBookmarks.splice(globalThis.bookmarkDeleted.index, 1);
-        this.totalPages = Math.ceil(this.allBookmarks.length / PAGE_SIZE) || 1;
-        if (this.currentPage >= this.totalPages && this.currentPage > 0) {
-            this.currentPage = this.totalPages - 1;
-        }
-        this.updateVisibleBookmarks();
-        delete globalThis.bookmarkDeleted;
-    } else if (globalThis.bookmarkEdited && globalThis.bookmarkEdited.bookName === this.name) {
-        if (this.allBookmarks[globalThis.bookmarkEdited.index]) {
-            this.allBookmarks[globalThis.bookmarkEdited.index].name = globalThis.bookmarkEdited.newName;
-        }
-        this.updateVisibleBookmarks();
-        delete globalThis.bookmarkEdited;
-    } else {
-        this.loadBookmarks();
-    }
+    
+    await this.loadBookmarks();
   },
   onDestroy() {
     if (this.timer) {
@@ -101,9 +86,8 @@ export default {
     }
   },
   async loadBookmarks() {
-    let progress = await bookStorage.get(this.name);
-    this.allBookmarks = progress.bookmarks || [];
-    progress = null;
+    
+    this.allBookmarks = await bookStorage.getBookmarks(this.name);
     this.totalPages = Math.ceil(this.allBookmarks.length / PAGE_SIZE) || 1;
     this.currentPage = 0;
     this.updateVisibleBookmarks();
@@ -132,16 +116,31 @@ export default {
     const realIndex = this.currentPage * PAGE_SIZE + index;
     const bookmark = this.allBookmarks[realIndex];
     
+    if (!bookmark) {
+      prompt.showToast({ message: '书签不存在', duration: 2000 });
+      this.isNavigating = false;
+      return;
+    }
+
+    
     const progressData = {
-        chapterIndex: bookmark.chapterIndex,
-        offsetInChapter: bookmark.offsetInChapter,
-        scrollOffset: bookmark.scrollOffset
+        chapterIndex: bookmark.chapterIndex !== undefined && bookmark.chapterIndex !== null 
+            ? parseInt(bookmark.chapterIndex) 
+            : null,
+        offsetInChapter: typeof bookmark.offsetInChapter === 'number' 
+            ? Math.max(0, Math.floor(bookmark.offsetInChapter)) 
+            : 0,
+        scrollOffset: typeof bookmark.scrollOffset === 'number' 
+            ? Math.max(0, Math.floor(bookmark.scrollOffset)) 
+            : 0
     };
 
     try {
+      
       await bookStorage.set(this.name, progressData);
       prompt.showToast({ message: '正在跳转...', duration: 500 });
       globalThis.justJumpedFromBookmark = true;
+      globalThis.justJumpedBookmarkChapterIndex = progressData.chapterIndex;
       router.back();
     } catch (e) {
       prompt.showToast({ message: '跳转失败', duration: 2000 });

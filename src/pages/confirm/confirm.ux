@@ -87,16 +87,17 @@ export default {
         }
 
         try {
-            let progress = await bookStorage.get(this.bookName);
-            if (progress.bookmarks && progress.bookmarks[this.bookmarkIndex] !== undefined) {
-                progress.bookmarks.splice(this.bookmarkIndex, 1);
-                await bookStorage.set(this.bookName, progress);
-                progress = null;
+            
+            let bookmarks = await bookStorage.getBookmarks(this.bookName);
+            if (bookmarks && bookmarks[this.bookmarkIndex] !== undefined) {
+                bookmarks.splice(this.bookmarkIndex, 1);
+                
+                await bookStorage.setBookmarks(this.bookName, bookmarks);
+                bookmarks = null;
                 prompt.showToast({ message: '删除成功' });
-                globalThis.bookmarkDeleted = { bookName: this.bookName, index: this.bookmarkIndex };
                 router.back();
             } else {
-                progress = null;
+                bookmarks = null;
                 prompt.showToast({ message: '找不到书签' });
                 router.back();
             }

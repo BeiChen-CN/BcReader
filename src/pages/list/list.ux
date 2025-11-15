@@ -181,11 +181,23 @@ export default {
         this.loadPage(this.currentPage + 1);
     }
   },
-  selectChapter(chapter) {
-    globalThis.justJumpedFromChapter = true;
-    globalThis.newChapterIndex = chapter.index;
-    globalThis.newChapterName = chapter.name;
-    router.back();
+  async selectChapter(chapter) {
+    try {
+      
+      let progress = await bookStorage.get(this.name);
+      progress.chapterIndex = chapter.index;
+      progress.offsetInChapter = 0;
+      progress.scrollOffset = 0;
+      await bookStorage.set(this.name, progress);
+      progress = null;
+      
+      globalThis.justJumpedFromChapter = true;
+      globalThis.newChapterIndex = chapter.index;
+      globalThis.newChapterName = chapter.name;
+      router.back();
+    } catch (e) {
+      prompt.showToast({ message: '跳转失败', duration: 2000 });
+    }
   },
   back() {
     router.back();

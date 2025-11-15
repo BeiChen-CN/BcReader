@@ -294,6 +294,8 @@
 		let offsetInChapter = 0;
 		let scrollOffset = 0;
 		let fromChapterJump = false;
+		let shouldScrollToTop = false;
+		let fromBookmark = false;
 
 		if (globalThis.justJumpedFromChapter) {
 			fromChapterJump = true;
@@ -301,13 +303,26 @@
 			this.currentChapterName = this.chapterName;
 			offsetInChapter = 0;
 			scrollOffset = 0;
+			shouldScrollToTop = true;
 			globalThis.justJumpedFromChapter = false;
-		} else if (globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber) {
-			chapterToLoadIndex = progress.chapterIndex;
+		} else if (globalThis.justJumpedFromPageNumber) {
+			
+			chapterToLoadIndex = globalThis.justJumpedChapterIndex !== undefined ? globalThis.justJumpedChapterIndex : progress.chapterIndex;
+			offsetInChapter = 0;
+			scrollOffset = 0;
+			shouldScrollToTop = true;
+			globalThis.justJumpedFromPageNumber = false;
+			delete globalThis.justJumpedChapterIndex;
+		} else if (globalThis.justJumpedFromBookmark) {
+			
+			chapterToLoadIndex = globalThis.justJumpedBookmarkChapterIndex !== undefined 
+				? globalThis.justJumpedBookmarkChapterIndex 
+				: progress.chapterIndex;
 			offsetInChapter = progress.offsetInChapter || 0;
 			scrollOffset = progress.scrollOffset || 0;
+			fromBookmark = true;
 			globalThis.justJumpedFromBookmark = false;
-			globalThis.justJumpedFromPageNumber = false;
+			delete globalThis.justJumpedBookmarkChapterIndex;
 		} else if (progress.chapterIndex !== null) {
 			chapterToLoadIndex = progress.chapterIndex;
 			offsetInChapter = progress.offsetInChapter || 0;
@@ -338,13 +353,22 @@
 		this.savedScrollOffset = scrollOffset;
 		this.scrollTopValue = scrollOffset;
 		this.currentScrollTop = scrollOffset;
+		
+		
+		this._shouldScrollToTop = shouldScrollToTop;
+		this._fromBookmark = fromBookmark;
 
 		this.loadChapter(chapterArrayIndex, () => {
 			this.loadInitialSegments();
-			if (fromChapterJump) {
-				this.isAtChapterStart = false;
+			
+			if (fromChapterJump || shouldScrollToTop) {
+				
+				this.isAtChapterStart = shouldScrollToTop;
+			} else if (this.currentFileOffset === 0 && this.savedScrollOffset < 10) {
+				
+				this.isAtChapterStart = true;
 			} else {
-				this.isAtChapterStart = this.currentFileOffset === 0 && this.savedScrollOffset < 10;
+				this.isAtChapterStart = false;
 			}
 			this.isNearTopForHd = this.currentFileOffset === 0 && this.savedScrollOffset < this.alwaysShowTimeSensitivity;
 		});
@@ -455,20 +479,68 @@
 	},
 	restoreScrollPosition() {
 		setTimeout(() => {
-			this.scrollTopValue = this.savedScrollOffset;
-			this.currentScrollTop = this.savedScrollOffset;
-			this.$element("contentContainer").getBoundingClientRect({
-				success: (rect) => {
-					this.contentHeight = rect.height;
-					this.updateChapterProgress();
-					this.wait = false;
-					this.saveData(true);
-				},
-				fail: () => {
-					this.wait = false;
+			
+			const shouldScrollToTop = this._shouldScrollToTop || (this.currentFileOffset === 0 && this.savedScrollOffset === 0);
+			
+			if (shouldScrollToTop) {
+				
+				this.scrollTopValue = 0;
+				this.currentScrollTop = 0;
+				this.currentFileOffset = 0;
+				this.savedScrollOffset = 0;
+				this.finalizeScrollRestore();
+			} else {
+				
+				if (this._fromBookmark && this.currentFileOffset > 0) {
+					
+					this.$element("page1").getBoundingClientRect({
+						success: (page1Rect) => {
+							
+							const charsBeforeOffset = this.currentFileOffset / 2;
+							const avgCharWidth = this.fontSize * 0.6; 
+							const charsPerLine = Math.floor(336 / avgCharWidth);
+							const linesBeforeOffset = Math.ceil(charsBeforeOffset / charsPerLine);
+							const estimatedHeightBefore = linesBeforeOffset * this.lineHeight;
+							
+							const totalScroll = estimatedHeightBefore + this.savedScrollOffset;
+							this.scrollTopValue = Math.max(0, Math.floor(totalScroll));
+							this.currentScrollTop = Math.max(0, Math.floor(totalScroll));
+							
+							this.finalizeScrollRestore();
+						},
+						fail: () => {
+							
+							this.scrollTopValue = Math.max(0, Math.floor(this.savedScrollOffset));
+							this.currentScrollTop = Math.max(0, Math.floor(this.savedScrollOffset));
+							this.finalizeScrollRestore();
+						}
+					});
+				} else {
+					
+					this.scrollTopValue = Math.max(0, Math.floor(this.savedScrollOffset));
+					this.currentScrollTop = Math.max(0, Math.floor(this.savedScrollOffset));
+					this.finalizeScrollRestore();
 				}
-			});
-		}, 50);
+			}
+		}, 100); 
+	},
+	finalizeScrollRestore() {
+		this.$element("contentContainer").getBoundingClientRect({
+			success: (rect) => {
+				this.contentHeight = rect.height;
+				this.updateChapterProgress();
+				this.wait = false;
+				
+				this._shouldScrollToTop = false;
+				this._fromBookmark = false;
+				this.saveData(true);
+			},
+			fail: () => {
+				this.wait = false;
+				this._shouldScrollToTop = false;
+				this._fromBookmark = false;
+			}
+		});
 	},
 	readFileText(readOffset, cb){
 		if(readOffset >= this.allSize){ cb('', 0); return; }
@@ -720,10 +792,21 @@
             return;
         }
         
+        
         this.isAtChapterEnd = false;
+        this.currentFileOffset = 0;
+        this.savedScrollOffset = 0;
+        this.scrollTopValue = 0;
+        this.currentScrollTop = 0;
 
         this.loadChapter(prevChapterIndex, () => {
-            this.loadEndAndScroll();
+            this.page1 = { text: "加载中...", offset: 0, length: 0 };
+            this.page2 = null;
+            this.loadInitialSegments();
+            this.isAtChapterStart = true;
+            this.isNearTopForHd = true;
+            this.chapterProgress = 0;
+            this.saveData(true);
         });
     },
     loadEndAndScroll() {
@@ -796,18 +879,20 @@
 	saveData(forceImmediate = false){
 		if (this.saveDataTimeout) {
 			clearTimeout(this.saveDataTimeout);
+			this.saveDataTimeout = null;
 		}
 		if (forceImmediate) {
+			
 			this._performSave();
-			this.saveDataTimeout = null;
 		} else {
-            if (this.saveMode === 'exit') {
-                return;
-            }
-			this.saveDataTimeout = setTimeout(() => {
-				this._performSave();
-                this.saveDataTimeout = null;
-			}, this.saveIntervalValue * 1000);
+			
+			if (this.saveMode === 'periodic' && this.saveIntervalValue > 0) {
+				this.saveDataTimeout = setTimeout(() => {
+					this._performSave();
+					this.saveDataTimeout = null;
+				}, this.saveIntervalValue * 1000);
+			}
+			
 		}
 	},
 	async _performSave() {
@@ -817,9 +902,10 @@
 			if (!chapter || chapter.index === undefined) return;
 	
 			let progress = await bookStorage.get(this.name);
+			
 			progress.chapterIndex = chapter.index;
-			progress.offsetInChapter = this.currentFileOffset;
-			progress.scrollOffset = this.currentScrollTop;
+			progress.offsetInChapter = Math.max(0, Math.floor(this.currentFileOffset || 0));
+			progress.scrollOffset = Math.max(0, Math.floor(this.currentScrollTop || 0));
 			progress.txtSizePage = this.txtSizePage;
 			progress.fontSize = this.fontSize;
 			progress.lastReadTimestamp = Date.now();
@@ -827,9 +913,11 @@
 			await bookStorage.set(this.name, progress);
 			progress = null;
 		} catch (e) {
+			
 		}
 	},
 	async onHide(){
+		
 		if (this.saveDataTimeout) {
 			clearTimeout(this.saveDataTimeout);
 			this.saveDataTimeout = null;
@@ -839,13 +927,17 @@
 			this.autoInterval = null; 
 		}
 		
+		
 		try {
-			await this._performSave()
-		} catch (e) {}
+			await this._performSave();
+		} catch (e) {
+			
+		}
 		
 		brightness.setKeepScreenOn({ keepScreenOn: false }); 
 	},
 	async onDestroy(){ 
+		
 		if (this.saveDataTimeout) {
 			clearTimeout(this.saveDataTimeout);
 			this.saveDataTimeout = null;
@@ -871,9 +963,11 @@
 			this.longPressTimeout = null;
 		}
 		
+		
 		try {
 			await this._performSave();
 		} catch (e) {
+			
 		}
 		
 		this.page1 = null;
@@ -887,6 +981,7 @@
 	},
 	onBackPress(){ this.back(); return true; },
 	async back(){
+		
 		if (this.saveDataTimeout) {
 			clearTimeout(this.saveDataTimeout);
 			this.saveDataTimeout = null;
@@ -908,9 +1003,12 @@
 			this.autoInterval = null; 
 		}
 		
+		
 		try {
 			await this._performSave();
-		} catch (e) {}
+		} catch (e) {
+			
+		}
 		
 		router.back();
 	},
@@ -926,6 +1024,7 @@
 		setTimeout(() => { this.isProcessingClick = false; }, 500);
 	},
 	async exitAppForTeacherScreen() {
+		
 		if (this.saveDataTimeout) {
 			clearTimeout(this.saveDataTimeout);
 			this.saveDataTimeout = null;
@@ -935,9 +1034,11 @@
 			this.autoInterval = null;
 		}
 		
+		
 		try {
 			await this._performSave();
 		} catch (e) {
+			
 		}
 		
 		app.terminate();
@@ -1033,8 +1134,9 @@
 			return;
 		}
 		
-		let progress = await bookStorage.get(this.name);
-		if (!progress.bookmarks) { progress.bookmarks = []; }
+		
+		let bookmarks = await bookStorage.getBookmarks(this.name);
+		if (!bookmarks) { bookmarks = []; }
 		
 		const chapter = await chapterManager.getChapterByIndex(this.name, this.currentChapterIndexInAll);
         if (!chapter || chapter.index === undefined) {
@@ -1047,22 +1149,24 @@
 		const newBookmark = { 
 			chapterIndex: chapterIndex,
 			chapterName: this.currentChapterName,
-			offsetInChapter: this.currentFileOffset, 
-			scrollOffset: this.currentScrollTop, 
+			
+			offsetInChapter: Math.max(0, Math.floor(this.currentFileOffset || 0)), 
+			scrollOffset: Math.max(0, Math.floor(this.currentScrollTop || 0)), 
 			time: new Date().getTime(), 
-			name: `书签${progress.bookmarks.length + 1}` 
+			name: `书签${bookmarks.length + 1}` 
 		};
 
-		progress.bookmarks.push(newBookmark);
-		progress.bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
+		bookmarks.push(newBookmark);
+		bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
 		
 		try {
-			await bookStorage.set(this.name, progress);
+			
+			await bookStorage.setBookmarks(this.name, bookmarks);
 			prompt.showToast({ message: '添加书签成功' });
 		} catch (e) {
 			prompt.showToast({ message: '添加书签失败' });
 		}
-    progress = null;
+		bookmarks = null;
 		this.isProcessingClick = false;
 	},
 	gotoBookmarks() { 

@@ -102,16 +102,17 @@ export default {
         }
 
         try {
-            let progress = await bookStorage.get(this.bookName);
-            if (progress.bookmarks && progress.bookmarks[this.bookmarkIndex]) {
-                progress.bookmarks[this.bookmarkIndex].name = this.textValue;
-                await bookStorage.set(this.bookName, progress);
-                progress = null;
+            
+            let bookmarks = await bookStorage.getBookmarks(this.bookName);
+            if (bookmarks && bookmarks[this.bookmarkIndex]) {
+                bookmarks[this.bookmarkIndex].name = this.textValue;
+                
+                await bookStorage.setBookmarks(this.bookName, bookmarks);
+                bookmarks = null;
                 prompt.showToast({ message: '保存成功' });
-                globalThis.bookmarkEdited = { bookName: this.bookName, index: this.bookmarkIndex, newName: this.textValue };
                 router.back();
             } else {
-                progress = null;
+                bookmarks = null;
                 prompt.showToast({ message: '找不到书签' });
             }
         } catch (e) {

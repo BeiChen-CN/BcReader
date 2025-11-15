@@ -123,6 +123,7 @@
 			  
 			  prompt.showToast({ message: '设置成功', duration: 1000 });
 			  globalThis.justJumpedFromPageNumber = true;
+			  globalThis.justJumpedChapterIndex = targetChapterIndex;
 			  router.back();
 		  } catch (e) {
 			  prompt.showToast({ message: '设置失败', duration: 2000 });
