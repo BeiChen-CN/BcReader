@@ -56,9 +56,9 @@
 			<progress percent="{{chapterProgress}}" style="position: absolute;left: 25px;width: 286px;color: #E1DDDD;stroke-width: {{progressBarHeight}}px;layer-color: #00000000;"></progress>
 		</div>
 	</div>
-  </template>
+</template>
 
-  <script>
+<script>
 	import prompt from '@system.prompt'
 	import file from '@system.file'
 	import router from '@system.router'
@@ -135,9 +135,11 @@
         chapterContentCache: null,
         saveMode: 'exit',
         saveIntervalValue: 10,
-        alwaysShowTime: false,
+		alwaysShowTime: false,
 		alwaysShowTimeSensitivity: 50,
-		isNearTopForHd: false
+		isNearTopForHd: false,
+		lastTxtSizePage: 400,
+		lastFontSize: 30
 	  },
 	  protected: {
 		name: '',
@@ -171,6 +173,11 @@
 	},
 	async onShow(){
 		await this.loadSettings();
+		
+		
+		const settingsChanged = this.isInitialized && 
+			(this.lastTxtSizePage !== this.txtSizePage || this.lastFontSize !== this.fontSize);
+		
 		if (typeof globalThis.isKeepScreenOn !== 'undefined') {
 			if (this.isKeepScreenOn !== globalThis.isKeepScreenOn) {
 				this.isKeepScreenOn = globalThis.isKeepScreenOn;
@@ -185,7 +192,7 @@
 			}
 		});
 		const isChapterJump = globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber;
-        if (!this.isInitialized || isChapterJump) {
+        if (!this.isInitialized || isChapterJump || settingsChanged) {
             if(globalThis.justJumpedFromChapter) {
 			    this.chapterIndex = globalThis.newChapterIndex;
 			    this.chapterName = globalThis.newChapterName;
@@ -194,6 +201,9 @@
             }
 			await this.loadBook();
             this.isInitialized = true;
+			
+			this.lastTxtSizePage = this.txtSizePage;
+			this.lastFontSize = this.fontSize;
         }
 	},
 	async loadSettings() {
@@ -331,14 +341,29 @@
 			chapterToLoadIndex = 0;
 		}
 
-     if (progress.txtSizePage) {
-         this.txtSizePage = progress.txtSizePage;
-     }
-     if (progress.fontSize) {
-        this.fontSize = progress.fontSize;
-        this.lineHeight = parseInt((-0.01)*(this.fontSize**2) + 1.62*this.fontSize - 3.23);
-        this.updateScrollHeight();
-     }
+		
+		const oldTxtSizePage = progress.txtSizePage || this.txtSizePage;
+		const oldFontSize = progress.fontSize || this.fontSize;
+		
+		
+		if (oldTxtSizePage !== this.txtSizePage || oldFontSize !== this.fontSize) {
+			
+			const fontSizeRatio = oldFontSize > 0 ? this.fontSize / oldFontSize : 1;
+			
+			const txtSizePageRatio = oldTxtSizePage > 0 ? this.txtSizePage / oldTxtSizePage : 1;
+			
+			
+			
+			if (txtSizePageRatio !== 1 && offsetInChapter > 0) {
+				offsetInChapter = Math.floor(offsetInChapter * txtSizePageRatio);
+			}
+			
+			
+			
+			if (fontSizeRatio !== 1 && scrollOffset > 0) {
+				scrollOffset = Math.floor(scrollOffset * fontSizeRatio);
+			}
+		}
 
      progress = null;
 
@@ -906,6 +931,7 @@
 			progress.chapterIndex = chapter.index;
 			progress.offsetInChapter = Math.max(0, Math.floor(this.currentFileOffset || 0));
 			progress.scrollOffset = Math.max(0, Math.floor(this.currentScrollTop || 0));
+			
 			progress.txtSizePage = this.txtSizePage;
 			progress.fontSize = this.fontSize;
 			progress.lastReadTimestamp = Date.now();
@@ -1235,5 +1261,4 @@
 	font-weight: bold;
 }
 </style>
-
 
