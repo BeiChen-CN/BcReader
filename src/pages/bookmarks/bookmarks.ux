@@ -7,9 +7,9 @@
       <list-item for="{{visibleBookmarks}}" class="item" type="bookmark">
         <div class="text-content" @click="jumpTo($idx)">
           <marquee if="{{bookmarkMarqueeEnabled}}" class="itemtext" scrollamount="20" text-offset="25">{{$item.name}}</marquee>
-          <text else class="itemtext">{{$item.name}}</text>
+          <text else class="itemtext" style="lines: 1;">{{$item.name}}</text>
           <marquee if="{{bookmarkMarqueeEnabled}}" class="itemtext2" scrollamount="50" text-offset="25">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</marquee>
-          <text else class="itemtext2">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</text>
+          <text else class="itemtext2" style="lines: 1;">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</text>
         </div>
         <div class="button-container">
           <img static src="/common/images/edit.png" @click="editBookmark($idx)" style="width: 72px; height: 72px;" />
