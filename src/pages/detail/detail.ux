@@ -1395,6 +1395,9 @@
 		if (this.nostalgicPageIndex < this.nostalgicPages.length - 1) {
 			this.nostalgicPageIndex++;
 			this.updateNostalgicPage();
+		} else {
+			// 确保 isAtChapterEnd 被正确设置
+			this.isAtChapterEnd = true;
 		}
 	},
 	nostalgicPrevPage() {
@@ -1472,6 +1475,7 @@
   		if (this.auto) {
 			if(this.autoInterval){ clearInterval(this.autoInterval); this.autoInterval = null; prompt.showToast({ message: '已关闭自动翻页' }); if (!this.isKeepScreenOn) { brightness.setKeepScreenOn({ keepScreenOn: false }); } return; }
 			this.autoInterval = setInterval(() => {
+				if (this.wait) return; // 如果正在加载，跳过本次翻页
 				if (this.readMode === 'nostalgic') {
 					if (this.isAtChapterEnd) {
 						this.goToNextChapter();
