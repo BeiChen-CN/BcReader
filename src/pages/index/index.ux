@@ -205,27 +205,36 @@ export default {
 	},
   updateCategories() {
     const categorySet = new Set();
+    let hasUncategorized = false;
     this.allBooks.forEach(book => {
       if (book.localCategory) {
         categorySet.add(book.localCategory);
+      } else {
+        hasUncategorized = true;
       }
     });
     this.categories = Array.from(categorySet).sort();
+    if (hasUncategorized) {
+      this.categories.push('未分类');
+    }
   },
   updateCategoryView() {
     if (this.selectedCategory) {
-      
-      this.categoryBooks = this.allBooks.filter(book => book.localCategory === this.selectedCategory);
+      if (this.selectedCategory === '未分类') {
+        this.categoryBooks = this.allBooks.filter(book => !book.localCategory);
+      } else {
+        this.categoryBooks = this.allBooks.filter(book => book.localCategory === this.selectedCategory);
+      }
       this.visibleBooks = this.categoryBooks;
     } else {
-      
       const categoryItems = this.categories.map(cat => ({
         isCategory: true,
         categoryName: cat,
         name: cat,
-        bookCount: this.allBooks.filter(b => b.localCategory === cat).length
+        bookCount: cat === '未分类' 
+          ? this.allBooks.filter(b => !b.localCategory).length 
+          : this.allBooks.filter(b => b.localCategory === cat).length
       }));
-      
       
       if (this.lastReadBook) {
         this.visibleBooks = [this.lastReadBook, ...categoryItems];
@@ -407,4 +416,5 @@ export default {
     color: white;
 }
 </style>
+
 
