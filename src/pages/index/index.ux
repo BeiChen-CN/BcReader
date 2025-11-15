@@ -8,8 +8,10 @@
 
       <list class="list" if="{{shelfStyle === 'list'}}">
 		  <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
-			  <marquee scrollamount="22" text-offset="25" class="itemtext" >{{$item.name}}</marquee>
-			  <marquee scrollamount="40" text-offset="25" class="itemtext2">{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{(($item.progress.chapterIndex || 0) + 1)}} / {{$item.chapterCount}} 章</marquee>
+			  <marquee if="{{shelfMarqueeEnabled}}" scrollamount="22" text-offset="25" class="itemtext" >{{$item.name}}</marquee>
+              <text else class="itemtext" >{{$item.name}}</text>
+			  <marquee if="{{shelfMarqueeEnabled}}" scrollamount="40" text-offset="25" class="itemtext2">{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{(($item.progress.chapterIndex || 0) + 1)}} / {{$item.chapterCount}} 章</marquee>
+              <text else class="itemtext2">{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{(($item.progress.chapterIndex || 0) + 1)}} / {{$item.chapterCount}} 章</text>
 		  </list-item>
           <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
             <div class="pagination-controls">
@@ -24,8 +26,10 @@
           <list-item for="{{visibleBooks}}" class="item cover-item" @click="selectFile($item)" type="nook">
             <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
             <div class="cover-content">
-              <marquee text-offset="25" scrollamount="30" class="itemtext" >{{$item.name}}</marquee>
-              <marquee text-offset="25" scrollamount="40" class="itemtext2" >{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{(($item.progress.chapterIndex || 0) + 1)}} / {{$item.chapterCount}} 章</marquee>
+              <marquee if="{{shelfMarqueeEnabled}}" text-offset="25" scrollamount="30" class="itemtext" >{{$item.name}}</marquee>
+              <text else class="itemtext" >{{$item.name}}</text>
+              <marquee if="{{shelfMarqueeEnabled}}" text-offset="25" scrollamount="40" class="itemtext2" >{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{(($item.progress.chapterIndex || 0) + 1)}} / {{$item.chapterCount}} 章</marquee>
+              <text else class="itemtext2" >{{ $item.isLastRead ? '上次阅读 · ' : '' }}{{roundToDecimal(((($item.progress.chapterIndex || 0) + 1) / $item.chapterCount) * 100, 2) || 0}}% · 看到 {{(($item.progress.chapterIndex || 0) + 1)}} / {{$item.chapterCount}} 章</text>
             </div>
           </list-item>
           <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
@@ -70,7 +74,8 @@ export default {
     currentPage: 0,
     totalPages: 1,
     pageSize: 6,
-    lastReadOnTop: true
+    lastReadOnTop: true,
+    shelfMarqueeEnabled: false
   },
   exit(){
 	  app.terminate();
@@ -119,15 +124,17 @@ export default {
     });
   },
   async loadSettingsAndFiles() {
-    const [pageSize, shelfStyle, lastReadOnTop] = await Promise.all([
+    const [pageSize, shelfStyle, lastReadOnTop, shelfMarqueeEnabled] = await Promise.all([
       this.getStorage('EBOOK_SHELF_PAGE_SIZE', '6'),
       this.getStorage('EBOOK_SHELF_STYLE', 'list'),
-      this.getStorage('EBOOK_TOP_LAST_READ', 'true')
+      this.getStorage('EBOOK_TOP_LAST_READ', 'true'),
+      this.getStorage('EBOOK_SHELF_MARQUEE_ENABLED', 'false')
     ]);
 
     this.pageSize = parseInt(pageSize);
     this.shelfStyle = shelfStyle;
     this.lastReadOnTop = lastReadOnTop === 'true';
+    this.shelfMarqueeEnabled = shelfMarqueeEnabled === 'true';
 
     this.loadFileList();
   },

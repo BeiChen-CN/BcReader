@@ -189,6 +189,9 @@
       },
       "pages/lastReadSetting": {
         "component": "lastReadSetting"
+      },
+      "pages/shelfMarqueeSetting": {
+        "component": "shelfMarqueeSetting"
       }
     }
   },

@@ -22,6 +22,13 @@
                 </div>
                 <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
             </list-item>
+            <list-item class="item" @click="routerTo('shelfMarqueeSetting')" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>书架跑马灯</text>
+                    <text class="itemtext2" static>滚动显示长文本</text>
+                </div>
+                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
+            </list-item>
         </list>
 
 
