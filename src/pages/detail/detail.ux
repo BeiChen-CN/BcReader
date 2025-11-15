@@ -1505,6 +1505,11 @@
 			this.isProcessingClick = false;
 			return;
 		}
+
+		if (this.readMode === 'nostalgic') {
+            prompt.showToast({ message: '怀旧模式不支持' });
+			return;
+		}
 		
 		
 		let bookmarks = await bookStorage.getBookmarks(this.name);

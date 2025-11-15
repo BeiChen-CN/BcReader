@@ -54,7 +54,8 @@ export default {
     nowTime: "00:00",
     timer: null,
     isNavigating: false,
-    bookmarkMarqueeEnabled: false
+    bookmarkMarqueeEnabled: false,
+	  readMode: 'scroll'
   },
   protected: {
     name: ''
@@ -85,6 +86,9 @@ export default {
         this.bookmarkMarqueeEnabled = false;
       }
     });
+		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
+			if (data) this.readMode = data;
+		}});
     
     await this.loadBookmarks();
   },
@@ -125,6 +129,19 @@ export default {
   },
   async jumpTo(index) {
     if (this.isNavigating) return;
+
+    if (this.readMode === 'nostalgic') {
+
+      router.push({
+          uri: '/pages/help',
+          params: {
+              title: '怀旧模式',
+              content: '怀旧模式下无法正常使用书签跳转功能。'
+          }
+      });
+      return;
+    }
+
     this.isNavigating = true;
 
     const realIndex = this.currentPage * PAGE_SIZE + index;

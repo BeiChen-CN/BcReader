@@ -8,7 +8,7 @@
 			</div>
 			<img src="{{alwaysShowTime ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 40px;"/>
 		</list-item>
-		<list-item class="item" @click="routerTo('alwaysShowTimeSensitivitySetting')" if="{{alwaysShowTime}}" type="item">
+		<list-item class="item" @click="routerTo('alwaysShowTimeSensitivitySetting')" if="{{alwaysShowTime && readMode !== 'nostalgic'}}" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>灵敏度设置</text>
 				<marquee text-offset="25" scrollamount="30" class="itemtext2" static>设置顶部标题栏不显示的距离</marquee>
@@ -34,7 +34,8 @@ export default {
   private: {
     alwaysShowTime: false,
     nowTime: "00:00",
-    timer: null
+    timer: null,
+	  readMode: 'scroll'
   },
   updateTime() {
     const date = new Date();
@@ -56,7 +57,10 @@ export default {
           this.alwaysShowTime = data === 'true';
         }
       }
-    })
+    });
+		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
+			if (data) this.readMode = data;
+		}});
   },
   onDestroy(){
     if (this.timer) {
