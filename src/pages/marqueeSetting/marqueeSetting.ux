@@ -4,42 +4,42 @@
 		<list-item class="item" @click="toggleShelfMarquee" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>书架</text>
-				<text class="itemtext2" static>书架滚动显示</text>
+				<text class="itemtext2" static>内容滚动显示</text>
 			</div>
 			<img src="{{shelfMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
 		</list-item>
 		<list-item class="item" @click="toggleBookmarkMarquee" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>书签列表</text>
-				<text class="itemtext2" static>书签列表滚动显示</text>
+				<text class="itemtext2" static>页面标题滚动</text>
 			</div>
 			<img src="{{bookmarkMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
 		</list-item>
 		<list-item class="item" @click="toggleBookinfoMarquee" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>书籍详情</text>
-				<text class="itemtext2" static>书籍详情滚动显示</text>
+				<text class="itemtext2" static>内容滚动显示</text>
 			</div>
 			<img src="{{bookinfoMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
 		</list-item>
 		<list-item class="item" @click="toggleChapterListMarquee" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>章节列表</text>
-				<text class="itemtext2" static>章节列表滚动显示</text>
+				<text class="itemtext2" static>页面标题滚动</text>
 			</div>
 			<img src="{{chapterListMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
 		</list-item>
 		<list-item class="item" @click="toggleTextReaderMarquee" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>书籍阅读器</text>
-				<text class="itemtext2" static>阅读器滚动显示</text>
+				<text class="itemtext2" static>页面标题滚动</text>
 			</div>
 			<img src="{{textReaderMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
 		</list-item>
 		<list-item class="item" @click="toggleDetailMarquee" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>文本阅读页</text>
-				<text class="itemtext2" static>阅读页滚动显示</text>
+				<text class="itemtext2" static>页面标题滚动</text>
 			</div>
 			<img src="{{detailMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
 		</list-item>
