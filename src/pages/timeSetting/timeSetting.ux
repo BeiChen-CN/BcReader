@@ -1,26 +1,26 @@
+<import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
   <div class="page" style="flex-direction: column;">
 	<list class="list">
 		<list-item class="item" @click="onClick" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>时间常驻</text>
-				<marquee text-offset="25" scrollamount="30" class="itemtext2" static>在阅读页始终显示时间</marquee>
+				<marquee scrollamount="30" class="itemtext2" static>在阅读页始终显示时间</marquee>
 			</div>
 			<img src="{{alwaysShowTime ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 40px;"/>
 		</list-item>
-		<list-item class="item" @click="routerTo('alwaysShowTimeSensitivitySetting')" if="{{alwaysShowTime && readMode !== 'nostalgic'}}" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>灵敏度设置</text>
-				<marquee text-offset="25" scrollamount="30" class="itemtext2" static>设置顶部标题栏不显示的距离</marquee>
-			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		</list-item>
 	</list>
-    <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-    <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-      {{nowTime}}
-    </text>
-    <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+	
+	<img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 412px;width: 432px;height: 102px;" />
+	<number if="{{alwaysShowTime && readMode !== 'nostalgic'}}" style="position: absolute;top:415px;" max.static="500" min.static="0" step.static="10" value="{{distanceValue}}" @change="changeDistance" name.static="调整距离"></number>
+
+	<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+	<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
+	<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	  {{nowTime}}
+	</text>
+	<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
       时间常驻
     </text>
   </div>
@@ -28,25 +28,47 @@
 
 <script>
 import router from '@system.router'
-import storage from '../../common/storage.js'
+import storage from '../../utils/storage.js'
+
+const DISTANCE_KEY = 'EBOOK_ALWAYS_SHOW_TIME_SENSITIVITY';
+const DEFAULT_DISTANCE = 200;
 
 export default {
   private: {
     alwaysShowTime: false,
+    distanceValue: DEFAULT_DISTANCE,
     nowTime: "00:00",
     timer: null,
-	  readMode: 'scroll'
+	  readMode: 'scroll',
+    timeFormat: '24h'
   },
   updateTime() {
     const date = new Date();
     let hours = date.getHours();
     let minutes = date.getMinutes();
-    hours = hours < 10 ? '0' + hours : hours;
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-    this.nowTime = `${hours}:${minutes}`;
+    if (this.timeFormat === '12h') {
+      let ampm = hours >= 12 ? '下午' : '上午';
+      hours = hours % 12;
+      hours = hours ? hours : 12; 
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${ampm} ${hours}:${minutes}`;
+    } else {
+      hours = hours < 10 ? '0' + hours : hours;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${hours}:${minutes}`;
+    }
   },
   onInit() {
-    this.updateTime();
+    storage.get({
+      key: 'EBOOK_TIME_FORMAT',
+      success: (data) => {
+        if(data) this.timeFormat = data;
+        this.updateTime();
+      },
+      fail: () => {
+        this.updateTime();
+      }
+    });
     this.timer = setInterval(() => {
       this.updateTime();
     }, 1000);
@@ -61,6 +83,14 @@ export default {
 		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
 			if (data) this.readMode = data;
 		}});
+    storage.get({
+      key: DISTANCE_KEY,
+      success: (data) => {
+        if (data) {
+          this.distanceValue = parseInt(data);
+        }
+      },
+    });
   },
   onDestroy(){
     if (this.timer) {
@@ -81,6 +111,19 @@ export default {
     this.alwaysShowTime = !this.alwaysShowTime;
     this.save()
   },
+  changeDistance(e) {
+    this.distanceValue = e.detail.value;
+    storage.set({
+      key: DISTANCE_KEY,
+      value: this.distanceValue.toString(),
+    });
+  },
+  reset() {
+    this.distanceValue = DEFAULT_DISTANCE;
+    this.alwaysShowTime = false;
+    storage.set({ key: DISTANCE_KEY, value: this.distanceValue.toString() });
+    storage.set({ key: "EBOOK_ALWAYS_SHOW_TIME", value: 'false' });
+  },
   routerTo(url) {
 	  router.push({
 		uri: '/pages/' + url
@@ -91,17 +134,17 @@ export default {
 
 <style>
 .page {
-  width: 336px;
-  height: 480px;
+  width: 432px;
+  height: 514px;
   background-color: #000000;
 }
 .list {
-	width: 336px;
-	height: 480px;
+	width: 432px;
+	height: 514px;
 	position: absolute;
 	top:0px;
 	left:0px;
-  padding: 86px 6px;
+  padding: 116px 12px;
 }
 .item {
 	width: 100%;

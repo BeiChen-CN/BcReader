@@ -1,6 +1,6 @@
 <template>
 	<div class="page">
-		<list class="list" style="padding: 86px 6px 6px 6px;">
+		<list class="list" style="padding: 92px 6px 6px 6px;">
 			<list-item if="{{hasCover}}" type="cover" style="height: 255px; align-items: center; justify-content: center; margin-bottom: 12px;">
 				<img src="{{coverPath}}" style="width: 160px;height: 213px;object-fit: cover;border-radius: 12px;" />
 			</list-item>
@@ -58,12 +58,12 @@
 			</list-item>
 		</list>
 
-		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
-		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-		<text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 			{{nowTime}}
 		</text>
-		<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 			书籍详情
 		</text>
 	</div>
@@ -73,8 +73,8 @@
 import router from '@system.router'
 import file from '@system.file'
 import runAsyncFunc from '../../utils/runAsyncFunc.js'
-import storage from '../../common/storage.js'
-import chapterManager from '../../common/chapterManager.js'
+import storage from '../../utils/storage.js'
+import chapterManager from '../../utils/chapterManager.js'
 
 export default {
 	private: {
@@ -133,13 +133,12 @@ export default {
 			success: (data) => {
 				this.bookinfoMarqueeEnabled = data === 'true';
 			},
-			fail: () => {
-				this.bookinfoMarqueeEnabled = true;
-			}
+			default: 'true'
 		});
 		this.timer = setInterval(() => {
 			this.updateTime();
 		}, 1000);
+		global.runGC();
 		this.loadFileInfo();
 	},
 	onShow() {
@@ -148,16 +147,15 @@ export default {
 			success: (data) => {
 				this.bookinfoMarqueeEnabled = data === 'true';
 			},
-			fail: () => {
-				this.bookinfoMarqueeEnabled = true;
-			}
+			default: 'true'
 		});
 	},
 	onDestroy() {
 		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+		global.runGC();
 	},
 	showSummary() {
 		router.push({
@@ -321,13 +319,13 @@ export default {
 
 <style>
 .page {
-	width: 336px;
-	height: 480px;
+	width: 432px;
+	height: 514px;
 	background-color: #000000;
 }
 .list {
-	width: 336px;
-	height: 480px;
+	width: 432px;
+	height: 514px;
 	position: absolute;
 	top: 0px;
 	left: 0px;

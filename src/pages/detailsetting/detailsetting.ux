@@ -15,6 +15,13 @@
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
 		  </list-item>
+		  <list-item type="item" class="item" @click="routerTo('readPercent')">
+			  <div class="item-content">
+				  <text class="itemtext" static>跳转百分比</text>
+				  <text class="itemtext2" static>当前章节百分比</text>
+			  </div>
+			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+		  </list-item>
 		  <list-item class="item" @click="routerTo('bookmarks')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>书签管理</text>
@@ -56,15 +63,22 @@
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
 		  </list-item>
+		  <list-item class="item" @click="routerTo('readingTime')" type="item">
+			  <div class="item-content">
+				  <text class="itemtext" static>阅读时长</text>
+				  <text class="itemtext2" static>查看阅读统计数据</text>
+			  </div>
+			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+		  </list-item>
 	  </list>
   
 	  
-	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
-	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+	  <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 		{{nowTime}}
 	  </text>
-	  <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+	  <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 		  菜单
 	  </text>
 	</div>
@@ -74,7 +88,7 @@
   import router from '@system.router'
   import prompt from '@system.prompt'
   import app from '@system.app'
-  import bookStorage from '../../common/bookStorage.js'
+  import bookStorage from '../../utils/bookStorage.js'
   
   
   export default {
@@ -114,7 +128,7 @@
   
 	},
 	onShow(){
-		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber) {
+		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber || globalThis.justJumpedFromPercent) {
 			router.back();
 			return;
 		}
@@ -184,18 +198,18 @@
   
   <style>
   .page {
-	  width: 336px;
-	  height: 480px;
+	  width: 432px;
+	  height: 514px;
 	  background-color: #000000;
   }
   
   .list {
-	  width: 336px;
-	  height: 480px;
+	  width: 432px;
+	  height: 514px;
 	  position: absolute;
 	  top:0px;
 	  left:0px;
-	padding: 86px 6px;
+	padding: 116px 12px;
   }
   
   .item {

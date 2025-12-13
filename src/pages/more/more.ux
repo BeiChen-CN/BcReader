@@ -37,17 +37,17 @@
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
 		  </list-item>
-		  <list-item class="item" @click="routerTo('tutorial')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext" static>教程中心</text>
-				  <text class="itemtext2" static>查看应用使用教程</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
-		  </list-item>
 		  <list-item class="item" @click="routerTo('push')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>书籍同步</text>
 				  <text class="itemtext2" static>连接手机同步内容</text>
+			  </div>
+			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
+		  </list-item>
+		  <list-item class="item" @click="routerTo('readingTime')" type="item">
+			  <div class="item-content">
+				  <text class="itemtext" static>阅读时长</text>
+				  <text class="itemtext2" static>查看全局阅读数据</text>
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
 		  </list-item>
@@ -61,12 +61,12 @@
 	  </list>
   
 	  
-	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
-	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+	  <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 		{{nowTime}}
 	  </text>
-	  <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+	  <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 		  设置
 	  </text>
 	</div>
@@ -76,7 +76,7 @@
   import router from '@system.router'
   import prompt from '@system.prompt'
   import app from '@system.app'
-  import storage from '../../common/storage.js'
+  import storage from '../../utils/storage.js'
   
   
   export default {
@@ -147,12 +147,10 @@
 	},
 	clearBooks(){
 	  router.push({
-            uri: '/pages/confirm',
+            uri: '/pages/help',
             params: {
-                action: 'clearBookshelf',
                 title: '清空数据',
-                confirmText: '确认清空数据？',
-                subText: '所有书籍和阅读进度都将被删除'
+                content: '为防止卡死，请手动将小程序卸载后重新安装。'
             }
         });
 	},
@@ -189,17 +187,17 @@
   
   <style>
   .page {
-	  width: 336px;
-	  height: 480px;
+	  width: 432px;
+	  height: 514px;
 	  background-color: #000000;
   }
   .list {
-	  width: 336px;
-	  height: 480px;
+	  width: 432px;
+	  height: 514px;
 	  position: absolute;
 	  top:0px;
 	  left:0px;
-	padding: 86px 6px;
+	padding: 116px 12px;
   }
   
   .item {

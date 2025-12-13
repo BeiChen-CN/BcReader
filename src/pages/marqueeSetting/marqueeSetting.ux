@@ -36,6 +36,13 @@
 			</div>
 			<img src="{{textReaderMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
 		</list-item>
+		<list-item class="item" @click="toggleDetailProgressMarquee" type="item">
+			<div class="item-content">
+				<text class="itemtext" static>书籍阅读器</text>
+				<text class="itemtext2" static>底部进度滚动</text>
+			</div>
+			<img src="{{detailProgressMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+		</list-item>
 		<list-item class="item" @click="toggleDetailMarquee" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>文本阅读页</text>
@@ -45,12 +52,12 @@
 		</list-item>
 	</list>
 	
-	<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
-	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-	<text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+	<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 	  {{nowTime}}
 	</text>
-	<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+	<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 		跑马灯设置
 	</text>
   </div>
@@ -58,7 +65,7 @@
 
 <script>
 import router from '@system.router'
-import storage from '../../common/storage.js'
+import storage from '../../utils/storage.js'
 
 export default {
   private: {
@@ -68,6 +75,7 @@ export default {
 	chapterListMarqueeEnabled: false,
 	textReaderMarqueeEnabled: false,
 	detailMarqueeEnabled: false,
+	detailProgressMarqueeEnabled: false,
 	nowTime: "00:00",
 	timer: null
   },
@@ -126,6 +134,13 @@ export default {
       },
 	  default: 'false'
 	});
+	storage.get({
+      key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED',
+      success:(data)=>{
+        this.detailProgressMarqueeEnabled = data === 'true'
+      },
+	  default: 'false'
+	});
   },
   onDestroy(){
 	  if (this.timer) {
@@ -177,56 +192,68 @@ export default {
 		key: 'EBOOK_DETAIL_MARQUEE_ENABLED',
 		value: this.detailMarqueeEnabled.toString()
 	});
+  },
+  toggleDetailProgressMarquee() {
+	this.detailProgressMarqueeEnabled = !this.detailProgressMarqueeEnabled;
+	storage.set({
+		key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED',
+		value: this.detailProgressMarqueeEnabled.toString()
+	});
   }
 }
 </script>
 
 <style>
 .page {
-	width: 336px;
-	height: 480px;
+	width: 432px;
+	height: 514px;
 	background-color: #000000;
 }
 .list {
-	width: 336px;
-	height: 480px;
+	width: 432px;
+	height: 514px;
 	position: absolute;
 	top:0px;
 	left:0px;
-	padding: 86px 6px;
+  padding: 116px 12px;
 }
+
 .item {
-	width: 100%;
-	height: 112px;
-	padding: 14px 20px;
-	margin-bottom: 8px;
-	background-color: #262626;
-	border-radius: 36px;
-	align-items: center;
+	  width: 100%;
+	  height: 112px;
+	  padding: 14px 20px;
+	  margin-bottom: 8px;
+	  background-color: #262626;
+	  border-radius: 36px;
+	  align-items: center;
 	justify-content: space-between;
-}
-.item-content {
-	height: 100%;
-	flex:1;
-	flex-direction: column;
-	justify-content: space-between;
-}
-.itemtext {
-	font-size: 32px;
-	line-height:40px;
-	width: 100%;
-	font-weight: bold;
-	color: white;
-	text-overflow: ellipsis;
-	lines: 1;
-}
-.itemtext2 {
-	font-size: 28px;
-	line-height: 37px;
-	font-weight: bold;
-	color: rgba(255,255,255,0.6);
-	text-overflow: ellipsis;
-	lines: 1;
-}
+  }
+  
+  .itemtext {
+	  font-size: 32px;
+	  line-height:40px;
+	  width: 100%;
+	  font-weight: bold;
+	  color: white;
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  
+  .itemtext2 {
+	  font-size: 28px;
+	  line-height: 37px;
+	  font-weight: bold;
+	  color: rgba(255,255,255,0.6);
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  
+  
+  .item-content {
+	  height: 100%;
+	  flex:1;
+	  flex-direction: column;
+	  justify-content: space-between;
+  }
 </style>
 

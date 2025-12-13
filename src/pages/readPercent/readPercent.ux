@@ -2,10 +2,10 @@
 	<div class="page" style="flex-direction: column;">
 	  <div class="item">
 		  <text style="font-size: 36px;font-weight:bold;color: white;width: 100%;text-align: center;">
-			  {{inputPage}}
+			  {{inputPercent}}%
 		  </text>
 		  <text style="font-size: 24px;font-weight:bold;color: rgba(255, 255, 255, 0.6);width: 100%;text-align: center;">
-			  共 {{syncedChapters}} / {{totalChapters}} 章
+			  当前章节进度
 		  </text>
 	  </div>
 	  <div class="row" style="top:228px">
@@ -35,7 +35,7 @@
 		{{nowTime}}
 	  </text>
 	  <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-		  跳转章节
+		  跳转百分比
 	  </text>
 	</div>
   </template>
@@ -46,14 +46,14 @@
   import file from '@system.file'
   import bookStorage from '../../utils/bookStorage.js'
   import chapterManager from '../../utils/chapterManager.js'
+  import runAsyncFunc from '../../utils/runAsyncFunc.js'
   
   export default {
 	private: {
-	  inputPage: '0',
+	  inputPercent: '0',
 	  nowTime: "00:00",
 	  timer: null,
-	  totalChapters: 1,
-	  syncedChapters: 1
+	  currentChapterIndex: null
 	},
 	protected: {
 		name: ''
@@ -76,13 +76,36 @@
 	  this.loadData();
 	},
 	async loadData() {
-		this.totalChapters = await chapterManager.getTotalChapters(this.name);
-		this.syncedChapters = await chapterManager.getSyncedChapters(this.name);
 		let progress = await bookStorage.get(this.name);
-		if (progress.chapterIndex !== null) {
-			this.inputPage = (progress.chapterIndex + 1).toString();
+		if (progress.chapterIndex !== null && progress.chapterIndex !== undefined) {
+			this.currentChapterIndex = progress.chapterIndex;
+			if (progress.chapterProgressPercent !== undefined && progress.chapterProgressPercent !== null) {
+				const percent = Math.round(progress.chapterProgressPercent);
+				this.inputPercent = percent.toString();
+			} else {
+				
+				try {
+					const chapter = await chapterManager.getChapterByIndex(this.name, progress.chapterIndex);
+					if (chapter) {
+						const chapterPath = `internal://files/books/${this.name}/content/${chapter.index}.txt`;
+						const fileInfo = await runAsyncFunc(file.get, { uri: chapterPath });
+						const allSize = fileInfo.length;
+						if (allSize > 0 && progress.offsetInChapter !== undefined && progress.offsetInChapter !== null) {
+							const percent = Math.round((progress.offsetInChapter / allSize) * 100);
+							this.inputPercent = Math.min(100, Math.max(0, percent)).toString();
+						} else {
+							this.inputPercent = '0';
+						}
+					} else {
+						this.inputPercent = '0';
+					}
+				} catch (e) {
+					this.inputPercent = '0';
+				}
+			}
 		} else {
-			this.inputPage = '1';
+			this.currentChapterIndex = null;
+			this.inputPercent = '0';
 		}
 	},
 	onDestroy(){
@@ -93,52 +116,72 @@
 	},
 	async onClick(num){
 	  if (num === 'del') {
-		  if (this.inputPage.length > 1) {
-			  this.inputPage = this.inputPage.slice(0, -1);
+		  if (this.inputPercent.length > 1) {
+			  this.inputPercent = this.inputPercent.slice(0, -1);
 		  } else {
-			  this.inputPage = '0';
+			  this.inputPercent = '0';
 		  }
 		  return;
 	  }
   
 	  if (num === 'conform') {
-		  let targetChapterNum = parseInt(this.inputPage);
-		  if (isNaN(targetChapterNum) || targetChapterNum < 1) {
-			  targetChapterNum = 1;
+		  if (this.currentChapterIndex === null || this.currentChapterIndex === undefined) {
+			  prompt.showToast({ message: '无法跳转，章节信息错误', duration: 2000 });
+			  return;
 		  }
-		  if (this.syncedChapters > 0 && targetChapterNum > this.syncedChapters) {
-			  targetChapterNum = this.syncedChapters;
-		  }
-		  if (this.totalChapters === 0) return;
 
-		  const targetChapterIndex = targetChapterNum - 1;
-		  
+		  let targetPercent = parseFloat(this.inputPercent);
+		  if (isNaN(targetPercent) || targetPercent < 0) {
+			  targetPercent = 0;
+		  }
+		  if (targetPercent > 100) {
+			  targetPercent = 100;
+		  }
+
 		  try {
+			  const chapter = await chapterManager.getChapterByIndex(this.name, this.currentChapterIndex);
+			  if (!chapter) {
+				  prompt.showToast({ message: '章节不存在', duration: 2000 });
+				  return;
+			  }
+
+			  const chapterPath = `internal://files/books/${this.name}/content/${chapter.index}.txt`;
+			  const fileInfo = await runAsyncFunc(file.get, { uri: chapterPath });
+			  const allSize = fileInfo.length;
+			  if (allSize <= 0) {
+				  prompt.showToast({ message: '章节内容为空', duration: 2000 });
+				  return;
+			  }
+
+			  
+			  const offsetInChapter = Math.floor((targetPercent / 100) * allSize / 2) * 2;
+			  
 			  let progress = await bookStorage.get(this.name);
-			  progress.chapterIndex = targetChapterIndex;
-			  progress.offsetInChapter = 0;
+			  progress.chapterIndex = this.currentChapterIndex;
+			  progress.offsetInChapter = offsetInChapter;
 			  progress.scrollOffset = 0;
 			  await bookStorage.set(this.name, progress);
         progress = null;
 			  
 			  prompt.showToast({ message: '设置成功', duration: 1000 });
-			  globalThis.justJumpedFromPageNumber = true;
-			  globalThis.justJumpedChapterIndex = targetChapterIndex;
+			  globalThis.justJumpedFromPercent = true;
+			  globalThis.justJumpedChapterIndex = this.currentChapterIndex;
+			  globalThis.justJumpedOffsetInChapter = offsetInChapter;
 			  router.back();
 		  } catch (e) {
-			  prompt.showToast({ message: '设置失败', duration: 2000 });
+			  prompt.showToast({ message: '设置失败: ' + (e.message || '未知错误'), duration: 2000 });
 		  }
 		  return;
 	  }
   
-	  const currentVal = this.inputPage === '0' ? '' : this.inputPage;
+	  const currentVal = this.inputPercent === '0' ? '' : this.inputPercent;
 	  const newValStr = currentVal + num;
-	  const newVal = parseInt(newValStr);
+	  const newVal = parseFloat(newValStr);
   
-	  if (newVal > this.syncedChapters) {
-		  prompt.showToast({ message: `最大章节为 ${this.syncedChapters}`, duration: 1000 });
+	  if (newVal > 100) {
+		  prompt.showToast({ message: '最大百分比为 100%', duration: 1000 });
 	  } else {
-		  this.inputPage = newValStr;
+		  this.inputPercent = newValStr;
 	  }
 	},
 	back(){
@@ -175,3 +218,4 @@
 	  justify-content: space-between;
   }
   </style>
+

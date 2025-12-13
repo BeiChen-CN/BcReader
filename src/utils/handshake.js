@@ -2,7 +2,8 @@ import interconn from './interconn.js';
 import { versionCode } from "../manifest.json";
 import router from '@system.router';
 
-const MIN_PHONE_VERSION = 40500;
+const MIN_PHONE_VERSION = 40610;
+const MIN_PHONE_VERSION_NAME = "4.6.10.DEV";
 //握握手，握握双手
 const type = "__hs__"
 const TIMEOUT = 15000;
@@ -23,13 +24,15 @@ export default class InterHandshake extends interconn {
         }
         this.addListener(type, ({ count, version }) => {
             if ((version && version < MIN_PHONE_VERSION) || !version) {
+                const currentVersion = version || '未知';
+                const requiredVersion = MIN_PHONE_VERSION_NAME;
                 return router.replace({
                     uri: 'pages/confirm',
                     params: {
                         action: 'versionError',
                         title: '版本不兼容',
-                        confirmText: '客户端版本过低',
-                        subText: '请将手机客户端更新到最新版本再使用本小程序',
+                        confirmText: '手机端版本过低',
+                        subText: `当前版本：${currentVersion}\n所需版本：${requiredVersion}\n请升级手机端后再使用本小程序`,
                     }
                 });
             }

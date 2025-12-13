@@ -1,18 +1,18 @@
 <template>
     <div class="page">
-        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
-        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-        <img static if="{{action!=='versionError'}}" src="/common/images/delete.png" @click="confirmAction" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-        <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+        <img static if="{{action!=='versionError'}}" src="/common/images/delete.png" @click="confirmAction" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
+        <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
             {{nowTime}}
         </text>
-        <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+        <text style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
             {{title}}
         </text>
 
-        <img static src="/common/images/bin.png" style="position: absolute;left: 104px;top: 146px;width: 128px;height: 128px;" />
-        <text style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{confirmText}}</text>
-        <text style="position: absolute;left: 0px;top: 340px;width: 336px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;padding:0 20px;">{{subText}}</text>
+        <img static src="/common/images/bin.png" style="position: absolute;left: 152px;top: 156px;width: 128px;height: 128px;" />
+        <text style="position: absolute;left: 0px;top: 319px;width: 432px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{confirmText}}</text>
+        <text style="position: absolute;left: 0px;top: 361px;width: 432px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;padding:0 20px;">{{subText}}</text>
     </div>
 </template>
 
@@ -20,8 +20,8 @@
 import router from '@system.router'
 import prompt from '@system.prompt'
 import file from '@system.file'
-import storage from '../../common/storage.js'
-import bookStorage from '../../common/bookStorage.js'
+import bookStorage from '../../utils/bookStorage.js'
+import chapterManager from '../../utils/chapterManager.js'
 
 export default {
     private: {
@@ -35,7 +35,9 @@ export default {
         confirmText: '确认执行操作吗？',
         subText: '此操作不可逆',
         bookName: '',
-        bookmarkIndex: -1
+        bookmarkIndex: -1,
+        chapterIndex: -1,
+        chapterName: ''
     },
     updateTime() {
         const date = new Date();
@@ -68,11 +70,11 @@ export default {
             case 'deleteBook':
                 this.deleteBook();
                 break;
-            case 'clearBookshelf':
-                this.clearBookshelf();
-                break;
             case 'deleteBookmark':
                 this.deleteBookmark();
+                break;
+            case 'deleteChapter':
+                this.deleteChapter();
                 break;
             default:
                 prompt.showToast({ message: '未知操作' });
@@ -143,28 +145,53 @@ export default {
         prompt.showToast({ message: '删除成功', duration: 1000 });
         router.replace({ uri: '/pages/index' });
     },
-    clearBookshelf() {
-        prompt.showToast({ message: '开始删除...', duration: 500 });
-        file.rmdir({
-            uri: 'internal://files/books/',
-            recursive: true,
-            complete: () => {
-                storage.clear({
-                    complete: function() {
-                        prompt.showToast({ message: '清空成功', duration: 1000 });
-                        router.back();
-                    }
-                });
+    async deleteChapter() {
+        if (!this.bookName || this.chapterIndex < 0) {
+            prompt.showToast({ message: '参数错误' });
+            router.back();
+            return;
+        }
+
+        try {
+            
+            const progress = await bookStorage.get(this.bookName);
+            const isCurrentChapter = progress && progress.chapterIndex === this.chapterIndex;
+            
+            
+            await chapterManager.deleteChapter(this.bookName, this.chapterIndex);
+            
+            
+            if (isCurrentChapter) {
+                const allChapters = await chapterManager.getAllAvailableChapters(this.bookName);
+                if (allChapters.length > 0) {
+                    
+                    progress.chapterIndex = allChapters[0].index;
+                    progress.offsetInChapter = 0;
+                    progress.scrollOffset = 0;
+                    await bookStorage.set(this.bookName, progress);
+                } else {
+                    
+                    progress.chapterIndex = null;
+                    progress.offsetInChapter = 0;
+                    progress.scrollOffset = 0;
+                    await bookStorage.set(this.bookName, progress);
+                }
             }
-        });
+            
+            prompt.showToast({ message: '删除成功' });
+            router.back();
+        } catch (e) {
+            prompt.showToast({ message: '删除失败: ' + (e.message || '未知错误') });
+            router.back();
+        }
     }
 }
 </script>
 
 <style>
 .page {
-    width: 336px;
-    height: 480px;
+    width: 432px;
+    height: 514px;
     background-color: #000000;
     flex-direction: column;
     align-items: center;

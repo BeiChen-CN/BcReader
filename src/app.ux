@@ -3,7 +3,7 @@ import interconnfile from "./utils/interconnfile"
 import interconn from "./utils/handshake"
 import router from '@system.router'
 import brightness from '@system.brightness'
-import storage from './common/storage.js'
+import storage from './utils/storage.js'
 import file from '@system.file'
 globalThis.conn = new interconn();
 globalThis.conn.setHandshakeListener(() => {
@@ -11,7 +11,6 @@ globalThis.conn.setHandshakeListener(() => {
 })
 globalThis.connfile = globalThis.conn.register(interconnfile);
 export default {
-    originalBrightnessMode: null,
     onInit() {
         file.mkdir({
             uri: 'internal://files/books/',
@@ -26,39 +25,25 @@ export default {
         storage.get({
             key: 'EBOOK_BRIGHTNESS_FOLLOW_SYSTEM',
             success: (data) => {
-                if (data === 'false') {
-                    brightness.getMode({
-                        success: (data) => {
-                            this.originalBrightnessMode = data.mode;
-                            storage.get({
-                                key: 'EBOOK_BRIGHTNESS',
-                                success: (brightnessData) => {
-                                    if (brightnessData) {
-                                        const brightnessValue = parseInt(brightnessData);
-                                        if (!isNaN(brightnessValue)) {
-                                            brightness.setMode({
-                                                mode: brightness.MANUAL_MODE
-                                            });
-                                            brightness.setValue({
-                                                value: brightnessValue
-                                            });
-                                        }
-                                    }
-                                }
+                if (data !== 'false') {
+                    return;
+                }
+                storage.get({
+                    key: 'EBOOK_BRIGHTNESS',
+                    success: (brightnessData) => {
+                        if (brightnessData) {
+                            const brightnessValue = parseInt(brightnessData);
+                            brightness.setMode({
+                                mode: 0
+                            });
+                            brightness.setValue({
+                                value: brightnessValue
                             });
                         }
-                    });
-                }
+                    }
+                });
             }
         });
-    },
-    onHide() {
-        if (this.originalBrightnessMode !== null) {
-            brightness.setMode({
-                mode: this.originalBrightnessMode
-            });
-            this.originalBrightnessMode = null;
-        }
     }
 }
 </script>

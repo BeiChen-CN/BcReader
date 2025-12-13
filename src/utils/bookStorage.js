@@ -3,7 +3,7 @@ import runAsyncFunc from '../utils/runAsyncFunc.js';
 import router from '@system.router';
 
 const BOOKSHELF_URI = 'internal://files/books/bookshelf.json';
-const BOOKSHELF_VERSION = 2;
+const BOOKSHELF_VERSION = 3;
 
 async function loadBookshelf() {
     try {
@@ -12,21 +12,16 @@ async function loadBookshelf() {
 
         if (Array.isArray(parsedData) || !parsedData.version || parsedData.version < BOOKSHELF_VERSION) {
             router.replace({
-                uri: '/pages/confirm',
+                uri: '/pages/help',
                 params: {
-                    action: 'clearBookshelf',
                     title: '格式不兼容',
-                    confirmText: '需要清空书架',
-                    subText: '书架存储格式已更新，旧数据不再兼容。请清空书架后重新同步书籍。'
+                    content: '书架存储格式已更新且旧数据不再兼容。为防止卡死，请卸载后重装小程序再重新同步书籍。'
                 }
             });
             return { version: BOOKSHELF_VERSION, books: [] };
         }
         return parsedData;
     } catch (e) {
-        if (e.message !== "Incompatible bookshelf version") {
-            
-        }
         return { version: BOOKSHELF_VERSION, books: [] };
     }
 }
@@ -48,8 +43,6 @@ async function get(bookDirName) {
     const progress = book?.progress || { chapterIndex: null, offsetInChapter: 0, scrollOffset: 0 };
     
     const result = JSON.parse(JSON.stringify(progress));
-    
-    
     if (result.chapterIndex === undefined || result.chapterIndex === null) {
         result.chapterIndex = null;
     }
@@ -74,8 +67,6 @@ async function set(bookDirName, progressData) {
         }
         
         const { bookmarks, ...progressWithoutBookmarks } = progressData;
-        
-        
         const cleanProgress = {};
         if (progressWithoutBookmarks.chapterIndex !== undefined && progressWithoutBookmarks.chapterIndex !== null) {
             cleanProgress.chapterIndex = parseInt(progressWithoutBookmarks.chapterIndex);
@@ -93,8 +84,6 @@ async function set(bookDirName, progressData) {
         cleanProgress.scrollOffset = typeof progressWithoutBookmarks.scrollOffset === 'number' 
             ? Math.max(0, Math.floor(progressWithoutBookmarks.scrollOffset)) 
             : 0;
-        
-        
         Object.keys(progressWithoutBookmarks).forEach(key => {
             if (!['chapterIndex', 'offsetInChapter', 'scrollOffset'].includes(key)) {
                 cleanProgress[key] = progressWithoutBookmarks[key];

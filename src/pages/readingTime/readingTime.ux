@@ -1,0 +1,334 @@
+<template>
+	<div class="page">
+		<!-- 全局阅读时长页面 -->
+		<list class="list" if="{{!name}}">
+			<list-item class="item" type="info">
+				<div class="stat-item">
+					<text class="item-title" static>总阅读时长</text>
+					<text class="item-value">{{totalReadingTimeFormatted}}</text>
+				</div>
+				<div class="stat-item">
+					<text class="item-title" static>总阅读天数</text>
+					<text class="item-value">{{totalReadingDays}}天</text>
+				</div>
+			</list-item>
+			
+			<list-item class="item" type="info">
+				<div class="stat-item">
+					<text class="item-title" static>今日阅读时长</text>
+					<text class="item-value">{{todayReadingTimeFormatted}}</text>
+				</div>
+				<div class="stat-item">
+					<text class="item-title" static>平均每日阅读时长</text>
+					<text class="item-value">{{averageDailyTimeFormatted}}</text>
+				</div>
+			</list-item>
+			
+			<list-item class="item" type="info">
+				<div class="stat-item">
+					<text class="item-title" static>本周阅读时长</text>
+					<text class="item-value">{{weekReadingTimeFormatted}}</text>
+				</div>
+				<div class="stat-item">
+					<text class="item-title" static>平均每周阅读时长</text>
+					<text class="item-value">{{averageWeekTimeFormatted}}</text>
+				</div>
+			</list-item>
+			
+			<list-item class="item item-single" type="info">
+				<div class="stat-item">
+					<text class="item-title" static>单日最长阅读时长</text>
+					<text class="item-value">{{maxDailyTimeFormatted}}</text>
+				</div>
+			</list-item>
+		</list>
+
+		<!-- 书籍阅读时长页面 -->
+		<list class="list" if="{{name}}">
+			<list-item class="item" type="info">
+				<div class="stat-item">
+					<text class="item-title" static>本书总阅读时长</text>
+					<text class="item-value">{{totalReadingTimeFormatted}}</text>
+				</div>
+				<div class="stat-item">
+					<text class="item-title" static>本书总阅读天数</text>
+					<text class="item-value">{{totalReadingDays}}天</text>
+				</div>
+			</list-item>
+			
+			<list-item class="item" type="info">
+				<div class="stat-item">
+					<text class="item-title" static>今日本书阅读时长</text>
+					<text class="item-value">{{todayReadingTimeFormatted}}</text>
+				</div>
+				<div class="stat-item">
+					<text class="item-title" static>平均每天本书阅读时长</text>
+					<text class="item-value">{{averageDailyTimeFormatted}}</text>
+				</div>
+			</list-item>
+			
+			<list-item class="item" type="info">
+				<div class="stat-item">
+					<text class="item-title" static>本书本周阅读时长</text>
+					<text class="item-value">{{weekReadingTimeFormatted}}</text>
+				</div>
+				<div class="stat-item">
+					<text class="item-title" static>平均每周本书阅读时长</text>
+					<text class="item-value">{{averageWeekTimeFormatted}}</text>
+				</div>
+			</list-item>
+			
+			<list-item class="item" type="info" if="{{firstReadDate || lastReadDate}}">
+				<div class="stat-item" if="{{firstReadDate}}">
+					<text class="item-title" static>首次阅读时间</text>
+					<text class="item-value">{{firstReadDate}}</text>
+				</div>
+				<div class="stat-item" if="{{lastReadDate}}">
+					<text class="item-title" static>最近阅读时间</text>
+					<text class="item-value">{{lastReadDate}}</text>
+				</div>
+			</list-item>
+			
+			<list-item class="item item-single" type="info">
+				<div class="stat-item">
+					<text class="item-title" static>本书阅读次数</text>
+					<text class="item-value">{{sessionCount}}次</text>
+				</div>
+			</list-item>
+		</list>
+
+		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+			{{nowTime}}
+		</text>
+		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+			{{pageTitle}}
+		</text>
+	</div>
+</template>
+
+<script>
+import router from '@system.router'
+import readingTimeStorage from '../../utils/readingTimeStorage.js'
+import storage from '../../utils/storage.js'
+
+export default {
+	private: {
+		totalReadingTime: 0,
+		totalReadingTimeFormatted: '加载中...',
+		totalReadingDays: 0,
+		todayReadingTime: 0,
+		todayReadingTimeFormatted: '0分钟',
+		averageDailyTime: 0,
+		averageDailyTimeFormatted: '0分钟',
+		weekReadingTime: 0,
+		weekReadingTimeFormatted: '0分钟',
+		averageWeekTime: 0,
+		averageWeekTimeFormatted: '0分钟',
+		maxDailyTime: 0,
+		maxDailyTimeFormatted: '0分钟',
+		firstReadDate: '',
+		lastReadDate: '',
+		sessionCount: 0,
+		nowTime: "00:00",
+		timer: null,
+		timeFormat: '24h',
+		pageTitle: '阅读时长'
+	},
+	protected: {
+		name: ''
+	},
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+        if (this.timeFormat === '12h') {
+            let ampm = hours >= 12 ? '下午' : '上午';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            this.nowTime = `${ampm} ${hours}:${minutes}`;
+        } else {
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            this.nowTime = `${hours}:${minutes}`;
+        }
+	},
+	onInit() {
+        storage.get({
+            key: 'EBOOK_TIME_FORMAT',
+            success: (data) => {
+                if(data) this.timeFormat = data;
+                this.updateTime();
+            },
+            fail: () => {
+                this.updateTime();
+            }
+        });
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 1000);
+		global.runGC();
+		this.loadReadingTime();
+	},
+	onShow() {
+		this.loadReadingTime();
+	},
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+		global.runGC();
+	},
+	async loadReadingTime() {
+		if (!this.name) {
+			this.pageTitle = '阅读时长';
+			await this.loadAllBooksReadingTime();
+		} else {
+			this.pageTitle = '阅读数据';
+			await this.loadBookReadingTime();
+		}
+	},
+	async loadBookReadingTime() {
+		try {
+			const readingTimeData = await readingTimeStorage.getReadingTime(this.name);
+			
+			if (!readingTimeData) {
+				this.resetBookData();
+				return;
+			}
+			
+			const stats = readingTimeStorage.calculateBookStats(readingTimeData);
+			
+			this.totalReadingTime = stats.totalSeconds;
+			this.totalReadingTimeFormatted = readingTimeStorage.formatDuration(stats.totalSeconds);
+			this.totalReadingDays = stats.totalDays;
+			this.todayReadingTime = stats.todaySeconds;
+			this.todayReadingTimeFormatted = readingTimeStorage.formatDuration(stats.todaySeconds);
+			this.averageDailyTime = stats.averageDailySeconds;
+			this.averageDailyTimeFormatted = readingTimeStorage.formatDuration(stats.averageDailySeconds);
+			this.weekReadingTime = stats.weekSeconds;
+			this.weekReadingTimeFormatted = readingTimeStorage.formatDuration(stats.weekSeconds);
+			this.averageWeekTime = stats.averageWeekSeconds;
+			this.averageWeekTimeFormatted = readingTimeStorage.formatDuration(stats.averageWeekSeconds);
+			this.firstReadDate = stats.firstReadDate;
+			this.lastReadDate = stats.lastReadDate;
+			this.sessionCount = stats.sessionCount;
+		} catch (e) {
+			this.resetBookData();
+		}
+	},
+	resetBookData() {
+		this.totalReadingTime = 0;
+		this.totalReadingTimeFormatted = '暂无记录';
+		this.totalReadingDays = 0;
+		this.todayReadingTime = 0;
+		this.todayReadingTimeFormatted = '0分钟';
+		this.averageDailyTime = 0;
+		this.averageDailyTimeFormatted = '0分钟';
+		this.weekReadingTime = 0;
+		this.weekReadingTimeFormatted = '0分钟';
+		this.averageWeekTime = 0;
+		this.averageWeekTimeFormatted = '0分钟';
+		this.firstReadDate = '';
+		this.lastReadDate = '';
+		this.sessionCount = 0;
+	},
+	async loadAllBooksReadingTime() {
+		try {
+			const allBooksData = await readingTimeStorage.getAllBooksReadingTime();
+			
+			const stats = readingTimeStorage.calculateGlobalStats(allBooksData);
+			
+			this.totalReadingTime = stats.totalSeconds;
+			this.totalReadingTimeFormatted = readingTimeStorage.formatDuration(stats.totalSeconds);
+			this.totalReadingDays = stats.totalDays;
+			this.todayReadingTime = stats.todaySeconds;
+			this.todayReadingTimeFormatted = readingTimeStorage.formatDuration(stats.todaySeconds);
+			this.averageDailyTime = stats.averageDailySeconds;
+			this.averageDailyTimeFormatted = readingTimeStorage.formatDuration(stats.averageDailySeconds);
+			this.weekReadingTime = stats.weekSeconds;
+			this.weekReadingTimeFormatted = readingTimeStorage.formatDuration(stats.weekSeconds);
+			this.averageWeekTime = stats.averageWeekSeconds;
+			this.averageWeekTimeFormatted = readingTimeStorage.formatDuration(stats.averageWeekSeconds);
+			this.maxDailyTime = stats.maxDailySeconds;
+			this.maxDailyTimeFormatted = readingTimeStorage.formatDuration(stats.maxDailySeconds);
+		} catch (e) {
+			this.resetGlobalData();
+		}
+	},
+	resetGlobalData() {
+		this.totalReadingTime = 0;
+		this.totalReadingTimeFormatted = '暂无记录';
+		this.totalReadingDays = 0;
+		this.todayReadingTime = 0;
+		this.todayReadingTimeFormatted = '0分钟';
+		this.averageDailyTime = 0;
+		this.averageDailyTimeFormatted = '0分钟';
+		this.weekReadingTime = 0;
+		this.weekReadingTimeFormatted = '0分钟';
+		this.averageWeekTime = 0;
+		this.averageWeekTimeFormatted = '0分钟';
+		this.maxDailyTime = 0;
+		this.maxDailyTimeFormatted = '0分钟';
+	},
+	back() {
+		router.back();
+	}
+}
+</script>
+
+<style>
+.page {
+	width: 432px;
+	height: 514px;
+	background-color: #000000;
+}
+.list {
+	width: 432px;
+	height: 514px;
+	position: absolute;
+	top:0px;
+	left:0px;
+	padding: 116px 12px;
+}
+.item {
+	width: 100%;
+	height: 200px;
+	padding: 14px 20px;
+	margin-bottom: 8px;
+	background-color: #262626;
+	border-radius: 36px;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: space-around;
+}
+.item-single {
+	height: 112px;
+}
+.stat-item {
+	width: 100%;
+	height: 80px;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+}
+.item-title {
+	font-size: 28px;
+	line-height: 37px;
+	font-weight: bold;
+	color: rgba(255,255,255,0.6);
+	margin-bottom: 4px;
+}
+.item-value {
+	font-size: 32px;
+	line-height: 40px;
+	width: 100%;
+	font-weight: bold;
+	color: white;
+	text-overflow: ellipsis;
+	lines: 1;
+}
+</style>

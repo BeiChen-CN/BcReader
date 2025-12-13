@@ -5,27 +5,36 @@
 		<list-item class="item" @click="toggleShowProgressBar" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>显示进度条</text>
-				<text class="itemtext2" static>在底部显示进度条</text>
+				<text class="itemtext2" static>在底部显示</text>
 			</div>
 			<img src="{{showProgressBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
 		</list-item>
 		<list-item class="item" @click="toggleShowPercent" if="{{showProgressBar}}" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>显示百分比</text>
-				<text class="itemtext2" static>在上方显示百分比</text>
+				<text class="itemtext2" static>进度条上方</text>
 			</div>
 			<img src="{{showProgressBarPercent ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
 		</list-item>
+		<list-item class="item" @click="routerTo('progressBarOpacitySetting')" type="item">
+			<div class="item-content">
+				<text class="itemtext" static>进度条透明度</text>
+				<text class="itemtext2" static>调整进度条透明度</text>
+			</div>
+			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+		</list-item>
 	</list>
 	
-	<number if="{{showProgressBar}}" style="position: absolute;bottom:6px" max.static="50" min.static="5" step.static="1" value="{{progressBarHeight}}" @change="changeHeight" name.static="调整高度"></number>
+	<img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 412px;width: 432px;height: 102px;" />
+	<number if="{{showProgressBar}}" style="position: absolute;top:415px;" max.static="50" min.static="5" step.static="1" value="{{progressBarHeight}}" @change="changeHeight" name.static="调整高度"></number>
 
-	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-	<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-	<text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+	<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
+	<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 	  {{nowTime}}
 	</text>
-	<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+	<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 		进度条设置
 	</text>
   </div>
@@ -33,7 +42,7 @@
 
 <script>
 import router from '@system.router'
-import storage from '../../common/storage.js'
+import storage from '../../utils/storage.js'
 
 export default {
   private: {
@@ -91,6 +100,11 @@ export default {
 		  value: this.progressBarHeight.toString()
 	  })
   },
+	routerTo(url) {
+		router.push({
+			uri: '/pages/' + url
+		})
+    },
   reset() {
 	this.progressBarHeight = 8;
 	this.showProgressBar = true;
@@ -121,18 +135,19 @@ export default {
 
 <style>
 .page {
-	width: 336px;
-	height: 480px;
+	width: 432px;
+	height: 514px;
 	background-color: #000000;
 }
 .list {
-	width: 336px;
-	height: 480px;
+	width: 432px;
+	height: 514px;
 	position: absolute;
 	top:0px;
 	left:0px;
-	padding: 86px 6px;
+  padding: 116px 12px;
 }
+
 .item {
 	width: 100%;
 	height: 112px;
@@ -141,7 +156,7 @@ export default {
 	background-color: #262626;
 	border-radius: 36px;
 	align-items: center;
-	justify-content: space-between;
+  justify-content: space-between;
 }
 .item-content {
 	height: 100%;

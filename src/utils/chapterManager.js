@@ -4,6 +4,7 @@ import runAsyncFunc from '../utils/runAsyncFunc.js';
 
 const bookIndexCache = new Map();
 const chapterChunkCache = new Map();
+const availableChaptersCache = new Map();
 const CACHE_EXPIRY = 5 * 60 * 1000;
 const CHAPTERS_PER_FILE = 100;
 
@@ -79,7 +80,6 @@ async function loadChapterChunk(bookName, chunkIndex) {
     }
 }
 
-
 function parseChapterList(text) {
     if (!text) return [];
     
@@ -90,13 +90,15 @@ function parseChapterList(text) {
         const line = lines[i].trim();
         if (!line) continue;
         
-        try {
-            const chapter = JSON.parse(line);
-            if (chapter && typeof chapter.index === 'number' && chapter.name) {
-                chapterMap.set(chapter.index, chapter);
+        const parts = line.split('\t');
+        if (parts.length >= 2) {
+            const index = parseInt(parts[0], 10);
+            const name = parts[1];
+            const wordCount = parts.length >= 3 ? parseInt(parts[2], 10) || 0 : 0;
+            
+            if (!isNaN(index) && name) {
+                chapterMap.set(index, { index, name, wordCount });
             }
-        } catch (e) {
-            continue;
         }
     }
     
@@ -106,10 +108,41 @@ function parseChapterList(text) {
     return chapters;
 }
 
+async function getAllAvailableChapters(bookName) {
+    const cached = availableChaptersCache.get(bookName);
+    if (cached && (Date.now() - cached.timestamp < CACHE_EXPIRY)) {
+        return cached.chapters;
+    }
+
+    const indexesUri = `internal://files/books/${bookName}/indexes/`;
+    let allChapters = [];
+    try {
+        const res = await runAsyncFunc(file.list, { uri: indexesUri });
+        const files = res.fileList.filter(f => f.uri.endsWith('.txt'));
+        
+        const promises = files.map(f => runAsyncFunc(file.readText, { uri: f.uri }));
+        const results = await Promise.all(promises);
+        
+        for (const result of results) {
+            const chapters = parseChapterList(result.text);
+            allChapters.push(...chapters);
+        }
+    } catch(e) {
+        return [];
+    }
+    
+    allChapters.sort((a, b) => a.index - b.index);
+    availableChaptersCache.set(bookName, {
+        chapters: allChapters,
+        timestamp: Date.now()
+    });
+    return allChapters;
+}
 
 function clearCache(bookName) {
     if (bookName) {
         bookIndexCache.delete(bookName);
+        availableChaptersCache.delete(bookName);
         for (const key of chapterChunkCache.keys()) {
             if (key.startsWith(bookName + '_')) {
                 chapterChunkCache.delete(key);
@@ -118,6 +151,7 @@ function clearCache(bookName) {
     } else {
         bookIndexCache.clear();
         chapterChunkCache.clear();
+        availableChaptersCache.clear();
     }
 }
 
@@ -127,54 +161,28 @@ async function getChapterPage(bookName, page = 0, pageSize = 8) {
         return { chapters: [], totalPages: 0, currentPage: 0, totalChapters: 0 };
     }
 
-    const bookIndex = await loadBookIndex(bookName);
-    if (!bookIndex || bookIndex.totalChapters === 0) {
-        return { chapters: [], totalPages: 0, currentPage: 0, totalChapters: bookIndex ? bookIndex.totalChapters : 0 };
+    const allChapters = await getAllAvailableChapters(bookName);
+    const totalChapters = allChapters.length;
+
+    if (totalChapters === 0) {
+         return { chapters: [], totalPages: 0, currentPage: 0, totalChapters: 0 };
     }
 
-    const { totalChapters } = bookIndex;
     const totalPages = Math.ceil(totalChapters / pageSize) || 1;
     const safePage = Math.max(0, Math.min(page, totalPages - 1));
 
-    const startChapterIndex = safePage * pageSize;
-    const endChapterIndex = Math.min(startChapterIndex + pageSize, totalChapters);
-
-    if (startChapterIndex >= endChapterIndex) {
-        return { chapters: [], totalPages, currentPage: safePage, totalChapters };
-    }
-    
-    const startChunk = Math.floor(startChapterIndex / CHAPTERS_PER_FILE) + 1;
-    const endChunk = Math.floor((endChapterIndex - 1) / CHAPTERS_PER_FILE) + 1;
-
-    let requiredChapters = [];
-    if (startChunk === endChunk) {
-        const chunk = await loadChapterChunk(bookName, startChunk);
-        requiredChapters = chunk.filter(ch => ch.index >= startChapterIndex && ch.index < endChapterIndex);
-    } else {
-        const chunkPromises = [];
-        for (let i = startChunk; i <= endChunk; i++) {
-            chunkPromises.push(loadChapterChunk(bookName, i));
-        }
-        const chapterChunks = await Promise.all(chunkPromises);
-        const allRelevantChapters = chapterChunks.flat();
-        requiredChapters = allRelevantChapters.filter(ch => ch.index >= startChapterIndex && ch.index < endChapterIndex);
-    }
+    const start = safePage * pageSize;
+    const end = start + pageSize;
+    const pageChapters = allChapters.slice(start, end);
     
     return {
-        chapters: requiredChapters,
+        chapters: pageChapters,
         totalPages,
         currentPage: safePage,
         totalChapters,
     };
-}
-
-
-async function getChapterByIndex(bookName, chapterIndex) {
-    const bookIndex = await loadBookIndex(bookName);
-    if (!bookIndex) return null;
-
+}async function getChapterByIndex(bookName, chapterIndex) {
     const chunkIndex = Math.floor(chapterIndex / CHAPTERS_PER_FILE) + 1;
-    
     const chunk = await loadChapterChunk(bookName, chunkIndex);
     return chunk.find(ch => ch.index === chapterIndex) || null;
 }
@@ -205,6 +213,52 @@ async function getSyncedChapters(bookName) {
     }
 }
 
+async function deleteChapter(bookName, chapterIndex) {
+    try {
+        const contentUri = `internal://files/books/${bookName}/content/${chapterIndex}.txt`;
+        try {
+            await runAsyncFunc(file.delete, { uri: contentUri });
+        } catch (e) {
+        }
+
+        const chunkIndex = Math.floor(chapterIndex / CHAPTERS_PER_FILE) + 1;
+        const chunkUri = `internal://files/books/${bookName}/indexes/${chunkIndex}.txt`;
+        
+        try {
+            const chunkData = await runAsyncFunc(file.readText, { uri: chunkUri });
+            const lines = chunkData.text.split('\n');
+            const filteredLines = lines.filter(line => {
+                const trimmed = line.trim();
+                if (!trimmed) return false;
+                const parts = trimmed.split('\t');
+                if (parts.length >= 2) {
+                    const index = parseInt(parts[0], 10);
+                    return index !== chapterIndex;
+                }
+                return true;
+            });
+            
+            if (filteredLines.length > 0) {
+                const newContent = filteredLines.join('\n') + '\n';
+                await runAsyncFunc(file.writeText, { 
+                    uri: chunkUri, 
+                    text: newContent 
+                });
+            } else {
+                try {
+                    await runAsyncFunc(file.delete, { uri: chunkUri });
+                } catch (e) {
+                }
+            }
+        } catch (e) {
+        }
+
+        return true;
+    } catch (error) {
+        throw new Error(`Failed to delete chapter ${chapterIndex}: ${error.message}`);
+    }
+}
+
 export default {
     checkVersion,
     handleOldVersion,
@@ -213,5 +267,7 @@ export default {
     getChapterByIndex,
     loadBookIndex,
     getTotalChapters,
-    getSyncedChapters
+    getSyncedChapters,
+    getAllAvailableChapters,
+    deleteChapter
 };

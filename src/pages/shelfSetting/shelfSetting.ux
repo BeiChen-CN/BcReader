@@ -1,47 +1,80 @@
+<import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
     <div class="page" style="flex-direction: column;">
         <list class="list">
-            <list-item class="item" @click="routerTo('shelfStyle')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>书架样式</text>
-                    <text class="itemtext2" static>列表或封面视图</text>
-                </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
+            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
+                <text class="section-title" static>书架样式</text>
             </list-item>
-            <list-item class="item" @click="routerTo('shelfPageSizeSetting')" type="item">
+            <list-item class="item {{shelfStyle === 'list' ? 'item2' : ''}}" @click="selectShelfStyle('list')" type="item">
                 <div class="item-content">
-                    <text class="itemtext" static>书架每页数量</text>
-                    <text class="itemtext2" static>调整书架分页数量</text>
+                    <text class="itemtext" static>列表样式</text>
+                    <text class="itemtext2" static>默认的列表样式</text>
                 </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
+                <img if="{{shelfStyle === 'list'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
             </list-item>
-            <list-item class="item" @click="routerTo('lastReadSetting')" type="item">
+            <list-item class="item {{shelfStyle === 'cover' ? 'item2' : ''}}" @click="selectShelfStyle('cover')" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>封面样式</text>
+                    <text class="itemtext2" static>展示书籍封面</text>
+                </div>
+                <img if="{{shelfStyle === 'cover'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+            </list-item>
+
+            <list-item class="item" @click="toggleLastRead" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>置顶上次阅读</text>
                     <text class="itemtext2" static>显示上次阅读</text>
                 </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
+                <img src="{{lastReadOnTop ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
             </list-item>
-            <list-item class="item" @click="routerTo('homeDisplaySetting')" type="item">
+            
+            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
+                <text class="section-title" static>首页展示方式</text>
+            </list-item>
+            <list-item class="item {{displayMode === 'all' ? 'item2' : ''}}" @click="selectDisplayMode('all')" type="item">
                 <div class="item-content">
-                    <text class="itemtext" static>首页展示方式</text>
-                    <text class="itemtext2" static>选择首页显示方式</text>
+                    <text class="itemtext" static>展示全部书籍</text>
+                    <text class="itemtext2" static>显示所有书籍</text>
                 </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static />
+                <img if="{{displayMode === 'all'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+            </list-item>
+            <list-item class="item {{displayMode === 'category' ? 'item2' : ''}}" @click="selectDisplayMode('category')" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>展示分类列表</text>
+                    <text class="itemtext2" static>显示分类列表</text>
+                </div>
+                <img if="{{displayMode === 'category'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+            </list-item>
+            
+            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
+                <text class="section-title" static>首页进度显示</text>
+            </list-item>
+            <list-item class="item {{progressMode === 'chapter' ? 'item2' : ''}}" @click="selectProgressMode('chapter')" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>章节进度</text>
+                    <text class="itemtext2" static>仅显示当前章进度</text>
+                </div>
+                <img if="{{progressMode === 'chapter'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+            </list-item>
+            <list-item class="item {{progressMode === 'book' ? 'item2' : ''}}" @click="selectProgressMode('book')" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>整本进度</text>
+                    <text class="itemtext2" static>结合章节进度显示</text>
+                </div>
+                <img if="{{progressMode === 'book'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
             </list-item>
         </list>
 
+        <img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 412px;width: 432px;height: 102px;" />
+        <number style="position: absolute;top:415px" max.static="15" min.static="2" step.static="1" value="{{shelfPageSize}}" @change="changePageSize" name.static="每页数量"></number>
 
-        <img static src="/common/images/hd.png"
-            style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
-        <img static src="/common/images/back.png" @click="back"
-            style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;" />
-        <text
-            style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-            {{nowTime}}
+        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+        <img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
+        <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+          {{nowTime}}
         </text>
-        <text static
-            style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+        <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
             书架设置
         </text>
     </div>
@@ -49,14 +82,18 @@
 
 <script>
     import router from '@system.router'
-    import storage from '../../common/storage.js'
-
+    import storage from '../../utils/storage.js'
 
     export default {
         private: {
             nowTime: "00:00",
             timer: null,
-            timeFormat: '24h'
+            timeFormat: '24h',
+            shelfStyle: 'list',
+            shelfPageSize: 12,
+            lastReadOnTop: true,
+            displayMode: 'all',
+            progressMode: 'book'
         },
         updateTime() {
             const date = new Date();
@@ -91,6 +128,69 @@
             this.timer = setInterval(() => {
                 this.updateTime();
             }, 1000);
+            
+            
+            storage.get({
+                key: 'EBOOK_SHELF_STYLE',
+                success: (data) => {
+                    if (data) {
+                        this.shelfStyle = data;
+                    }
+                },
+                fail: () => {
+                    this.shelfStyle = 'list';
+                }
+            });
+            
+            
+            storage.get({
+                key: 'EBOOK_SHELF_PAGE_SIZE',
+                success: (data) => {
+                    if (data) {
+                        this.shelfPageSize = parseInt(data);
+                    }
+                },
+                fail: () => {
+                    this.shelfPageSize = 12;
+                }
+            });
+            
+            
+            storage.get({
+                key: 'EBOOK_TOP_LAST_READ',
+                success: (data) => {
+                    this.lastReadOnTop = data === 'true';
+                },
+                fail: () => {
+                    this.lastReadOnTop = true;
+                }
+            });
+            
+            
+            storage.get({
+                key: 'EBOOK_HOME_DISPLAY_MODE',
+                success: (data) => {
+                    if (data) {
+                        this.displayMode = data;
+                    }
+                },
+                fail: () => {
+                    this.displayMode = 'all';
+                }
+            });
+            
+            
+            storage.get({
+                key: 'EBOOK_HOME_PROGRESS_MODE',
+                success: (data) => {
+                    if (data) {
+                        this.progressMode = data;
+                    }
+                },
+                fail: () => {
+                    this.progressMode = 'book';
+                }
+            });
         },
         onDestroy() {
             if (this.timer) {
@@ -98,10 +198,70 @@
                 this.timer = null;
             }
         },
-        routerTo(url) {
-            router.push({
-                uri: '/pages/' + url
-            })
+        selectShelfStyle(style) {
+            if (this.shelfStyle === style) {
+                return;
+            }
+            this.shelfStyle = style;
+            storage.set({
+                key: 'EBOOK_SHELF_STYLE',
+                value: style
+            });
+            if (style === 'cover') {
+                router.push({
+                    uri: '/pages/help',
+                    params: {
+                        title: '性能提示',
+                        content: '由于性能问题，开启封面显示后，停留在书架页面会严重降低书架传输速度。'
+                    }
+                });
+            }
+        },
+        changePageSize(e) {
+            this.shelfPageSize = e.detail.value;
+            storage.set({
+                key: 'EBOOK_SHELF_PAGE_SIZE',
+                value: this.shelfPageSize.toString()
+            });
+        },
+        toggleLastRead() {
+            this.lastReadOnTop = !this.lastReadOnTop;
+            storage.set({
+                key: 'EBOOK_TOP_LAST_READ',
+                value: this.lastReadOnTop.toString()
+            });
+        },
+        selectDisplayMode(mode) {
+            if (this.displayMode === mode) {
+                return;
+            }
+            this.displayMode = mode;
+            storage.set({
+                key: 'EBOOK_HOME_DISPLAY_MODE',
+                value: mode
+            });
+        },
+        selectProgressMode(mode) {
+            if (this.progressMode === mode) {
+                return;
+            }
+            this.progressMode = mode;
+            storage.set({
+                key: 'EBOOK_HOME_PROGRESS_MODE',
+                value: mode
+            });
+        },
+        reset() {
+            this.shelfStyle = 'list';
+            this.shelfPageSize = 12;
+            this.lastReadOnTop = true;
+            this.displayMode = 'all';
+            this.progressMode = 'book';
+            storage.set({ key: "EBOOK_SHELF_STYLE", value: 'list' });
+            storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '12' });
+            storage.set({ key: "EBOOK_TOP_LAST_READ", value: 'true' });
+            storage.set({ key: "EBOOK_HOME_DISPLAY_MODE", value: 'all' });
+            storage.set({ key: "EBOOK_HOME_PROGRESS_MODE", value: 'book' });
         },
         back() {
             router.back();
@@ -111,18 +271,18 @@
 
 <style>
     .page {
-        width: 336px;
-        height: 480px;
+        width: 432px;
+        height: 514px;
         background-color: #000000;
     }
 
     .list {
-        width: 336px;
-        height: 480px;
+        width: 432px;
+        height: 514px;
         position: absolute;
         top: 0px;
         left: 0px;
-        padding: 86px 6px;
+        padding: 116px 12px;
     }
 
     .item {
@@ -134,6 +294,10 @@
         border-radius: 36px;
         align-items: center;
         justify-content: space-between;
+    }
+
+    .item2 {
+        background-color: #0D6EFF;
     }
 
     .itemtext {
@@ -155,11 +319,17 @@
         lines: 1;
     }
 
-
     .item-content {
         height: 100%;
         flex: 1;
         flex-direction: column;
         justify-content: space-between;
+    }
+
+    .section-title {
+        font-size: 24px;
+        line-height: 36px;
+        font-weight: bold;
+        color: rgba(255, 255, 255, 0.5);
     }
 </style>
