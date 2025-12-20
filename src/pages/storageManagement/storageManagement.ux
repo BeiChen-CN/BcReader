@@ -1,0 +1,238 @@
+<template>
+	<div class="page">
+		<list class="list" style="padding: 116px 12px;">
+			<list-item class="item" type="info" style="height: 280px; flex-direction: column;">
+				<text class="item-title" style="text-align: left;" static>除书籍以外的总占用</text>
+				<text class="item-value" style="width: auto;">{{totalExclBooks}}</text>
+				<div static style="width: 100%; height: 1px; background-color: rgba(255,255,255,0.2); margin: 8px 0px;"></div>
+				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
+					<text class="item-title" style="font-size: 24px;" static>书籍索引占用</text>
+					<text class="item-value" style="font-size: 24px; width: auto;">{{bookIndexStorage}}</text>
+				</div>
+				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
+					<text class="item-title" style="font-size: 24px;" static>阅读进度占用</text>
+					<text class="item-value" style="font-size: 24px; width: auto;">{{readProgressStorage}}</text>
+				</div>
+				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
+					<text class="item-title" style="font-size: 24px;" static>阅读时长占用</text>
+					<text class="item-value" style="font-size: 24px; width: auto;">{{readingTimeStorage}}</text>
+				</div>
+				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
+					<text class="item-title" style="font-size: 24px;" static>设置占用</text>
+					<text class="item-value" style="font-size: 24px; width: auto;">{{settingsStorage}}</text>
+				</div>
+			</list-item>
+
+			<list-item class="item" type="item" @click="clearBooks">
+				<div class="item-content">
+					<text class="itemtext" static>清空数据</text>
+					<text class="itemtext2" static>清空全部数据</text>
+				</div>
+				<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+			</list-item>
+		</list>
+
+		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
+		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+			{{nowTime}}
+		</text>
+		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+			存储管理
+		</text>
+	</div>
+</template>
+
+<script>
+import router from '@system.router'
+import file from '@system.file'
+import runAsyncFunc from '../../utils/runAsyncFunc.js'
+import bookStorage from '../../utils/bookStorage.js'
+import readingTimeStorage from '../../utils/readingTimeStorage.js'
+
+export default {
+	private: {
+		nowTime: "00:00",
+		timer: null,
+		totalExclBooks: '加载中...',
+		bookIndexStorage: '加载中...',
+		readProgressStorage: '加载中...',
+		readingTimeStorage: '加载中...',
+		settingsStorage: '加载中...',
+		timeFormat: '24h'
+	},
+	onInit() {
+		this.updateTime();
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 1000);
+		this.calculateStorageOverview();
+	},
+	onShow() {
+		this.calculateStorageOverview();
+	},
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+	},
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		hours = hours < 10 ? '0' + hours : hours;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		this.nowTime = `${hours}:${minutes}`;
+	},
+	async calculateStorageOverview() {
+		this.totalExclBooks = '计算中...';
+		this.bookIndexStorage = '计算中...';
+		this.readProgressStorage = '计算中...';
+		this.readingTimeStorage = '计算中...';
+		try {
+			let progressBytes = 0;
+			try {
+				const bookshelf = await bookStorage.load();
+				(bookshelf.books || []).forEach(b => {
+					if (b.progress) {
+						const copy = Object.assign({}, b.progress);
+						delete copy.bookmarks;
+						try {
+							progressBytes += JSON.stringify(copy).length;
+						} catch (e) {}
+					}
+				});
+			} catch (e) {}
+			this.readProgressStorage = this.formatFileSize(progressBytes);
+
+			let readingTimeBytes = 0;
+			try {
+				const times = await readingTimeStorage.getAllBooksReadingTime();
+				readingTimeBytes = JSON.stringify(times).length;
+			} catch (e) {}
+			this.readingTimeStorage = this.formatFileSize(readingTimeBytes);
+
+			let bookIndexBytes = 0;
+			let settingsBytes = 0;
+			try {
+				const tryGet = async (uri) => {
+					try {
+						const r = await runAsyncFunc(file.get, { uri });
+						return r.length || 0;
+					} catch (e) {
+						return 0;
+					}
+				};
+				
+				bookIndexBytes = await tryGet('internal://files/books/bookshelf.json');
+				this.bookIndexStorage = this.formatFileSize(bookIndexBytes);
+				
+				settingsBytes = await tryGet('internal://files/books/storage-api/savedFile');
+				this.settingsStorage = this.formatFileSize(settingsBytes);
+			} catch (e) {}
+
+			const totalExcl = bookIndexBytes + progressBytes + readingTimeBytes + settingsBytes;
+			this.totalExclBooks = this.formatFileSize(totalExcl);
+		} catch (e) {
+		}
+	},
+	formatFileSize(bytes) {
+		if (!bytes) return '0 Bytes';
+		const k = 1024;
+		const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+	},
+	clearBooks() {
+		router.push({
+			uri: '/pages/help',
+			params: {
+				title: '清空数据',
+				content: '为防止卡死，请手动将小程序卸载后重新安装。'
+			}
+		});
+	},
+	back() {
+		router.back();
+	}
+}
+</script>
+
+<style>
+.page {
+	width: 432px;
+	height: 514px;
+	background-color: #000000;
+}
+.list {
+	width: 432px;
+	height: 514px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+  .item {
+	  width: 100%;
+	  height: 112px;
+	  padding: 14px 20px;
+	  margin-bottom: 8px;
+	  background-color: #262626;
+	  border-radius: 36px;
+	  align-items: center;
+	justify-content: space-between;
+  }
+  .itemtext {
+	  font-size: 32px;
+	  line-height:40px;
+	  width: 100%;
+	  font-weight: bold;
+	  color: white;
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  
+  .itemtext2 {
+	  font-size: 28px;
+	  line-height: 37px;
+	  font-weight: bold;
+	  color: rgba(255,255,255,0.6);
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+.item-value {
+	font-size: 32px;
+	line-height: 40px;
+	width: 100%;
+	font-weight: bold;
+	color: white;
+	lines: 1;
+}
+.itemtext {
+	font-size: 32px;
+	line-height:40px;
+	width: 100%;
+	font-weight: bold;
+	color: white;
+	text-overflow: ellipsis;
+	lines: 1;
+}
+
+  
+.item-content {
+	  height: 100%;
+	  flex:1;
+	  flex-direction: column;
+	  justify-content: space-between;
+  }
+  
+.item-title {
+	font-size: 28px;
+	line-height: 37px;
+	font-weight: bold;
+	color: rgba(255,255,255,0.6);
+}
+</style>
+
+

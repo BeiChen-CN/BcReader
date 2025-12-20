@@ -177,6 +177,9 @@
       },
       "pages/readingTime": {
         "component": "readingTime"
+      },
+      "pages/storageManagement": {
+        "component": "storageManagement"
       }
     }
   },
