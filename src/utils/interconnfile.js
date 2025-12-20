@@ -76,6 +76,9 @@ export default class interconnfile {
                 case "set_batch_reading_data":
                     this.setBatchReadingData(payload);
                     break;
+                case "delete_chapters":
+                    this.deleteChapters(payload);
+                    break;
             }
         }
         addListener(onmessage);
@@ -1010,6 +1013,60 @@ export default class interconnfile {
             });
         } catch (error) {
             this.send({ type: "error", message: `批量同步阅读数据失败: ${error.message || 'unknown error'}`, count: 0 });
+        }
+    }
+
+    async deleteChapters({ filename, chapterIndices }) {
+        try {
+            const chapterManager = require('../utils/chapterManager.js').default;
+            const sanitizedDirName = this.generateDirName(filename);
+            
+            if (!Array.isArray(chapterIndices) || chapterIndices.length === 0) {
+                this.send({ type: "error", message: "无效的章节索引列表", count: 0 });
+                return;
+            }
+
+            let successCount = 0;
+            let errorCount = 0;
+            const total = chapterIndices.length;
+
+            for (let i = 0; i < chapterIndices.length; i++) {
+                const chapterIndex = chapterIndices[i];
+                try {
+                    await chapterManager.deleteChapter(sanitizedDirName, chapterIndex);
+                    successCount++;
+                    
+                    const progress = Math.floor(((i + 1) / total) * 100);
+                    this.send({ 
+                        type: "progress", 
+                        message: `正在删除章节 ${i + 1}/${total}`, 
+                        count: progress 
+                    });
+                } catch (error) {
+                    errorCount++;
+                    console.error(`Failed to delete chapter ${chapterIndex}:`, error);
+                }
+            }
+
+            if (errorCount === 0) {
+                this.send({ 
+                    type: "success", 
+                    message: `成功删除 ${successCount} 个章节`, 
+                    count: successCount 
+                });
+            } else {
+                this.send({ 
+                    type: "error", 
+                    message: `删除完成：成功 ${successCount} 个，失败 ${errorCount} 个`, 
+                    count: successCount 
+                });
+            }
+        } catch (error) {
+            this.send({ 
+                type: "error", 
+                message: `删除章节失败: ${error.message || 'unknown error'}`, 
+                count: 0 
+            });
         }
     }
 
