@@ -77,9 +77,20 @@ async function set(bookDirName, progressData) {
             cleanProgress.chapterIndex = null;
         }
         
-        cleanProgress.offsetInChapter = typeof progressWithoutBookmarks.offsetInChapter === 'number' 
-            ? Math.max(0, Math.floor(progressWithoutBookmarks.offsetInChapter)) 
-            : 0;
+        (function() {
+            const rawOffset = progressWithoutBookmarks.offsetInChapter;
+            let offset = 0;
+            if (typeof rawOffset === 'number') {
+                offset = Math.max(0, Math.floor(rawOffset));
+            } else if (typeof rawOffset === 'string') {
+                const parsed = parseInt(rawOffset, 10);
+                offset = isNaN(parsed) ? 0 : Math.max(0, parsed);
+            } else {
+                offset = 0;
+            }
+            if (offset % 2 === 1) offset = Math.max(0, offset - 1);
+            cleanProgress.offsetInChapter = offset;
+        })();
         
         cleanProgress.scrollOffset = typeof progressWithoutBookmarks.scrollOffset === 'number' 
             ? Math.max(0, Math.floor(progressWithoutBookmarks.scrollOffset)) 

@@ -762,16 +762,16 @@
 	},
 	readFileText(readOffset, cb){
 		if(readOffset >= this.allSize){ cb('', 0); return; }
-        
+
         if (this.chapterContentCache) {
             const start = readOffset / 2;
             let end = start + this.txtSizePage;
             if (end > this.chapterContentCache.length) {
                 end = this.chapterContentCache.length;
             }
-            
+
             let str = this.chapterContentCache.substring(start, end);
-            
+
             if (this.preventParagraphSplitting && end < this.chapterContentCache.length) {
                 const lastNewline = str.lastIndexOf('\n');
                 if (lastNewline > -1) {
@@ -786,42 +786,56 @@
 		var length = this.txtSizePage * 2;
 		if(readOffset < 0){ length += readOffset; readOffset = 0; }
 		if((readOffset + length) >= this.allSize){ length = this.allSize - readOffset; }
-		
-		file.readArrayBuffer({
-		  uri: this.cPath, position: readOffset, length: length,
-		  success: (data) => {
-			if (!data.buffer || data.buffer.byteLength === 0) {
-				cb('', 0);
-				return;
-			}
-			try {
-                const buffer = new Uint8Array(data.buffer);
-                const chars = [];
-				for(let i = 0; i < buffer.length; i += 2){
-				  chars.push(String.fromCharCode(buffer[i+1]*256 + buffer[i]));
-				}
-				let str = chars.join('');
-                
-                let bytesRead = length;
-                if (this.preventParagraphSplitting && (readOffset + length) < this.allSize) {
-                    const lastNewline = str.lastIndexOf('\n');
-                    if (lastNewline > -1) {
-                        str = str.substring(0, lastNewline + 1);
-                        bytesRead = str.length * 2;
-                    }
+
+        const self = this;
+        
+        function attemptRead(len, attemptsLeft) {
+            file.readArrayBuffer({
+              uri: self.cPath, position: readOffset, length: len,
+              success: (data) => {
+                if (!data.buffer || data.buffer.byteLength === 0) {
+                    cb('', 0);
+                    return;
                 }
-				cb(str, bytesRead);
-			} catch (e) {
-				cb('', 0);
-			}
-		  },
-		  fail: function(data, code){ 
-			  if (code === 301) {
-				  prompt.showToast({ message: '文件不存在，请重新同步该章节' });
-			  }
-			  cb('', 0); 
-		  }
-		});
+                try {
+                    const buffer = new Uint8Array(data.buffer);
+                    const chars = [];
+                    for(let i = 0; i < buffer.length; i += 2){
+                      chars.push(String.fromCharCode(buffer[i+1]*256 + buffer[i]));
+                    }
+                    let str = chars.join('');
+
+                    let bytesRead = len;
+                    if (self.preventParagraphSplitting && (readOffset + len) < self.allSize) {
+                        const lastNewline = str.lastIndexOf('\n');
+                        if (lastNewline > -1) {
+                            str = str.substring(0, lastNewline + 1);
+                            bytesRead = str.length * 2;
+                        }
+                    }
+                    cb(str, bytesRead);
+                } catch (e) {
+                    cb('', 0);
+                }
+              },
+              fail: function(data, code){
+                  
+                  if (attemptsLeft > 0) {
+                      const nextLen = Math.max(256, Math.floor(len / 2));
+                      attemptRead(nextLen, attemptsLeft - 1);
+                      return;
+                  }
+                  if (code === 301) {
+                      prompt.showToast({ message: '文件不存在，请重新同步该章节' });
+                  } else {
+                      prompt.showToast({ message: '读取章节失败，请检查存储空间或重启手环' });
+                  }
+                  cb('', 0);
+              }
+            });
+        }
+
+        attemptRead(length, 3);
 	},
 	onScroll(e){
 		if (this.wait) return;
