@@ -253,7 +253,7 @@ export default {
       params: {
         action: 'deleteChapter',
         title: '删除章节',
-        confirmText: '确认删除章节的文件吗？',
+        confirmText: '确认删除章节文件吗?',
         subText: chapter.name,
         bookName: this.name,
         chapterIndex: chapter.index,
