@@ -153,24 +153,20 @@ export default {
         }
 
         try {
-            
             const progress = await bookStorage.get(this.bookName);
             const isCurrentChapter = progress && progress.chapterIndex === this.chapterIndex;
             
-            
             await chapterManager.deleteChapter(this.bookName, this.chapterIndex);
-            
+            chapterManager.clearCache(this.bookName);
             
             if (isCurrentChapter) {
                 const allChapters = await chapterManager.getAllAvailableChapters(this.bookName);
                 if (allChapters.length > 0) {
-                    
                     progress.chapterIndex = allChapters[0].index;
                     progress.offsetInChapter = 0;
                     progress.scrollOffset = 0;
                     await bookStorage.set(this.bookName, progress);
                 } else {
-                    
                     progress.chapterIndex = null;
                     progress.offsetInChapter = 0;
                     progress.scrollOffset = 0;
