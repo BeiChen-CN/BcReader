@@ -946,7 +946,20 @@ export default class interconnfile {
             
             if (progress) {
                 try {
-                    const progressData = JSON.parse(progress);
+                    let progressData = JSON.parse(progress);
+                    if (progressData && typeof progressData.offsetInChapter !== 'undefined') {
+                        let o = progressData.offsetInChapter;
+                        if (typeof o === 'string') {
+                            o = parseInt(o, 10);
+                        }
+                        if (typeof o === 'number' && !isNaN(o)) {
+                            o = Math.max(0, Math.floor(o));
+                            if (o % 2 === 1) o = Math.max(0, o - 1);
+                            progressData.offsetInChapter = o;
+                        } else {
+                            progressData.offsetInChapter = 0;
+                        }
+                    }
                     await bookStorage.set(sanitizedDirName, progressData);
                 } catch (e) {
                 }
