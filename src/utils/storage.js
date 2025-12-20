@@ -13,6 +13,9 @@ function loadIfNeeded(callback) {
         success: function(data) {
             try {
                 storageCache = JSON.parse(data.text);
+                if (storageCache === null || typeof storageCache !== 'object') {
+                    storageCache = {};
+                }
             } catch (e) {
                 storageCache = {};
             }
@@ -26,51 +29,62 @@ function loadIfNeeded(callback) {
 }
 
 function saveToFile() {
-    if (storageCache !== null) {
+    const toWrite = (storageCache && typeof storageCache === 'object') ? storageCache : {};
+    try {
         file.writeText({
             uri: fileSavedPath,
-            text: JSON.stringify(storageCache)
+            text: JSON.stringify(toWrite)
         });
+    } catch (e) {
     }
 }
 
 function get(param){
     loadIfNeeded(data => {
-        var str = data[param.key];
-        if(str === undefined && param.default !== undefined){
+        const safeData = (data && typeof data === 'object') ? data : {};
+        const key = param && param.key;
+        let str = (key !== undefined) ? safeData[key] : undefined;
+        if (str === undefined && param && param.default !== undefined) {
             str = param.default;
         }
-        if(str === undefined){
+        if (str === undefined) {
             str = '';
         }
-        if(param.success){
+        if (param && param.success) {
             param.success(str);
         }
-        if(param.complete){
+        if (param && param.complete) {
             param.complete();
         }
     });
 }
 
 function save(data,param){
-    storageCache = data;
+    // ensure we never set storageCache to a non-object
+    if (data && typeof data === 'object') {
+        storageCache = data;
+    } else {
+        storageCache = {};
+    }
     saveToFile();
-    if(param.success){
+    if (param && param.success) {
         param.success();
     }
-    if(param.complete){
+    if (param && param.complete) {
         param.complete();
     }
 }
 
 function set(param){
     loadIfNeeded(data => {
-        data[param.key] = param.value;
+        const safeData = (data && typeof data === 'object') ? data : {};
+        safeData[param.key] = param.value;
+        storageCache = safeData;
         saveToFile();
-        if(param.success){
+        if (param && param.success) {
             param.success();
         }
-        if(param.complete){
+        if (param && param.complete) {
             param.complete();
         }
     });
