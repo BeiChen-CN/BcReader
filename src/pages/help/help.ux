@@ -34,8 +34,8 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 336px;
+	height: 480px;
 	background-color: #000000;
 	flex-direction: column;
 	justify-content: center;

@@ -8,15 +8,16 @@
 		<text class="preview-text">进度条预览</text>
 	</div>
 	
-	<number style="position: absolute; top: 415px" max.static="100" min.static="0" step.static="1" value="{{progressBarOpacity}}" @change="changeOpacity" name.static="当前透明度" unit.static="%"></number>
+	<number style="position: absolute;bottom:6px" max.static="100" min.static="0" step.static="1" value="{{progressBarOpacity}}" @change="changeOpacity" name.static="当前透明度" unit.static="%"></number>
 
-	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-	<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-	<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+	<img static src="/common/images/info.png" @click="showHelp" style="position: absolute;left: 180px;top: 6px;width: 72px;height: 72px;"/>
+	<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+	<text style="position: absolute;left: 78px;top: 7px;width: 100px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 	  {{nowTime}}
 	</text>
-	<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-		透明度调整
+	<text static style="position: absolute;left: 78px;top: 35px;width: 100px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		调整
 	</text>
   </div>
 </template>
@@ -71,6 +72,15 @@ export default {
 		value: this.progressBarOpacity.toString()
 	});
   },
+  showHelp() {
+    router.push({
+      uri: '/pages/help',
+      params: {
+        title: '关于进度条透明度',
+        content: '由于 小米手环9Pro 的系统原因，修改此项在9Pro上将导致进度条渲染错误。'
+      }
+    })
+  },
   reset() {
 	this.progressBarOpacity = 100;
 	storage.set({ 
@@ -86,23 +96,21 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 336px;
+	height: 480px;
 	background-color: #000000;
 }
 
 .preview-container {
 	position: absolute;
-	left: 27px;
-	top: 116px;
-	width: 378px;
-	height: 278px;
-	border-radius: 36px;
+	left: 6px;
+	top: 86px;
+	width: 324px;
+	height: 280px;
 	flex-direction: column;
-	border: 3px solid #262626;
-	align-items: center;
 	justify-content: center;
-	padding: 20px;
+	align-items: center;
+	padding: 10px;
 }
 
 .preview-progress-bar-container {

@@ -1,33 +1,33 @@
 <template>
-  <div class="page" style="flex-direction: column;width: 432px;">
+  <div class="page" style="flex-direction: column;width: 336px;">
 
-      <div style="flex-direction: column;margin-top: 46px;width: 432px;align-items:center;" if="{{state == 'wait'}}">
-          <img static src="/common/images/connect.png" style="margin-bottom:24px;margin-top:100px" />
-          <text static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-top: 0px;">
+      <div style="flex-direction: column;margin-top: 46px;width: 336px;" if="{{state == 'wait'}}">
+        <img static src="/common/images/connect.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
+        <text static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-top: 0px;">
           	等待客户端连接
           </text>
-          <text static style="width: 286px;font-size: 24px;font-weight:bold;color: rgb(153, 153, 153);text-align: left;margin-top: 10px;padding: 10px;">请下载安装《弦电子书》专用手机客户端，在客户端中连接手环。
+          <text static style="width: 286px;left:25px;font-size: 24px;font-weight:bold;color: rgb(153, 153, 153);text-align: left;margin-top: 10px;padding: 10px;">请下载安装《弦电子书》专用手机客户端，在客户端中连接手环。
           </text>
       </div>
-      <div style="flex-direction: column;margin-top: 46px;width: 432px;align-items:center;" if="{{state == 'ready'}}">
-          <img static src="/common/images/choose.png" style="margin-bottom:24px;margin-top:100px" />
-          <text static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-top: 0px;">
+      <div style="flex-direction: column;margin-top: 46px;width: 336px;" if="{{state == 'ready'}}">
+        <img static src="/common/images/choose.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
+        <text static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-top: 0px;">
             等待选择文本
           </text>
-          <text static style="width: 286px;font-size: 24px;font-weight:bold;color: rgb(153, 153, 153);text-align: left;margin-top: 10px;padding: 10px;">连接成功，请在手机找到对应书籍后点击“同步”按钮。
+          <text static style="width: 286px;left:25px;font-size: 24px;font-weight:bold;color: rgb(153, 153, 153);text-align: left;margin-top: 10px;padding: 10px;">连接成功，请在手机找到对应书籍后点击“同步”按钮。
           </text>
       </div>
-      <div style="flex-direction: column;margin-top: 46px;width: 432px;align-items:center;" if="{{state == 'upload'}}">
-          <img if="{{state2 == 'ing'}}" static src="/common/images/download.png" style="margin-bottom:24px;margin-top:100px" />
-          <text if="{{state2 == 'ing'}}" static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
+      <div style="flex-direction: column;margin-top: 46px;width: 336px;" if="{{state == 'upload'}}">
+        <img if="{{state2 == 'ing'}}" static src="/common/images/download.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
+        <text if="{{state2 == 'ing'}}" static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
             正在同步
           </text>
-          <img if="{{state2 == 'error'}}" static src="/common/images/error.png" style="margin-bottom:24px;margin-top:100px" />
-          <text if="{{state2 == 'error'}}" static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
+          <img if="{{state2 == 'error'}}" static src="/common/images/error.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
+          <text if="{{state2 == 'error'}}" static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
             同步失败
           </text>
-          <img if="{{state2 == 'succ'}}" static src="/common/images/succ.png" style="margin-bottom:24px;margin-top:100px" />
-          <text if="{{state2 == 'succ'}}" static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
+          <img if="{{state2 == 'succ'}}" static src="/common/images/succ.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
+          <text if="{{state2 == 'succ'}}" static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
             同步成功
           </text>
           <div class="item">
@@ -37,11 +37,11 @@
       </div>
 
 
-      <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-      <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+      <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+      <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
         {{nowTime}}
       </text>
-      <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+      <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
         书籍同步
       </text>
   </div>	
@@ -146,8 +146,8 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 336px;
+	height: 480px;
 	background-color: #000000;
 }
 
@@ -155,6 +155,7 @@ export default {
 	height: 102px;
   width: 324px;
 	margin-top: -4px;
+  left:6px;
 	background-color: #262626;
 	border-radius: 36px;
 	align-items: center;

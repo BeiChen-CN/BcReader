@@ -65,16 +65,16 @@
             </list-item>
         </list>
 
-        <img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 412px;width: 432px;height: 102px;" />
-        <number style="position: absolute;top:415px" max.static="15" min.static="2" step.static="1" value="{{shelfPageSize}}" @change="changePageSize" name.static="每页数量"></number>
+        <img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 336px;height: 102px;" />
+        <number style="position: absolute;bottom:6px" max.static="15" min.static="2" step.static="1" value="{{shelfPageSize}}" @change="changePageSize" name.static="每页数量"></number>
 
-        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-        <img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-        <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
+        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+		<text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
           {{nowTime}}
         </text>
-        <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+        <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
             书架设置
         </text>
     </div>
@@ -90,7 +90,7 @@
             timer: null,
             timeFormat: '24h',
             shelfStyle: 'list',
-            shelfPageSize: 12,
+            shelfPageSize: 6,
             lastReadOnTop: true,
             displayMode: 'all',
             progressMode: 'book'
@@ -151,7 +151,7 @@
                     }
                 },
                 fail: () => {
-                    this.shelfPageSize = 12;
+                    this.shelfPageSize = 6;
                 }
             });
             
@@ -253,12 +253,12 @@
         },
         reset() {
             this.shelfStyle = 'list';
-            this.shelfPageSize = 12;
+            this.shelfPageSize = 6;
             this.lastReadOnTop = true;
             this.displayMode = 'all';
             this.progressMode = 'book';
             storage.set({ key: "EBOOK_SHELF_STYLE", value: 'list' });
-            storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '12' });
+            storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '6' });
             storage.set({ key: "EBOOK_TOP_LAST_READ", value: 'true' });
             storage.set({ key: "EBOOK_HOME_DISPLAY_MODE", value: 'all' });
             storage.set({ key: "EBOOK_HOME_PROGRESS_MODE", value: 'book' });
@@ -271,18 +271,18 @@
 
 <style>
     .page {
-        width: 432px;
-        height: 514px;
+        width: 336px;
+        height: 480px;
         background-color: #000000;
     }
 
     .list {
-        width: 432px;
-        height: 514px;
+        width: 336px;
+        height: 480px;
         position: absolute;
         top: 0px;
         left: 0px;
-        padding: 116px 12px;
+        padding: 86px 6px;
     }
 
     .item {

@@ -2,9 +2,9 @@
 	<div class="page" style="flex-direction: column;">
 
 	  <img if="{{allBooks.length == 0}}" static src="/common/images/empty.png"
-		  style="position: absolute;left: 152px;top: 156px;width: 128px;height: 128px;" />
+		  style="position: absolute;left: 104px;top: 146px;width: 128px;height: 128px;" />
 
-	  <text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 319px;width: 432px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">书架空空</text>
+      <text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">书架空空</text>
 
       <list class="list" if="{{shelfStyle === 'list' && displayMode === 'all'}}">
 		  <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
@@ -63,18 +63,18 @@
         </list-item>
       </list>
 
-    <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-    <img static src="/common/images/back.png" @click="exit" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-    <img static src="/common/images/more.png" @click="routerTo('more')" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-    <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+      <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
+      <img static src="/common/images/back.png" @click="exit" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+      <img static src="/common/images/more.png" @click="routerTo('more')" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+      <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
       {{nowTime}}
     </text>
-    <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+    <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
       电子书
     </text>
 
     <img if="{{allBooks.length == 0}}" static src="/common/images/push.png" 
-      style="position: absolute;left: 308px;top: 420px;width: 82px;height: 82px;" @click="routerTo('push')"/>
+      style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;" @click="routerTo('push')"/>
 	</div>
 </template>
 
@@ -95,7 +95,7 @@ export default {
     visibleBooks: [],
     currentPage: 0,
     totalPages: 1,
-    pageSize: 12,
+    pageSize: 6,
     lastReadOnTop: true,
     shelfMarqueeEnabled: false,
     displayMode: 'all',
@@ -181,7 +181,7 @@ export default {
   },
   async loadSettingsAndFiles() {
     const [pageSize, shelfStyle, lastReadOnTop, shelfMarqueeEnabled, displayMode, homeProgressMode] = await Promise.all([
-      this.getStorage('EBOOK_SHELF_PAGE_SIZE', '12'),
+      this.getStorage('EBOOK_SHELF_PAGE_SIZE', '6'),
       this.getStorage('EBOOK_SHELF_STYLE', 'list'),
       this.getStorage('EBOOK_TOP_LAST_READ', 'true'),
       this.getStorage('EBOOK_SHELF_MARQUEE_ENABLED', 'false'),
@@ -452,18 +452,18 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 336px;
+	height: 480px;
 	background-color: #000000;
 }
 
 .list {
-	width: 432px;
-	height: 514px;
+	width: 336px;
+	height: 480px;
 	position: absolute;
 	top:0px;
 	left:0px;
-  padding: 116px 12px;
+  padding: 86px 6px;
 }
 
 .item {

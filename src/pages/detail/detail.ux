@@ -2,7 +2,7 @@
 	<div class="page">
 	  <scroll id="scrollId"
 		if="{{readMode !== 'nostalgic'}}"
-		style="position: absolute; width: 432px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;"
+		style="position: absolute; width: 336px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;"
 		scroll-y="{{true}}"
 		scroll-top="{{scrollTopValue}}"
 		@scroll="onScroll"
@@ -15,15 +15,15 @@
 		@touchend="onTouchEnd"
 		bounces="{{(isAtChapterStart || isAtChapterEnd) && (chapterSwitchStyle == 'boundary')}}"
 		>
-		<div id="contentContainer" style="position: absolute; width:432px; flex-direction: column;">
+		<div id="contentContainer" style="position: absolute; width:336px; flex-direction: column;">
 			<div if="{{chapterSwitchStyle == 'button' && isAtChapterStart && !showSetting && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToPrevChapter">
 				<text static style="color: #aaa; font-size: 28px; font-weight: bold;">上一章</text>
 			</div>
 		  <div id="page1" style="flex-direction: column; width: 100%; flex-shrink: 0;">
-			<text style="width: 432px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page1.text }}</text>
+			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page1.text }}</text>
 		  </div>
 		  <div id="page2" if="{{page2}}" style="flex-direction: column; width: 100%; flex-shrink: 0;">
-			<text style="width: 432px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page2.text }}</text>
+			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page2.text }}</text>
 		  </div>
 			<div if="{{chapterSwitchStyle == 'button' && isAtChapterEnd && !showSetting && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToNextChapter">
 				<text static style="color: #aaa; font-size: 28px; font-weight: bold;">下一章</text>
@@ -32,41 +32,36 @@
 	  </scroll>
 	  <div if="{{readMode === 'nostalgic'}}" 
 		id="nostalgicContainer"
-		style="position: absolute; width: 432px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;"
+		style="position: absolute; width: 336px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;"
 		@click="onNostalgicClick"
 		onlongpress="onTxtLongPress">
-		<div id="nostalgicContent" style="position: absolute; width:432px; height: {{scrollHeight}}px; flex-direction: column; justify-content: flex-start; pointer-events: none;">
+		<div id="nostalgicContent" style="position: absolute; width:336px; height: {{scrollHeight}}px; flex-direction: column; justify-content: flex-start; pointer-events: none;">
 		  <div id="nostalgicPage" style="flex-direction: column; width: 100%; height: 100%; pointer-events: none;">
-			<text style="width: 432px; height: {{scrollHeight}}px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; overflow: hidden; pointer-events: none;">{{ nostalgicPageText }}</text>
+			<text style="width: 336px; height: {{scrollHeight}}px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; overflow: hidden; pointer-events: none;">{{ nostalgicPageText }}</text>
 		  </div>
 		</div>
 	  </div>
-	  <img show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 122px;" />
-		<img show="{{showSetting}}" src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-		<img show="{{showSetting}}" src="/common/images/more.png" @click="gotoSetting" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-		<div show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" style="position: absolute; left: 130px; top: 8px; width: 172px; flex-direction: column; align-items: center;">
-			<text style="line-height: 24px; font-weight: bold; font-size: 20px; color: rgba(255,255,255,0.6); text-align: center;">
-				{{batteryLevel}}
-			</text>
-			<text style="line-height: 28px; font-weight: bold; font-size: 24px; color: rgba(255,255,255,0.6); text-align: center;">
-				{{nowTime}}
-			</text>
-		</div>
-		<marquee if="{{textReaderMarqueeEnabled}}" scrollamount="50"text-offset="25" show="{{showSetting}}" style="position: absolute;left: 130px;top: 58px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+	  <img show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
+	  <img show="{{showSetting}}" src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+	  <img show="{{showSetting}}" src="/common/images/more.png" @click="gotoSetting" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+	  <text show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		  {{nowTime}}
+	  </text>
+	  <marquee if="{{textReaderMarqueeEnabled}}" scrollamount="50" show="{{showSetting}}" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 			{{currentChapterName}}
 		</marquee>
-		<text else show="{{showSetting}}" style="position: absolute;left: 130px;top: 58px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;lines: 1;">
+		<text else show="{{showSetting}}" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;lines: 1;">
 			{{currentChapterName}}
 		</text>
 		<text if="{{showProgressBar && showProgressBarPercent}}" class="progress-bar-percent" style="bottom: {{progressBarHeight + 1}}px;">{{Math.round(chapterProgress)}}%</text>
 
-		<img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 412px;width: 432px;height: 102px;" />
-        <img show="{{showSetting}}" src="{{ isKeepScreenOn ? '/common/images/brightness.png' : '/common/images/brightness_off.png' }}" @click="toggleKeepScreenOn" style="position: absolute;left: 38px;top: 408px;width: 82px;height: 82px;"/>
-		<div show="{{showSetting}}" style="position: absolute; top: 426px; left: 130px; width: 172px; height: 82px; flex-direction: column; justify-content: flex-start; align-items: center;">
+		<img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 336px;height: 102px;" />
+        <img show="{{showSetting}}" src="{{ isKeepScreenOn ? '/common/images/brightness.png' : '/common/images/brightness_off.png' }}" @click="toggleKeepScreenOn" style="position: absolute;left: 6px;top: 402px;width: 72px;height: 72px;"/>
+		<div show="{{showSetting}}" style="position: absolute; top: 402px; left: 78px; width: 180px; height: 72px; flex-direction: column; justify-content: flex-start; align-items: center;">
 			<marquee if="{{detailProgressMarqueeEnabled}}" scrollamount="40" text-offset="25" style="line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 				{{currentPage}} / {{totalPages}}
 			</marquee>
-			<text else style="line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;lines: 1;">
+			<text else style="line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 				{{currentPage}} / {{totalPages}}
 			</text>
 			<marquee if="{{detailProgressMarqueeEnabled}}" scrollamount="30" text-offset="25" static style="line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
@@ -76,10 +71,10 @@
 				阅读进度
 			</text>
 		</div>
-        <img show="{{showSetting}}" src="/common/images/add_bookmark.png" @click="addBookmark" @longpress="gotoBookmarks" style="position: absolute;left: 322px;top: 408px;width: 82px;height: 82px;"/>
+        <img show="{{showSetting}}" src="/common/images/add_bookmark.png" @click="addBookmark" @longpress="gotoBookmarks" style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;"/>
 		
 		<div if="{{showProgressBar && !showSetting}}" class="progress-bar-container" style="height: {{progressBarHeight}}px;opacity: {{progressBarOpacity/100}};">
-			<progress percent="{{chapterProgress}}" style="left: 35px;width: 362px;color: #E1DDDD;stroke-width: {{progressBarHeight}}px;layer-color: #00000000;"></progress>
+			<progress percent="{{chapterProgress}}" style="position: absolute;left: 25px;width: 286px;color: #E1DDDD;stroke-width: {{progressBarHeight}}px;layer-color: #00000000;"></progress>
 		</div>
 	</div>
 </template>
@@ -94,19 +89,18 @@
 	import brightness from '@system.brightness'
 	import app from '@system.app'
 	import readingTimeStorage from '../../utils/readingTimeStorage.js'
-	import battery from '@system.battery'
 
 	export default {
-	  allSize: 0,
-    autoInterval: null,
-    cPath: "",
-	private: {
-		txtSizePage: 800,
+	    allSize: 0,
+        autoInterval: null,
+        cPath: "",
+	    private: {
+		txtSizePage: 400,
 		fontSize: 30,
 		lineHeight: 34,
-		pageHeigh: 514,
+		pageHeigh: 480,
 		verticalMargin: 10,
-		scrollHeight: 514,
+		scrollHeight: 480,
 		showSetting: true,
 		loadingNext: false,
 		loadingPrev: false,
@@ -117,7 +111,6 @@
 		swipe: 'column',
 		auto: false,
 		nowTime: "00:00",
-		batteryLevel: "",
 		timer: null,
 		timeCounter: 0,
 		savedScrollOffset: 0,
@@ -204,28 +197,14 @@
             this.nowTime = `${hours}:${minutes}`;
         }
 	 },
-	 updateBatteryStatus() {
-		battery.getStatus({
-		  success: (data) => {
-			let level = Math.round(data.level * 100);
-			this.batteryLevel = data.charging ? `充电中 ${level}%` : `电量 ${level}%`;
-		  }
-		})
-	  },
 	updatePageNumber(){
 		this.currentPage = this.currentChapterIndexInAll + 1;
 		this.totalPages = this.totalChapters;
 	},
 	onInit(){
 		this.updateTime();
-		this.updateBatteryStatus();
 		this.timer = setInterval(() => { 
 			this.updateTime(); 
-			this.timeCounter++;
-			if (this.timeCounter >= 60) {
-				this.updateBatteryStatus();
-				this.timeCounter = 0;
-			}
 		}, 1000);
 		globalThis.isKeepScreenOn = this.isKeepScreenOn;
 		global.runGC();
@@ -237,7 +216,6 @@
 		const settingsChanged = this.isInitialized && 
 			(this.lastTxtSizePage !== this.txtSizePage || this.lastFontSize !== this.fontSize);
 		
-		this.updateBatteryStatus();
 		if (typeof globalThis.isKeepScreenOn !== 'undefined') {
 			if (this.isKeepScreenOn !== globalThis.isKeepScreenOn) {
 				this.isKeepScreenOn = globalThis.isKeepScreenOn;
@@ -358,7 +336,7 @@
 		}, 50);
 	},
 	updateScrollHeight() {
-		this.scrollHeight = 514 - this.verticalMargin * 2;
+		this.scrollHeight = 480 - this.verticalMargin * 2;
 		this.pageHeigh = Math.floor(this.scrollHeight/this.lineHeight) * this.lineHeight;
 	},
 	calculateNostalgicCharsPerPage() {
@@ -694,7 +672,7 @@
 								const offsetInPage1 = targetOffset - page1StartOffset;
 								const charsInPage1 = offsetInPage1 / 2;
 								const avgCharWidth = this.fontSize * 0.6; 
-								const charsPerLine = Math.floor(432 / avgCharWidth);
+								const charsPerLine = Math.floor(336 / avgCharWidth);
 								const linesInPage1 = Math.ceil(charsInPage1 / charsPerLine);
 								const heightInPage1 = linesInPage1 * this.lineHeight;
 								
@@ -709,7 +687,7 @@
 								
 								const charsBeforeOffset = targetOffset / 2;
 								const avgCharWidth = this.fontSize * 0.6; 
-								const charsPerLine = Math.floor(432 / avgCharWidth);
+								const charsPerLine = Math.floor(336 / avgCharWidth);
 								const linesBeforeOffset = Math.ceil(charsBeforeOffset / charsPerLine);
 								const estimatedHeightBefore = linesBeforeOffset * this.lineHeight;
 								
@@ -1382,7 +1360,7 @@
 		
 		const pages = [];
 		let start = 0;
-		const screenWidth = 432;
+		const screenWidth = 336;
 		const screenHeight = this.scrollHeight;
 		const linesPerPage = Math.floor(screenHeight / this.lineHeight);
 		const charsPerLine = Math.floor(screenWidth / this.fontSize);
@@ -1767,21 +1745,21 @@
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 336px;
+	height: 480px;
 	background-color: #000000;
 }
 .progress-bar-container {
 	position: absolute;
 	bottom: 0px;
-	width: 432px;
+	width: 336px;
 	justify-content: center;
 	align-items: center;
 }
 .progress-bar-percent {
 	position: absolute;
 	left: 0px;
-	width: 432px;
+	width: 336px;
 	text-align: center;
 	color: rgba(255, 255, 255, 0.6);
 	font-size: 20px;
