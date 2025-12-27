@@ -77,9 +77,6 @@ const READING_TIME_KEY = 'EBOOK_READING_TIME_DATA';async function getAllReadingT
         }
         
         readingTimeData[bookName].sessions.push(session);
-        if (readingTimeData[bookName].sessions.length > 100) {
-            readingTimeData[bookName].sessions = readingTimeData[bookName].sessions.slice(-100);
-        }
         readingTimeData[bookName].lastReadDate = session.date;
         if (!readingTimeData[bookName].firstReadDate) {
             readingTimeData[bookName].firstReadDate = session.date;
