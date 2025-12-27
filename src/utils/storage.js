@@ -60,13 +60,13 @@ function get(param){
 }
 
 function save(data,param){
-    // ensure we never set storageCache to a non-object
-    if (data && typeof data === 'object') {
-        storageCache = data;
-    } else {
-        storageCache = {};
+    const newData = (data && typeof data === 'object') ? data : {};
+    const dataStr = JSON.stringify(newData);
+    const cacheStr = (storageCache && typeof storageCache === 'object') ? JSON.stringify(storageCache) : '{}';
+    if (dataStr !== cacheStr) {
+        storageCache = newData;
+        saveToFile();
     }
-    saveToFile();
     if (param && param.success) {
         param.success();
     }
@@ -78,9 +78,12 @@ function save(data,param){
 function set(param){
     loadIfNeeded(data => {
         const safeData = (data && typeof data === 'object') ? data : {};
-        safeData[param.key] = param.value;
-        storageCache = safeData;
-        saveToFile();
+        const oldValue = safeData[param.key];
+        if (oldValue !== param.value) {
+            safeData[param.key] = param.value;
+            storageCache = safeData;
+            saveToFile();
+        }
         if (param && param.success) {
             param.success();
         }
@@ -91,16 +94,22 @@ function set(param){
 }
 
 function clear(param){
-    storageCache = {};
-    saveToFile();
+    if (storageCache !== null && Object.keys(storageCache).length > 0) {
+        storageCache = {};
+        saveToFile();
+    } else {
+        storageCache = {};
+    }
     if (param && param.success) param.success();
     if (param && param.complete) param.complete();
 }
 
 function del(param){
     loadIfNeeded(data => {
-        delete data[param.key];
-        saveToFile();
+        if (param.key in data) {
+            delete data[param.key];
+            saveToFile();
+        }
         if(param.success) {
             param.success();
         }
