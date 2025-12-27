@@ -22,6 +22,13 @@
                 </div>
                 <img src="{{preventParagraphSplitting ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
             </list-item>
+            <list-item class="item" @click="toggleReadingTimeRecording" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>阅读时长记录</text>
+                    <text class="itemtext2" static>记录阅读时长统计</text>
+                </div>
+                <img src="{{readingTimeRecording ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+            </list-item>
             <list-item class="item" @click="routerTo('progressSavingSetting')" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>阅读进度保存</text>
@@ -63,7 +70,8 @@
             timer: null,
             timeFormat: '24h',
             preloadChapter: false,
-            preventParagraphSplitting: false
+            preventParagraphSplitting: false,
+            readingTimeRecording: true
         },
         updateTime() {
             const date = new Date();
@@ -122,6 +130,20 @@
                     this.preventParagraphSplitting = false;
                 }
             });
+            
+            storage.get({
+                key: 'EBOOK_READING_TIME_RECORDING',
+                success: (data) => {
+                    if (data !== undefined && data !== '') {
+                        this.readingTimeRecording = data === 'true';
+                    } else {
+                        this.readingTimeRecording = true;
+                    }
+                },
+                fail: () => {
+                    this.readingTimeRecording = true;
+                }
+            });
         },
         onDestroy() {
             if (this.timer) {
@@ -146,6 +168,13 @@
             storage.set({
                 key: 'EBOOK_PREVENT_PARAGRAPH_SPLITTING',
                 value: this.preventParagraphSplitting.toString()
+            });
+        },
+        toggleReadingTimeRecording() {
+            this.readingTimeRecording = !this.readingTimeRecording;
+            storage.set({
+                key: 'EBOOK_READING_TIME_RECORDING',
+                value: this.readingTimeRecording.toString()
             });
         },
         back() {
