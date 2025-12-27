@@ -1657,7 +1657,6 @@
 			return;
 		}
 		
-		
 		let bookmarks = await bookStorage.getBookmarks(this.name);
 		if (!bookmarks) { bookmarks = []; }
 		

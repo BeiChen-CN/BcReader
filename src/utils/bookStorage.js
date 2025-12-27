@@ -125,6 +125,7 @@ async function setBookmarks(bookDirName, bookmarks) {
         }
         
         bookshelf.books[bookIndex].progress.bookmarks = JSON.parse(JSON.stringify(bookmarks));
+        bookshelf.books[bookIndex].progress.lastReadTimestamp = Date.now();
         
         await saveBookshelf(bookshelf);
     }
