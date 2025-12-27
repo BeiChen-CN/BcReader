@@ -1,6 +1,26 @@
 import storage from '../utils/storage.js'
 
-const READING_TIME_KEY = 'EBOOK_READING_TIME_DATA';async function getAllReadingTime() {
+const READING_TIME_KEY = 'EBOOK_READING_TIME_DATA';
+
+async function isReadingTimeRecordingEnabled() {
+    return new Promise((resolve) => {
+        storage.get({
+            key: 'EBOOK_READING_TIME_RECORDING',
+            success: (data) => {
+                if (data !== undefined && data !== '') {
+                    resolve(data === 'true');
+                } else {
+                    resolve(true);
+                }
+            },
+            fail: () => {
+                resolve(true);
+            }
+        });
+    });
+}
+
+async function getAllReadingTime() {
     return new Promise((resolve) => {
         storage.get({
             key: READING_TIME_KEY,
@@ -29,6 +49,9 @@ const READING_TIME_KEY = 'EBOOK_READING_TIME_DATA';async function getAllReadingT
 }async function recordReadingStart(bookName) {
     if (!bookName) return;
     
+    const isEnabled = await isReadingTimeRecordingEnabled();
+    if (!isEnabled) return;
+    
     try {
         const readingTimeData = await getAllReadingTime();
         
@@ -48,6 +71,9 @@ const READING_TIME_KEY = 'EBOOK_READING_TIME_DATA';async function getAllReadingT
     }
 }async function recordReadingEnd(bookName) {
     if (!bookName) return;
+    
+    const isEnabled = await isReadingTimeRecordingEnabled();
+    if (!isEnabled) return;
     
     try {
         const readingTimeData = await getAllReadingTime();
