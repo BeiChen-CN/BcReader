@@ -139,7 +139,7 @@ export default {
 						this.reservedStorage = this.formatFileSize(storageInfo.reservedStorage);
 						this.actualAvailableStorage = this.formatFileSize(storageInfo.actualAvailable);
 						this.actualAvailableBytes = storageInfo.actualAvailable;
-						this.actualAvailableColor = isStorageLow(storageInfo.actualAvailable) ? '#ff4444' : 'white';
+						this.actualAvailableColor = isStorageLow(storageInfo.actualAvailable) ? '#f14444' : '#aaa';
 						const usableSpace = totalStorage - storageInfo.reservedStorage;
 						this.usableStorage = this.formatFileSize(usableSpace);
 						if (usableSpace > 0) {
