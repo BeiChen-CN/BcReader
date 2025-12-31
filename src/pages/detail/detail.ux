@@ -48,7 +48,7 @@
 		<img show="{{showSetting}}" src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
 		<img show="{{showSetting}}" src="/common/images/more.png" @click="gotoSetting" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
 		<div show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" style="position: absolute; left: 130px; top: 8px; width: 172px; flex-direction: column; align-items: center;">
-			<text style="line-height: 24px; font-weight: bold; font-size: 20px; color: rgba(255,255,255,0.6); text-align: center;">
+			<text if="{{showSetting || (alwaysShowBattery && alwaysShowTime && !isNearTopForHd)}}" style="line-height: 24px; font-weight: bold; font-size: 20px; color: rgba(255,255,255,0.6); text-align: center;">
 				{{batteryLevel}}
 			</text>
 			<text style="line-height: 28px; font-weight: bold; font-size: 24px; color: rgba(255,255,255,0.6); text-align: center;">
@@ -176,6 +176,7 @@
         saveIntervalValue: 10,
 		alwaysShowTime: false,
 		alwaysShowTimeSensitivity: 50,
+		alwaysShowBattery: true,
 		isNearTopForHd: false,
 		lastTxtSizePage: 400,
 		lastFontSize: 30,
@@ -322,6 +323,7 @@
 			{ key: 'EBOOK_PROGRESS_SAVE_INTERVAL', prop: 'saveIntervalValue', type: 'int', default: 10 },
 			{ key: 'EBOOK_ALWAYS_SHOW_TIME', prop: 'alwaysShowTime', type: 'bool', default: false },
 			{ key: 'EBOOK_ALWAYS_SHOW_TIME_SENSITIVITY', prop: 'alwaysShowTimeSensitivity', type: 'int', default: 200 },
+			{ key: 'EBOOK_ALWAYS_SHOW_BATTERY', prop: 'alwaysShowBattery', type: 'bool', default: true },
 			{ key: 'EBOOK_READ_MODE', prop: 'readMode', type: 'string', default: 'scroll' },
 			{ key: 'EBOOK_TEXT_READER_MARQUEE_ENABLED', prop: 'textReaderMarqueeEnabled', type: 'bool', default: false },
 			{ key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED', prop: 'detailProgressMarqueeEnabled', type: 'bool', default: false },
