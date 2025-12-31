@@ -1,22 +1,23 @@
 <template>
 	<div class="page" style="flex-direction: column;">
 
-    <div if="{{showStorageWarning}}" style="position: absolute;left: 12px;top: 116px;width: 408px;background-color: #ff4444;border-radius: 36px;padding: 16px 20px;z-index: 10;">
-      <text style="font-size: 28px;line-height: 36px;font-weight: bold;color: white;">存储空间不足，可能影响功能使用</text>
-    </div>
-
     <img if="{{allBooks.length == 0}}" static src="/common/images/empty.png"
 		  style="position: absolute;left: 104px;top: 146px;width: 128px;height: 128px;" />
 
       <text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">书架空空</text>
 
-      <list class="list" if="{{shelfStyle === 'list' && displayMode === 'all'}}" style="padding-top: {{showStorageWarning ? '180px' : '116px'}};">
-		  <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
-			  <marquee if="{{shelfMarqueeEnabled}}" scrollamount="22" class="itemtext" text-offset="25">{{$item.name}}</marquee>
-              <text else class="itemtext" >{{$item.name}}</text>
-			  <marquee if="{{shelfMarqueeEnabled}}" scrollamount="40" text-offset="25" class="itemtext2">{{getProgressSubtitle($item)}}</marquee>
-              <text else class="itemtext2">{{getProgressSubtitle($item)}}</text>
-		  </list-item>
+      <list class="list" if="{{shelfStyle === 'list' && displayMode === 'all'}}">
+        
+        <list-item type="tip" if="{{showStorageWarning}}" class="item" style="background-color: #ad0000;">
+          <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
+        </list-item>
+
+          <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
+            <marquee if="{{shelfMarqueeEnabled}}" scrollamount="22" class="itemtext" text-offset="25">{{$item.name}}</marquee>
+                  <text else class="itemtext" >{{$item.name}}</text>
+            <marquee if="{{shelfMarqueeEnabled}}" scrollamount="40" text-offset="25" class="itemtext2">{{getProgressSubtitle($item)}}</marquee>
+                  <text else class="itemtext2">{{getProgressSubtitle($item)}}</text>
+          </list-item>
           <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
             <div class="pagination-controls">
               <img src="/common/images/pre.png" if="{{currentPage > 0}}" @click="prevPage" class="pagination-button"/>
@@ -26,7 +27,12 @@
           </list-item>
 	  </list>
 
-      <list class="list" if="{{shelfStyle === 'cover' && displayMode === 'all'}}" style="padding-top: {{showStorageWarning ? '180px' : '116px'}};">
+      <list class="list" if="{{shelfStyle === 'cover' && displayMode === 'all'}}">
+                
+          <list-item type="tip" if="{{showStorageWarning}}" class="item" style="background-color: #ad0000;">
+            <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
+          </list-item>
+
           <list-item for="{{visibleBooks}}" class="item cover-item" @click="selectFile($item)" type="nook">
             <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
             <div class="cover-content">
@@ -45,7 +51,12 @@
           </list-item>
       </list>
 
-      <list class="list" if="{{displayMode === 'category'}}" style="padding-top: {{showStorageWarning ? '180px' : '116px'}};">
+      <list class="list" if="{{displayMode === 'category'}}">
+
+        <list-item type="tip" if="{{showStorageWarning && !selectedCategory}}" class="item" style="background-color: #ad0000;">
+          <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
+        </list-item>
+
         <list-item if="{{selectedCategory}}" class="item" @click="backToCategoryList" type="nook" style="height: 72px;">
           <text class="itemtext">← 返回分类列表</text>
         </list-item>
@@ -110,8 +121,7 @@ export default {
     categoryBooks: [],
     lastReadBook: null,
     homeProgressMode: 'book',
-    showStorageWarning: false,
-    deviceProduct: null
+    showStorageWarning: false
   },
   exit(){
 	  app.terminate();
@@ -132,8 +142,6 @@ export default {
       this.updateTime();
     }, 1000);
     bookStorage.load();
-    this.loadDeviceInfo();
-    this.checkStorageWarning();
   },
   onDestroy(){
 	  if (this.timer) {
@@ -166,7 +174,6 @@ export default {
     }
     
     this.loadSettingsAndFiles().then(() => {
-      
       if (shouldRestoreCategory && categoryToRestore) {
         this.displayMode = 'category';
         this.selectedCategory = categoryToRestore;
@@ -174,8 +181,8 @@ export default {
       } else if (shouldRestoreHomePage && homePageToRestore !== null && this.displayMode === 'all') {
         this.loadPage(homePageToRestore);
       }
+      this.loadDeviceInfo();
     });
-    this.checkStorageWarning();
   },
   getStorage(key, defaultValue) {
     return new Promise((resolve) => {
@@ -458,30 +465,18 @@ export default {
   loadDeviceInfo() {
     device.getInfo({
       success: (ret) => {
-        this.deviceProduct = ret.product;
-      },
-      fail: () => {
-        this.deviceProduct = null;
-      }
-    });
-  },
-  checkStorageWarning() {
-    device.getTotalStorage({
-      success: (data) => {
-        const totalStorage = data.totalStorage || 0;
-        device.getAvailableStorage({
-          success: (availData) => {
-            const availableStorage = availData.availableStorage || 0;
-            const storageInfo = calculateStorageInfo(totalStorage, availableStorage, this.deviceProduct);
-            this.showStorageWarning = isStorageLow(storageInfo.actualAvailable);
-          },
-          fail: () => {
-            this.showStorageWarning = false;
+        device.getTotalStorage({
+          success: (data) => {
+            const totalStorage = data.totalStorage || 0;
+            device.getAvailableStorage({
+              success: (availData) => {
+                const availableStorage = availData.availableStorage || 0;
+                const storageInfo = calculateStorageInfo(totalStorage, availableStorage, ret.product);
+                this.showStorageWarning = isStorageLow(storageInfo.actualAvailable);
+              }
+            });
           }
         });
-      },
-      fail: () => {
-        this.showStorageWarning = false;
       }
     });
   }
