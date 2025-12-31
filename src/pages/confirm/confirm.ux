@@ -20,8 +20,10 @@
 import router from '@system.router'
 import prompt from '@system.prompt'
 import file from '@system.file'
+import app from '@system.app'
 import bookStorage from '../../utils/bookStorage.js'
 import chapterManager from '../../utils/chapterManager.js'
+import readingTimeStorage from '../../utils/readingTimeStorage.js'
 
 export default {
     private: {
@@ -75,6 +77,9 @@ export default {
                 break;
             case 'deleteChapter':
                 this.deleteChapter();
+                break;
+            case 'clearReadingTime':
+                this.clearReadingTime();
                 break;
             default:
                 prompt.showToast({ message: '未知操作' });
@@ -178,6 +183,16 @@ export default {
             router.back();
         } catch (e) {
             prompt.showToast({ message: '删除失败: ' + (e.message || '未知错误') });
+            router.back();
+        }
+    },
+    async clearReadingTime() {
+        try {
+            await readingTimeStorage.clearAllReadingTime();
+            prompt.showToast({ message: '清空成功' });
+            router.back();
+        } catch (e) {
+            prompt.showToast({ message: '清空失败' });
             router.back();
         }
     }

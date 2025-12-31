@@ -20,10 +20,10 @@
 				<text static style="color: #aaa; font-size: 28px; font-weight: bold;">上一章</text>
 			</div>
 		  <div id="page1" style="flex-direction: column; width: 100%; flex-shrink: 0;">
-			<text style="width: 432px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page1.text }}</text>
+			<text style="width: 432px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; ">{{ page1.text }}</text>
 		  </div>
 		  <div id="page2" if="{{page2}}" style="flex-direction: column; width: 100%; flex-shrink: 0;">
-			<text style="width: 432px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; ">{{ page2.text }}</text>
+			<text style="width: 432px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; ">{{ page2.text }}</text>
 		  </div>
 			<div if="{{chapterSwitchStyle == 'button' && isAtChapterEnd && !showSetting && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToNextChapter">
 				<text static style="color: #aaa; font-size: 28px; font-weight: bold;">下一章</text>
@@ -40,7 +40,7 @@
 		onlongpress="onTxtLongPress">
 		<div id="nostalgicContent" style="position: absolute; width:432px; height: {{scrollHeight}}px; flex-direction: column; justify-content: flex-start; pointer-events: none;">
 		  <div id="nostalgicPage" style="flex-direction: column; width: 100%; height: 100%; pointer-events: none;">
-			<text style="width: 432px; height: {{scrollHeight}}px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: bold; line-height: {{lineHeight}}px; overflow: hidden; pointer-events: none;">{{ nostalgicPageText }}</text>
+			<text style="width: 432px; height: {{scrollHeight}}px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; overflow: hidden; pointer-events: none;">{{ nostalgicPageText }}</text>
 		  </div>
 		</div>
 	  </div>
@@ -189,6 +189,7 @@
 		nostalgicPageTurnMode: 'topBottomClick',
 		textReaderMarqueeEnabled: false,
 		detailProgressMarqueeEnabled: false,
+		boldEnabled: true,
         allSize: 0,
         autoInterval: null,
         cPath: "",
@@ -327,7 +328,8 @@
 			{ key: 'EBOOK_READ_MODE', prop: 'readMode', type: 'string', default: 'scroll' },
 			{ key: 'EBOOK_TEXT_READER_MARQUEE_ENABLED', prop: 'textReaderMarqueeEnabled', type: 'bool', default: false },
 			{ key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED', prop: 'detailProgressMarqueeEnabled', type: 'bool', default: false },
-			{ key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE', prop: 'nostalgicPageTurnMode', type: 'string', default: 'topBottomClick' }
+			{ key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE', prop: 'nostalgicPageTurnMode', type: 'string', default: 'topBottomClick' },
+			{ key: 'EBOOK_BOLD_ENABLED', prop: 'boldEnabled', type: 'bool', default: true }
 		];
 	
 		const promises = settingsConfig.map(s => getSetting(s.key, s.default));
