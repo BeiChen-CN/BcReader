@@ -2,19 +2,44 @@
 	<div class="page" style="flex-direction: column;">
 
 	  <list class="list">
-		<list-item class="item {{onSelect==1?'item2':''}}" @click="select('1')" type="item">
+		<list-item class="item {{readMode === 'scroll' ? 'item2' : ''}}" @click="select('scroll')" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>滚动模式</text>
 				<text class="itemtext2" static>传统滚动阅读方式</text>
 			</div>
-			<img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{onSelect==1}}"/>
+			<img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{readMode === 'scroll'}}"/>
 		</list-item>
-		  <list-item class="item {{onSelect==2?'item2':''}}" @click="select('2')" type="item">
+		  <list-item class="item {{readMode === 'nostalgic' ? 'item2' : ''}}" @click="select('nostalgic')" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>怀旧模式</text>
 				<text class="itemtext2" static>一屏一页，点击翻页</text>
 			</div>
-			  <img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{onSelect==2}}"/>
+			  <img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{readMode === 'nostalgic'}}"/>
+		  </list-item>
+
+		  <list-item if="{{readMode === 'nostalgic'}}" class="item" style="padding: 7px 16px; height: 50px;" type="tip">
+			  <text class="section-title" static>翻页方式</text>
+		  </list-item>
+		  <list-item if="{{readMode === 'nostalgic'}}" class="item {{nostalgicPageTurnMode === 'swipe' ? 'item2' : ''}}" @click="selectPageTurnMode('swipe')" type="item">
+			  <div class="item-content">
+				  <text class="itemtext" static>左右滑动</text>
+				  <text class="itemtext2" static>左右滑动翻页</text>
+			  </div>
+			  <img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{nostalgicPageTurnMode === 'swipe'}}"/>
+		  </list-item>
+		  <list-item if="{{readMode === 'nostalgic'}}" class="item {{nostalgicPageTurnMode === 'sideClick' ? 'item2' : ''}}" @click="selectPageTurnMode('sideClick')" type="item">
+			  <div class="item-content">
+				  <text class="itemtext" static>两侧点击</text>
+				  <text class="itemtext2" static>点击左右两侧翻页</text>
+			  </div>
+			  <img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{nostalgicPageTurnMode === 'sideClick'}}"/>
+		  </list-item>
+		  <list-item if="{{readMode === 'nostalgic'}}" class="item {{nostalgicPageTurnMode === 'topBottomClick' ? 'item2' : ''}}" @click="selectPageTurnMode('topBottomClick')" type="item">
+			  <div class="item-content">
+				  <text class="itemtext" static>上下点击</text>
+				  <text class="itemtext2" static>点击上下区域翻页</text>
+			  </div>
+			  <img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{nostalgicPageTurnMode === 'topBottomClick'}}"/>
 		  </list-item>
 
 	  </list>
@@ -39,7 +64,8 @@
 
   export default {
 	private: {
-		onSelect:1,
+		readMode: 'scroll',
+		nostalgicPageTurnMode: 'topBottomClick',
 		txtNum:0,
 		nowTime: "00:00",
 		timer: null
@@ -80,39 +106,78 @@
 	  storage.get({
 		  key: 'EBOOK_READ_MODE',
 		  success: function(data) {
-			if (data=="nostalgic") {
-				that.onSelect=2
+			if (data) {
+				that.readMode = data;
 			} else {
-				that.onSelect=1
+				that.readMode = 'scroll';
 			}
-			that.updateScene();
+			if (that.readMode === 'nostalgic') {
+				storage.get({
+					key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
+					success: function(modeData) {
+						if (modeData) {
+							that.nostalgicPageTurnMode = modeData;
+						} else {
+							that.nostalgicPageTurnMode = 'topBottomClick';
+						}
+						that.updateScene();
+					},
+					fail: function() {
+						that.nostalgicPageTurnMode = 'topBottomClick';
+						that.updateScene();
+					}
+				});
+			} else {
+				that.updateScene();
+			}
 		  },
 		  fail: function(data, code) {
-			that.onSelect=1
+			that.readMode = 'scroll';
+			that.updateScene();
 		  }
 	  })
 	},
 	onBackPress(){
 	},
 
-	select(fun){
-	  if (fun=='1'){
-			if(this.onSelect!=1){
-				this.onSelect=1
-			  storage.set({
-	  			key: 'EBOOK_READ_MODE',
-	  			value: 'scroll',
-	  		})
-			}
-	  }else if (fun=='2'){
-			if(this.onSelect!=2){
-				this.onSelect=2
-				storage.set({
-					key: 'EBOOK_READ_MODE',
-					value: 'nostalgic',
-				})
-			}
+	select(mode){
+	  if (this.readMode === mode) {
+		  return;
 	  }
+	  this.readMode = mode;
+	  storage.set({
+		  key: 'EBOOK_READ_MODE',
+		  value: mode,
+	  });
+	  if (mode === 'nostalgic') {
+		  storage.get({
+			  key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
+			  success: (modeData) => {
+				  if (modeData) {
+					  this.nostalgicPageTurnMode = modeData;
+				  } else {
+					  this.nostalgicPageTurnMode = 'topBottomClick';
+				  }
+				  this.updateScene();
+			  },
+			  fail: () => {
+				  this.nostalgicPageTurnMode = 'topBottomClick';
+				  this.updateScene();
+			  }
+		  });
+	  } else {
+		  this.updateScene();
+	  }
+	},
+	selectPageTurnMode(mode) {
+	  if (this.nostalgicPageTurnMode === mode) {
+		  return;
+	  }
+	  this.nostalgicPageTurnMode = mode;
+	  storage.set({
+		  key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
+		  value: mode,
+	  });
 	  this.updateScene();
 	},
 
@@ -194,5 +259,12 @@ justify-content: space-between;
   flex:1;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.section-title {
+  font-size: 24px;
+  line-height: 36px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.5);
 }
 </style>
