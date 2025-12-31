@@ -7,34 +7,33 @@
 				<text class="itemtext" static>左右滑动</text>
 				<text class="itemtext2" static>左滑切换章节</text>
 			</div>
-			<img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{onSelect==1}}"/>
+			<img src="/common/images/check.png" style="width:32px;height: 32px;" if="{{onSelect==1}}"/>
 		</list-item>
 		  <list-item class="item {{onSelect==2?'item2':''}}" @click="select('2')" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>按钮换章</text>
-				<text class="itemtext2" static>通过按钮切换章节</text>
+				<text class="itemtext2" static>通过按钮切换</text>
 			</div>
-			  <img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{onSelect==2}}"/>
+			  <img src="/common/images/check.png" style="width:32px;height: 32px;" if="{{onSelect==2}}"/>
 		  </list-item>
 
 		  <list-item class="item {{onSelect==3?'item2':''}}" @click="select('3')" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>越界换章</text>
-				<text class="itemtext2" static>滑动到边缘时切换章节</text>
+				<text class="itemtext2" static>滑到边缘切换</text>
 			</div>
-			<img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{onSelect==3}}"/>
+			<img src="/common/images/check.png" style="width:32px;height: 32px;" if="{{onSelect==3}}"/>
 		  </list-item>
 
 	  </list>
 	  
-	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
 	  <text style="position: absolute;top:-100px;left:0px;">{{txtNum}}</text>
 
-		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	  <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
 		  {{nowTime}}
 		</text>
-		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
 			换章方式
 		</text>
 	</div>
@@ -157,53 +156,51 @@
   </script>
 
   <style>
-  .page {
-	  width: 432px;
-	  height: 514px;
-	  background-color: #000000;
-  }
-  .list {
-	width: 432px;
-	height: 514px;
+.page {
+	width: 212px;
+	height: 520px;
+	background-color: #000000;
+}
+
+.list {
+	width: 212px;
+	height: 520px;
 	position: absolute;
 	top:0px;
 	left:0px;
-  padding: 116px 12px;
+	padding: 86px 12px;
 }
 
 .item {
-	width: 100%;
-	height: 112px;
-	padding: 14px 20px;
-	margin-bottom: 8px;
-	background-color: #262626;
-	border-radius: 36px;
-	align-items: center;
-  justify-content: space-between;
-}
-
-.itemtext {
-	font-size: 32px;
-	line-height:40px;
-	width: 100%;
-	font-weight: bold;
-	color: white;
-	text-overflow: ellipsis;
-	lines: 1;
-}
-
-.itemtext2 {
-	font-size: 28px;
-	line-height: 37px;
-	font-weight: bold;
-	color: rgba(255,255,255,0.6);
-	text-overflow: ellipsis;
-	lines: 1;
-}
-
+	  width: 100%;
+	  height: 85px;
+	  padding: 12px 18px;
+	  margin-bottom: 8px;
+	  background-color: #262626;
+	  border-radius: 26px;
+	  align-items: center;
+	justify-content: space-between;
+  }
+  
+  .itemtext {
+	  font-size: 23px;
+	  width: 100%;
+	  font-weight: bold;
+	  color: white;
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  
+  .itemtext2 {
+	  font-size: 20px;
+	  font-weight: bold;
+	  color: rgba(255,255,255,0.6);
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
 
 .item2 {
-	background-color: #0D6EFF;
+	background-color: #0D6EFF !important;
 }
 
 .item-content {

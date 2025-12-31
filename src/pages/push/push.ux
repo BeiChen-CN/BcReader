@@ -1,53 +1,47 @@
 <template>
-  <div class="page" style="flex-direction: column;width: 432px;">
+  <div class="page">
+    
+    <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">{{nowTime}}</text>
+    <text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">书籍同步</text>
 
-      <div style="flex-direction: column;margin-top: 46px;width: 432px;align-items:center;" if="{{state == 'wait'}}">
-          <img static src="/common/images/connect.png" style="margin-bottom:24px;margin-top:100px" />
-          <text static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-top: 0px;">
-          	等待客户端连接
-          </text>
-          <text static style="width: 286px;font-size: 24px;font-weight:bold;color: rgb(153, 153, 153);text-align: left;margin-top: 10px;padding: 10px;">请下载安装《弦电子书》专用手机客户端，在客户端中连接手环。
-          </text>
+    <div class="content">
+      <div class="state-container" if="{{state == 'wait'}}">
+        <img class="state-icon" src="/common/images/connect.png" />
+        <text class="state-title">等待客户端连接</text>
+        <text class="state-desc">请下载安装《弦电子书》专用手机客户端，在客户端中连接手环。</text>
       </div>
-      <div style="flex-direction: column;margin-top: 46px;width: 432px;align-items:center;" if="{{state == 'ready'}}">
-          <img static src="/common/images/choose.png" style="margin-bottom:24px;margin-top:100px" />
-          <text static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-top: 0px;">
-            等待选择文本
-          </text>
-          <text static style="width: 286px;font-size: 24px;font-weight:bold;color: rgb(153, 153, 153);text-align: left;margin-top: 10px;padding: 10px;">连接成功，请在手机找到对应书籍后点击“同步”按钮。
-          </text>
+
+      <div class="state-container" if="{{state == 'ready'}}">
+        <img class="state-icon" src="/common/images/choose.png" />
+        <text class="state-title">等待选择文本</text>
+        <text class="state-desc">连接成功，请在手机找到对应书籍后点击"同步"按钮。</text>
       </div>
-      <div style="flex-direction: column;margin-top: 46px;width: 432px;align-items:center;" if="{{state == 'upload'}}">
-          <img if="{{state2 == 'ing'}}" static src="/common/images/download.png" style="margin-bottom:24px;margin-top:100px" />
-          <text if="{{state2 == 'ing'}}" static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
-            正在同步
-          </text>
-          <img if="{{state2 == 'error'}}" static src="/common/images/error.png" style="margin-bottom:24px;margin-top:100px" />
-          <text if="{{state2 == 'error'}}" static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
-            同步失败
-          </text>
-          <img if="{{state2 == 'succ'}}" static src="/common/images/succ.png" style="margin-bottom:24px;margin-top:100px" />
-          <text if="{{state2 == 'succ'}}" static style="width: 432px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
-            同步成功
-          </text>
-          <div class="item">
-            <text class="itemtext" style="flex:1" static>书籍内容</text>
-            <text class="itemtext" style="color:rgb(168, 168, 168)">{{persent}}%</text>
+
+      <div class="state-container" if="{{state == 'upload'}}">
+        <div style="flex-direction: column;justify-content: center;align-items: center;" if="{{state2 == 'ing'}}">
+          <div style="justify-content: space-between;padding: 0px 25px;">
+            <img class="state-icon-2" src="/common/images/download.png" />
+            <text class="state-title">正在同步</text>
           </div>
+          <div class="progress-item">
+            <text class="item-name" style="margin-right: 6px;">书籍内容</text>
+            <text class="item-percent">{{persent}}%</text>
+          </div>
+        </div>
+
+        <div style="justify-content: space-between;padding: 0px 25px;" if="{{state2 == 'error'}}">
+          <img class="state-icon-2" src="/common/images/error.png" />
+          <text class="state-title">同步失败</text>
+        </div>
+
+        <div style="justify-content: space-between;padding: 0px 25px;" if="{{state2 == 'succ'}}">
+          <img class="state-icon-2" src="/common/images/succ.png" />
+          <text class="state-title">同步成功</text>
+        </div>
       </div>
-
-
-      <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-      <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-        {{nowTime}}
-      </text>
-      <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-        书籍同步
-      </text>
+    </div>
   </div>	
 </template>
-
-
 
 <script>
 import router from '@system.router'
@@ -110,29 +104,19 @@ export default {
   },
 
   onShow() {
-		brightness.setKeepScreenOn({
-			keepScreenOn: true,
-		});
-	},
-
-	onHide() {
-		brightness.setKeepScreenOn({
-			keepScreenOn: false,
-		});
-	},
-
-  next(){
-    if (this.state=="wait"){
-      this.state="ready"
-    }else if (this.state=="ready"){
-      this.state="upload"
-    }else if (this.state=="upload"){
-      this.state="wait"
-    }
-
+    brightness.setKeepScreenOn({
+      keepScreenOn: true,
+    });
   },
+
+  onHide() {
+    brightness.setKeepScreenOn({
+      keepScreenOn: false,
+    });
+  },
+
   back(){
-  	router.back();
+    router.back();
   },
   onDestroy() {
     if (this.timer) {
@@ -146,27 +130,80 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
-	background-color: #000000;
+  width: 212px;
+  height: 520px;
+  background-color: #000000;
+  flex-direction: column;
 }
 
-.item {
-	height: 102px;
-  width: 324px;
-	margin-top: -4px;
-	background-color: #262626;
-	border-radius: 36px;
-	align-items: center;
+.content {
+  flex: 1;
+  padding: 0 16px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.state-container {
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.state-icon {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 20px;
+}
+
+.state-icon-2 {
+  width: 46px;
+  height: 46px;
+  margin-bottom: 20px;
+}
+
+.state-title {
+  width: 100%;
+  font-size: 22px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  line-height: 30px;
+  margin-bottom: 16px;
+}
+
+.state-desc {
+  width: 100%;
+  font-size: 16px;
+  font-weight: bold;
+  color: rgb(153, 153, 153);
+  text-align: center;
+  line-height: 22px;
+  padding: 0 8px;
+}
+
+.progress-item {
+  width: 100%;
+  height: 60px;
+  background-color: #262626;
+  border-radius: 20px;
+  flex-direction: row;
+  align-items: center;
   justify-content: space-between;
-  padding: 25px 20px;
+  padding: 0 20px;
+  margin-top: 5px;
 }
 
-.itemtext {
-	font-size: 32px;
-	font-weight: bold;
-	color: white;
-  text-overflow: ellipsis;
-  lines: 1;
+.item-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+}
+
+.item-percent {
+  font-size: 18px;
+  font-weight: bold;
+  color: rgb(168, 168, 168);
 }
 </style>

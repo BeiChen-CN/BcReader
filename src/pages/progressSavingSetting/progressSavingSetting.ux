@@ -2,7 +2,7 @@
 <template>
 	<div class="page" style="flex-direction: column">
 		<div class="item">
-			<text static style="font-size: 24px; color: white; text-align: left; padding: 20px; lines: 5;">
+			<text static style="font-size: 21px; color: white; text-align: left; padding: 20px; lines: 5;">
 				选择阅读器保存阅读进度的方式。
 			</text>
 		</div>
@@ -10,23 +10,21 @@
         <div class="setting-group">
             <div class="setting-item" @click="changeMode('exit')">
                 <text class="setting-label">退出时保存</text>
-                <img class="radio-icon" if="{{saveMode === 'exit'}}" src="/common/images/check.png" />
+                <img class="radio-icon" if="{{saveMode === 'exit'}}" src="/common/images/check.png" style="width: 32px;height: 32px;" />
             </div>
             <div class="setting-item" @click="changeMode('periodic')">
                 <text class="setting-label">定时保存</text>
-                <img class="radio-icon" if="{{saveMode === 'periodic'}}" src="/common/images/check.png" />
+                <img class="radio-icon" if="{{saveMode === 'periodic'}}" src="/common/images/check.png" style="width: 32px;height: 32px;" />
             </div>
         </div>
 
-		<number if="{{saveMode === 'periodic'}}" style="position: absolute;top:415px;" max.static="60" min.static="1" step.static="1" unit.static="秒" value="{{saveInterval}}" @change="change" name.static="保存间隔">
+		<number if="{{saveMode === 'periodic'}}" style="position: absolute;top:365px;" max.static="60" min.static="1" step.static="1" unit.static="秒" value="{{saveInterval}}" @change="change" name.static="保存间隔">
 		</number>
 
-		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		<text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
 		  {{nowTime}}
 		</text>
-		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
 			进度保存
 		</text>
 	</div>
@@ -120,8 +118,8 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	background-color: #000000;
 }
 .item {
@@ -138,13 +136,13 @@ export default {
 }
 .setting-item {
     width: 100%;
-    height: 80px;
+    height: 60px;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
 .setting-label {
-    font-size: 28px;
+    font-size: 18px;
     color: white;
 }
 .radio-icon {

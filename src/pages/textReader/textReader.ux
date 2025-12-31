@@ -25,7 +25,7 @@
             timer: null,
             fontSize: 26,
             opacity: 100,
-            verticalMargin: 10,
+            verticalMargin: 60,
             lineHeight: 30,
             detailMarqueeEnabled: false
         },

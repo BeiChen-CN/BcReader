@@ -2,14 +2,14 @@
 	<div class="page" style="flex-direction: column;">
 
     <img if="{{allBooks.length == 0}}" static src="/common/images/empty.png"
-		  style="position: absolute;left: 152px;top: 156px;width: 128px;height: 128px;" />
+		  style="position: absolute;left: 58px;top: 186px;width: 92px;height: 92px;" />
 
-	  <text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 319px;width: 432px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">书架空空</text>
+	  <text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 289px;width: 212px;line-height: 42px;font-weight:bold;font-size:22px;color:white;text-align:center;">书架空空</text>
 
       <list class="list" if="{{shelfStyle === 'list' && displayMode === 'all'}}">
         
         <list-item type="tip" if="{{showStorageWarning}}" class="item" style="background-color: #ad0000;">
-          <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
+          <text style="color: white;font-size: 21px;">实际可用存储空间不足，将无法正常使用。</text>
         </list-item>
 
           <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
@@ -30,7 +30,7 @@
       <list class="list" if="{{shelfStyle === 'cover' && displayMode === 'all'}}">
                 
           <list-item type="tip" if="{{showStorageWarning}}" class="item" style="background-color: #ad0000;">
-            <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
+            <text style="color: white;font-size: 21px;">实际可用存储空间不足，将无法正常使用。</text>
           </list-item>
 
           <list-item for="{{visibleBooks}}" class="item cover-item" @click="selectFile($item)" type="nook">
@@ -54,7 +54,7 @@
       <list class="list" if="{{displayMode === 'category'}}">
 
         <list-item type="tip" if="{{showStorageWarning && !selectedCategory}}" class="item" style="background-color: #ad0000;">
-          <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
+          <text style="color: white;font-size: 21px;">实际可用存储空间不足，将无法正常使用。</text>
         </list-item>
 
         <list-item if="{{selectedCategory}}" class="item" @click="backToCategoryList" type="nook" style="height: 72px;">
@@ -78,18 +78,14 @@
         </list-item>
       </list>
 
-    <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-    <img static src="/common/images/back.png" @click="exit" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-    <img static src="/common/images/more.png" @click="routerTo('more')" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-    <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+    <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 102px;" />
+    <img static src="/common/images/more.png" @click="routerTo('more')" style="position: absolute;left: 67px;top: 418px;width: 72px;height: 72px;"/>
+    <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
       {{nowTime}}
     </text>
-    <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+    <text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
       电子书
     </text>
-
-    <img if="{{allBooks.length == 0}}" static src="/common/images/push.png" 
-      style="position: absolute;left: 308px;top: 420px;width: 82px;height: 82px;" @click="routerTo('push')"/>
 	</div>
 </template>
 
@@ -99,7 +95,6 @@ import bookStorage from '../../utils/bookStorage.js'
 import storage from '../../utils/storage.js';
 import chapterManager from '../../utils/chapterManager.js';
 import device from '@system.device';
-import app from '@system.app';
 import { calculateStorageInfo, isStorageLow } from '../../utils/storageUtils.js';
 
 export default {
@@ -112,7 +107,7 @@ export default {
     visibleBooks: [],
     currentPage: 0,
     totalPages: 1,
-    pageSize: 12,
+    pageSize: 5,
     lastReadOnTop: true,
     shelfMarqueeEnabled: false,
     displayMode: 'all',
@@ -122,9 +117,6 @@ export default {
     lastReadBook: null,
     homeProgressMode: 'book',
     showStorageWarning: false
-  },
-  exit(){
-	  app.terminate();
   },
   updateTime() {
     const date = new Date();
@@ -199,7 +191,7 @@ export default {
   },
   async loadSettingsAndFiles() {
     const [pageSize, shelfStyle, lastReadOnTop, shelfMarqueeEnabled, displayMode, homeProgressMode] = await Promise.all([
-      this.getStorage('EBOOK_SHELF_PAGE_SIZE', '12'),
+      this.getStorage('EBOOK_SHELF_PAGE_SIZE', '5'),
       this.getStorage('EBOOK_SHELF_STYLE', 'list'),
       this.getStorage('EBOOK_TOP_LAST_READ', 'true'),
       this.getStorage('EBOOK_SHELF_MARQUEE_ENABLED', 'false'),
@@ -485,18 +477,18 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	background-color: #000000;
 }
 
 .list {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	position: absolute;
 	top:0px;
 	left:0px;
-  padding: 116px 12px;
+  padding: 86px 12px;
 }
 
 .item {

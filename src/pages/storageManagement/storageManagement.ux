@@ -1,71 +1,71 @@
 <template>
 	<div class="page">
-		<list class="list" style="padding: 116px 12px;">
-			<list-item class="item storage-item" type="info" style="height: 310px; flex-direction: column;">
-				<text class="item-title" style="text-align: left; margin-bottom: 12px;" static>手环存储空间</text>
+		<list class="list">
+			<list-item class="item storage-item" type="info" style="height: 280px; flex-direction: column;">
+				<text class="item-title" style="text-align: left;" static>手环存储空间</text>
+				<div static style="width: 100%; height: 1px; background-color: rgba(255,255,255,0.2); margin: 8px 0px;"></div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
-					<text class="item-title" style="font-size: 24px;" static>总空间</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{totalStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>总空间</text>
+					<text class="item-value" style="font-size: 17px; width: auto;">{{totalStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
-					<text class="item-title" style="font-size: 24px;" static>已用空间</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{usedStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>已用空间</text>
+					<text class="item-value" style="font-size: 17px; width: auto;">{{usedStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
-					<text class="item-title" style="font-size: 24px;" static>预留空间</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{reservedStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>预留空间</text>
+					<text class="item-value" style="font-size: 17px; width: auto;">{{reservedStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 12px;">
-					<text class="item-title" style="font-size: 24px;" static>实际可用</text>
-					<text class="item-value" style="font-size: 24px; width: auto; color: {{actualAvailableColor}};">{{actualAvailableStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>实际可用</text>
+					<text class="item-value" style="font-size: 17px; width: auto; color: {{actualAvailableColor}};">{{actualAvailableStorage}}</text>
 				</div>
 				<progress class="storage-progress" percent="{{storagePercent}}" type="horizontal" style="color: #888;"></progress>
 				<text class="progress-text" style="text-align: center; margin-top: 4px;">{{usedStorage}} / {{usableStorage}}</text>
 			</list-item>
 			<list-item class="item" type="info" style="height: 280px; flex-direction: column;">
-				<text class="item-title" style="text-align: left;" static>除书籍以外的总占用</text>
-				<text class="item-value" style="width: auto;">{{totalExclBooks}}</text>
+				<text class="item-title" style="text-align: center;" static>除书籍以外的总占用</text>
+				<text class="item-value" style="width: auto;font-size: 19px;">{{totalExclBooks}}</text>
 				<div static style="width: 100%; height: 1px; background-color: rgba(255,255,255,0.2); margin: 8px 0px;"></div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 24px;" static>书籍索引占用</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{bookIndexStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>书籍索引</text>
+					<text class="item-value" style="font-size: 17px; width: auto;">{{bookIndexStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 24px;" static>阅读进度占用</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{readProgressStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>阅读进度</text>
+					<text class="item-value" style="font-size: 17px; width: auto;">{{readProgressStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 24px;" static>阅读时长占用</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{readingTimeStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>阅读时长</text>
+					<text class="item-value" style="font-size: 17px; width: auto;">{{readingTimeStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 24px;" static>设置数据占用</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{settingsStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>设置</text>
+					<text class="item-value" style="font-size: 17px; width: auto;">{{settingsStorage}}</text>
 				</div>
 			</list-item>
 
 			<list-item class="item" type="item" @click="clearReadingTime">
 				<div class="item-content">
-					<text class="itemtext" static>清空阅读时长</text>
-					<text class="itemtext2" static>清空所有时长数据</text>
+					<text class="itemtext" static>清空时长</text>
+					<text class="itemtext2" static>清空阅读时长</text>
 				</div>
-				<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+				<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
 			</list-item>
 			<list-item class="item" type="item" @click="clearBooks">
 				<div class="item-content">
 					<text class="itemtext" static>清空数据</text>
 					<text class="itemtext2" static>清空全部数据</text>
 				</div>
-				<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+				<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
 			</list-item>
 		</list>
 
-		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+		<text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
 			{{nowTime}}
 		</text>
-		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
 			存储管理
 		</text>
 	</div>
@@ -263,31 +263,33 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	background-color: #000000;
 }
+
 .list {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	position: absolute;
-	top: 0px;
-	left: 0px;
+	top:0px;
+	left:0px;
+	padding: 86px 12px;
 }
 
-  .item {
+.item {
 	  width: 100%;
-	  height: 112px;
-	  padding: 14px 20px;
+	  height: 85px;
+	  padding: 12px 18px;
 	  margin-bottom: 8px;
 	  background-color: #262626;
-	  border-radius: 36px;
+	  border-radius: 26px;
 	  align-items: center;
 	justify-content: space-between;
   }
+  
   .itemtext {
-	  font-size: 32px;
-	  line-height:40px;
+	  font-size: 23px;
 	  width: 100%;
 	  font-weight: bold;
 	  color: white;
@@ -296,31 +298,20 @@ export default {
   }
   
   .itemtext2 {
-	  font-size: 28px;
-	  line-height: 37px;
+	  font-size: 20px;
 	  font-weight: bold;
 	  color: rgba(255,255,255,0.6);
 	  text-overflow: ellipsis;
 	  lines: 1;
   }
-.item-value {
-	font-size: 32px;
-	line-height: 40px;
-	width: 100%;
-	font-weight: bold;
-	color: white;
-	lines: 1;
-}
-.itemtext {
-	font-size: 32px;
-	line-height:40px;
-	width: 100%;
-	font-weight: bold;
-	color: white;
-	text-overflow: ellipsis;
-	lines: 1;
-}
 
+.item-value {
+	font-size: 17px;
+	width: 100%;
+	font-weight: bold;
+	color: white;
+	lines: 1;
+}
   
 .item-content {
 	  height: 100%;
@@ -330,8 +321,7 @@ export default {
   }
   
 .item-title {
-	font-size: 28px;
-	line-height: 37px;
+	font-size: 23px;
 	font-weight: bold;
 	color: rgba(255,255,255,0.6);
 }
@@ -348,7 +338,7 @@ export default {
 }
 
 .progress-text {
-	font-size: 22px;
+	font-size: 18px;
 	line-height: 30px;
 	color: rgba(255,255,255,0.5);
 }

@@ -1,18 +1,17 @@
 <template>
     <div class="page">
-        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-        <img static if="{{action!=='versionError'}}" src="/common/images/delete.png" @click="confirmAction" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-        <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 70px;top: 30px;width: 72px;height: 72px;"/>
+        <img static if="{{action!=='versionError'}}" src="/common/images/delete.png" @click="confirmAction" style="position: absolute;left: 67px;top: 418px;width: 72px;height: 72px;"/>
+        <text style="position: absolute;top: 106px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
             {{nowTime}}
         </text>
-        <text style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+        <text static style="position: absolute;top: 126px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
             {{title}}
         </text>
 
-        <img static src="/common/images/bin.png" style="position: absolute;left: 152px;top: 156px;width: 128px;height: 128px;" />
-        <text style="position: absolute;left: 0px;top: 319px;width: 432px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{confirmText}}</text>
-        <text style="position: absolute;left: 0px;top: 361px;width: 432px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;padding:0 20px;">{{subText}}</text>
+        <img static src="/common/images/bin.png" style="position: absolute;left: 66px;top: 186px;width: 80px;height: 80px;"/>
+        <text style="position: absolute;left: 0px;top: 269px;width: 212px;font-weight:bold;font-size:20px;color:white;text-align:center;">{{confirmText}}</text>
+        <text style="position: absolute;left: 0px;top: 299px;width: 212px;font-weight:bold;font-size:20px;color:rgba(255,255,255,0.6);text-align:center;">{{subText}}</text>
     </div>
 </template>
 

@@ -1,13 +1,12 @@
 <template>
 	<div class="page">
-		<!-- 全局阅读时长页面 -->
 		<list class="list" if="{{!name}}">
 			<list-item class="item" type="info">
 				<div class="stat-item">
 					<text class="item-title" static>总阅读时长</text>
 					<text class="item-value">{{totalReadingTimeFormatted}}</text>
 				</div>
-				<div class="stat-item">
+				<div class="stat-item" style="margin-top: 4px;">
 					<text class="item-title" static>总阅读天数</text>
 					<text class="item-value">{{totalReadingDays}}天</text>
 				</div>
@@ -18,8 +17,8 @@
 					<text class="item-title" static>今日阅读时长</text>
 					<text class="item-value">{{todayReadingTimeFormatted}}</text>
 				</div>
-				<div class="stat-item">
-					<text class="item-title" static>平均每日阅读时长</text>
+				<div class="stat-item" style="margin-top: 4px;">
+					<text class="item-title" static>平均每日时长</text>
 					<text class="item-value">{{averageDailyTimeFormatted}}</text>
 				</div>
 			</list-item>
@@ -29,28 +28,27 @@
 					<text class="item-title" static>本周阅读时长</text>
 					<text class="item-value">{{weekReadingTimeFormatted}}</text>
 				</div>
-				<div class="stat-item">
-					<text class="item-title" static>平均每周阅读时长</text>
+				<div class="stat-item" style="margin-top: 4px;">
+					<text class="item-title" static>平均每周时长</text>
 					<text class="item-value">{{averageWeekTimeFormatted}}</text>
 				</div>
 			</list-item>
 			
 			<list-item class="item item-single" type="info">
 				<div class="stat-item">
-					<text class="item-title" static>单日最长阅读时长</text>
+					<text class="item-title" static>单日最长时长</text>
 					<text class="item-value">{{maxDailyTimeFormatted}}</text>
 				</div>
 			</list-item>
 		</list>
 
-		<!-- 书籍阅读时长页面 -->
 		<list class="list" if="{{name}}">
 			<list-item class="item" type="info">
 				<div class="stat-item">
 					<text class="item-title" static>本书总阅读时长</text>
 					<text class="item-value">{{totalReadingTimeFormatted}}</text>
 				</div>
-				<div class="stat-item">
+				<div class="stat-item" style="margin-top: 4px;">
 					<text class="item-title" static>本书总阅读天数</text>
 					<text class="item-value">{{totalReadingDays}}天</text>
 				</div>
@@ -61,7 +59,7 @@
 					<text class="item-title" static>今日本书阅读时长</text>
 					<text class="item-value">{{todayReadingTimeFormatted}}</text>
 				</div>
-				<div class="stat-item">
+				<div class="stat-item" style="margin-top: 4px;">
 					<text class="item-title" static>平均每天本书阅读时长</text>
 					<text class="item-value">{{averageDailyTimeFormatted}}</text>
 				</div>
@@ -72,7 +70,7 @@
 					<text class="item-title" static>本书本周阅读时长</text>
 					<text class="item-value">{{weekReadingTimeFormatted}}</text>
 				</div>
-				<div class="stat-item">
+				<div class="stat-item" style="margin-top: 4px;">
 					<text class="item-title" static>平均每周本书阅读时长</text>
 					<text class="item-value">{{averageWeekTimeFormatted}}</text>
 				</div>
@@ -83,7 +81,7 @@
 					<text class="item-title" static>首次阅读时间</text>
 					<text class="item-value">{{firstReadDate}}</text>
 				</div>
-				<div class="stat-item" if="{{lastReadDate}}">
+				<div class="stat-item" if="{{lastReadDate}}" style="margin-top: 4px;">
 					<text class="item-title" static>最近阅读时间</text>
 					<text class="item-value">{{lastReadDate}}</text>
 				</div>
@@ -97,12 +95,11 @@
 			</list-item>
 		</list>
 
-		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+		<text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
 			{{nowTime}}
 		</text>
-		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
 			{{pageTitle}}
 		</text>
 	</div>
@@ -282,21 +279,22 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	background-color: #000000;
 }
+
 .list {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	position: absolute;
 	top:0px;
 	left:0px;
-	padding: 116px 12px;
+	padding: 86px 12px;
 }
 .item {
 	width: 100%;
-	height: 200px;
+	height: 140px;
 	padding: 14px 20px;
 	margin-bottom: 8px;
 	background-color: #262626;
@@ -306,7 +304,7 @@ export default {
 	justify-content: space-around;
 }
 .item-single {
-	height: 112px;
+	height: 82px;
 }
 .stat-item {
 	width: 100%;
@@ -316,15 +314,12 @@ export default {
 	justify-content: flex-start;
 }
 .item-title {
-	font-size: 28px;
-	line-height: 37px;
+	font-size: 21px;
 	font-weight: bold;
 	color: rgba(255,255,255,0.6);
-	margin-bottom: 4px;
 }
 .item-value {
-	font-size: 32px;
-	line-height: 40px;
+	font-size: 18px;
 	width: 100%;
 	font-weight: bold;
 	color: white;

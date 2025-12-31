@@ -1,7 +1,7 @@
 {
   "package": "com.bandbbs.ebook.plus",
   "name": "电子书",
-  "versionName": "4.6.4.RW",
+  "versionName": "4.6.4.BAND10",
   "versionCode": 251231,
   "minPlatformVersion": 1100,
   "icon": "/common/logo.png",
@@ -55,7 +55,7 @@
   ],
   "config": {
     "logLevel": "log",
-    "designWidth": 432
+    "designWidth": 212
   },
   "router": {
     "entry": "pages/index",
@@ -100,9 +100,6 @@
       "pages/push": {
         "component": "push"
       },
-      "pages/info": {
-        "component": "info"
-      },
       "pages/swipe": {
         "component": "swipe"
       },
@@ -129,9 +126,6 @@
       },
       "pages/list": {
         "component": "list"
-      },
-      "pages/progressBarSetting": {
-        "component": "progressBarSetting"
       },
       "pages/textReader": {
         "component": "textReader"
@@ -171,9 +165,6 @@
       },
       "pages/readModeSetting": {
         "component": "readModeSetting"
-      },
-      "pages/progressBarOpacitySetting": {
-        "component": "progressBarOpacitySetting"
       },
       "pages/readingTime": {
         "component": "readingTime"

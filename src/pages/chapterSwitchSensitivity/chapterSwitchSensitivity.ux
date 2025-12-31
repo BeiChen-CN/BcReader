@@ -16,14 +16,12 @@
 		  </div>
 	  </div>
 	  
-	  <number style="position: absolute;top:415px;" max.static="240" min.static="10" step.static="10" value="{{ chapterSwitchSensitivity }}" @change="change" name.static="调整灵敏度"></number>
+	  <number style="position: absolute;top:365px;" max.static="240" unit.static="px" min.static="10" step.static="10" value="{{ chapterSwitchSensitivity }}" @change="change" name.static="调整灵敏度"></number>
 
-		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	  <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
 		  {{nowTime}}
 		</text>
-		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
 			越界换章
 		</text>
 	</div>
@@ -108,16 +106,16 @@ export default {
 
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	background-color: #000000;
 }
 
 .preview-container {
 	position: absolute;
-	left: 54px;
+	left: 2px;
 	top: 86px;
-	width: 324px;
+	width: 208px;
 	height: 280px;
 	flex-direction: row;
 	justify-content: space-between;
@@ -126,14 +124,19 @@ export default {
 }
 
 .preview-screen {
-	width: 144px;
-	height: 171px;
+	width: 106px;
+	height: 260px;
 	background-color: #1a1a1a;
-	border-radius: 20px;
+	border-radius: 53px;
 	border: 3px solid #333333;
 	flex-direction: column;
 	overflow: hidden;
-	position: relative;
+}
+
+.margin-indicator {
+	width: 100%;
+	background: linear-gradient(180deg, #0D6EFF 0%, #0D6EFF 100%);
+	opacity: 0.3;
 }
 
 .content-area {
@@ -146,11 +149,10 @@ export default {
 }
 
 .preview-text {
-	font-size: 20px;
+	font-size: 16px;
 	font-weight: bold;
 	color: white;
 	text-align: center;
-	lines: 3;
 	text-overflow: ellipsis;
 }
 
@@ -163,25 +165,24 @@ export default {
 }
 
 .info-title {
-	font-size: 28px;
+	font-size: 21px;
 	font-weight: bold;
 	color: white;
-	line-height: 38px;
 	margin-bottom: 6px;
+	text-align: center;
 }
 
 .info-value {
-	font-size: 48px;
+	font-size: 28px;
 	font-weight: bold;
 	color: #0D6EFF;
-	line-height: 56px;
 	margin-bottom: 10px;
+	text-align: center;
 }
 
 .info-desc {
-	font-size: 22px;
+	font-size: 14px;
 	color: rgba(255,255,255,0.6);
-	line-height: 30px;
 	text-align: center;
 }
 </style>
