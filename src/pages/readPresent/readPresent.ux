@@ -1,177 +1,268 @@
 <template>
 	<div class="page" style="flex-direction: column;">
-	  <div class="item">
-		  <text style="font-size: 36px;font-weight:bold;color: white;width: 100%;text-align: center;">
-			  {{inputPage}}
-		  </text>
-		  <text style="font-size: 24px;font-weight:bold;color: rgba(255, 255, 255, 0.6);width: 100%;text-align: center;">
-			  共 {{syncedChapters}} / {{totalChapters}} 章
-		  </text>
-	  </div>
-	  <div class="row" style="top:228px">
-		  <img static src="/common/images/num_pad/7.png" @click="onClick('7')"/>
-		  <img static src="/common/images/num_pad/8.png" @click="onClick('8')"/>
-		  <img static src="/common/images/num_pad/9.png" @click="onClick('9')"/>
-	  </div>
-	  <div class="row" style="top:298px">
-		  <img static src="/common/images/num_pad/4.png" @click="onClick('4')"/>
-		  <img static src="/common/images/num_pad/5.png" @click="onClick('5')"/>
-		  <img static src="/common/images/num_pad/6.png" @click="onClick('6')"/>
-	  </div>
-	  <div class="row" style="top:368px">
-		  <img static src="/common/images/num_pad/1.png" @click="onClick('1')"/>
-		  <img static src="/common/images/num_pad/2.png" @click="onClick('2')"/>
-		  <img static src="/common/images/num_pad/3.png" @click="onClick('3')"/>
-	  </div>
-	  <div class="row" style="top:438px">
-		  <img static src="/common/images/num_pad/0.png" @click="onClick('0')"/>
-		  <img static src="/common/images/num_pad/del.png" @click="onClick('del')"/>
-	  </div>
-  
-  
-	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-	  <img static src="/common/images/conform.png" @click="onClick('conform')" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-	  <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-		{{nowTime}}
-	  </text>
-	  <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-		  跳转章节
-	  </text>
+		<div class="header-container">
+			<img static src="/common/images/hd.png" class="header-bg" />
+			<text class="time-text">{{nowTime}}</text>
+			<text static class="title-text">跳转章节</text>
+		</div>
+
+		<div class="display-item">
+			<text class="chapter-value">{{inputPage}}</text>
+			<text class="chapter-label">共 {{syncedChapters}} / {{totalChapters}} 章</text>
+		</div>
+
+		<div class="keypad">
+			<div class="key-row">
+				<div class="btn" @click="onClick('7')"><text class="btn-text">7</text></div>
+				<div class="btn" @click="onClick('8')"><text class="btn-text">8</text></div>
+				<div class="btn" @click="onClick('9')"><text class="btn-text">9</text></div>
+			</div>
+			<div class="key-row">
+				<div class="btn" @click="onClick('4')"><text class="btn-text">4</text></div>
+				<div class="btn" @click="onClick('5')"><text class="btn-text">5</text></div>
+				<div class="btn" @click="onClick('6')"><text class="btn-text">6</text></div>
+			</div>
+			<div class="key-row">
+				<div class="btn" @click="onClick('1')"><text class="btn-text">1</text></div>
+				<div class="btn" @click="onClick('2')"><text class="btn-text">2</text></div>
+				<div class="btn" @click="onClick('3')"><text class="btn-text">3</text></div>
+			</div>
+			<div class="key-row">
+				<div class="btn btn-warn" @click="onClick('del')"><text class="btn-text">删</text></div>
+				<div class="btn" @click="onClick('0')"><text class="btn-text">0</text></div>
+				<div class="btn btn-confirm" @click="onClick('conform')"><text class="btn-text">定</text></div>
+			</div>
+		</div>
+
+		<div class="bottom-nav">
+			<div class="back-btn" @click="back">
+				<text class="back-text">返回</text>
+			</div>
+		</div>
 	</div>
-  </template>
-  
-  <script>
-  import router from '@system.router'
-  import prompt from '@system.prompt'
-  import file from '@system.file'
-  import bookStorage from '../../utils/bookStorage.js'
-  import chapterManager from '../../utils/chapterManager.js'
-  
-  export default {
+</template>
+
+<script>
+import router from '@system.router'
+import prompt from '@system.prompt'
+import file from '@system.file'
+import bookStorage from '../../utils/bookStorage.js'
+import chapterManager from '../../utils/chapterManager.js'
+
+export default {
 	private: {
-	  inputPage: '0',
-	  nowTime: "00:00",
-	  timer: null,
-	  totalChapters: 1,
-	  syncedChapters: 1
+		inputPage: '0',
+		nowTime: "00:00",
+		timer: null,
+		totalChapters: 1,
+		syncedChapters: 1
 	},
 	protected: {
 		name: ''
 	},
 	updateTime() {
-	  const date = new Date();
-	  let hours = date.getHours();
-	  let minutes = date.getMinutes();
-  
-	  hours = hours < 10 ? '0' + hours : hours;
-	  minutes = minutes < 10 ? '0' + minutes : minutes;
-  
-	  this.nowTime = `${hours}:${minutes}`;
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		hours = hours < 10 ? '0' + hours : hours;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		this.nowTime = `${hours}:${minutes}`;
 	},
 	onInit() {
-	  this.updateTime();
-	  this.timer = setInterval(() => {
 		this.updateTime();
-	  }, 1000);
-	  this.loadData();
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 1000);
+		this.loadData();
 	},
 	async loadData() {
 		this.totalChapters = await chapterManager.getTotalChapters(this.name);
 		this.syncedChapters = await chapterManager.getSyncedChapters(this.name);
 		let progress = await bookStorage.get(this.name);
-		if (progress.chapterIndex !== null) {
+		if (progress.chapterIndex !== null && progress.chapterIndex !== undefined) {
 			this.inputPage = (progress.chapterIndex + 1).toString();
 		} else {
 			this.inputPage = '1';
 		}
 	},
-	onDestroy(){
+	onDestroy() {
 		if (this.timer) {
 			clearInterval(this.timer);
 			this.timer = null;
 		}
 	},
-	async onClick(num){
-	  if (num === 'del') {
-		  if (this.inputPage.length > 1) {
-			  this.inputPage = this.inputPage.slice(0, -1);
-		  } else {
-			  this.inputPage = '0';
-		  }
-		  return;
-	  }
-  
-	  if (num === 'conform') {
-		  let targetChapterNum = parseInt(this.inputPage);
-		  if (isNaN(targetChapterNum) || targetChapterNum < 1) {
-			  targetChapterNum = 1;
-		  }
-		  if (this.syncedChapters > 0 && targetChapterNum > this.syncedChapters) {
-			  targetChapterNum = this.syncedChapters;
-		  }
-		  if (this.totalChapters === 0) return;
+	async onClick(num) {
+		if (num === 'del') {
+			if (this.inputPage.length > 1) {
+				this.inputPage = this.inputPage.slice(0, -1);
+			} else {
+				this.inputPage = '0';
+			}
+			return;
+		}
 
-		  const targetChapterIndex = targetChapterNum - 1;
-		  
-		  try {
-			  let progress = await bookStorage.get(this.name);
-			  progress.chapterIndex = targetChapterIndex;
-			  progress.offsetInChapter = 0;
-			  progress.scrollOffset = 0;
-			  await bookStorage.set(this.name, progress);
-        progress = null;
-			  
-			  prompt.showToast({ message: '设置成功', duration: 1000 });
-			  globalThis.justJumpedFromPageNumber = true;
-			  globalThis.justJumpedChapterIndex = targetChapterIndex;
-			  router.back();
-		  } catch (e) {
-			  prompt.showToast({ message: '设置失败', duration: 2000 });
-		  }
-		  return;
-	  }
-  
-	  const currentVal = this.inputPage === '0' ? '' : this.inputPage;
-	  const newValStr = currentVal + num;
-	  const newVal = parseInt(newValStr);
-  
-	  if (newVal > this.syncedChapters) {
-		  prompt.showToast({ message: `最大章节为 ${this.syncedChapters}`, duration: 1000 });
-	  } else {
-		  this.inputPage = newValStr;
-	  }
+		if (num === 'conform') {
+			let targetChapterNum = parseInt(this.inputPage);
+			if (isNaN(targetChapterNum) || targetChapterNum < 1) {
+				targetChapterNum = 1;
+			}
+			if (this.syncedChapters > 0 && targetChapterNum > this.syncedChapters) {
+				targetChapterNum = this.syncedChapters;
+			}
+			if (this.totalChapters === 0) return;
+
+			const targetChapterIndex = targetChapterNum - 1;
+
+			try {
+				let progress = await bookStorage.get(this.name);
+				progress.chapterIndex = targetChapterIndex;
+				progress.offsetInChapter = 0;
+				progress.scrollOffset = 0;
+				await bookStorage.set(this.name, progress);
+
+				prompt.showToast({ message: '跳转中...' });
+				globalThis.justJumpedFromPageNumber = true;
+				globalThis.justJumpedChapterIndex = targetChapterIndex;
+				router.back();
+			} catch (e) {
+				prompt.showToast({ message: '跳转失败' });
+			}
+			return;
+		}
+
+		const currentVal = this.inputPage === '0' ? '' : this.inputPage;
+		const newValStr = currentVal + num;
+		const newVal = parseInt(newValStr);
+
+		if (newVal > this.syncedChapters) {
+			prompt.showToast({ message: `最大 ${this.syncedChapters} 章` });
+		} else {
+			this.inputPage = newValStr;
+		}
 	},
-	back(){
+	back() {
 		router.back();
 	}
-  }
-  </script>
-  
-  <style>
-  .page {
-	  width: 432px;
-	  height: 514px;
-	  background-color: #000000;
-  }
-  
-  .item {
-	  position: absolute;
-	  left: 27px;
-	  top: 114px;
-	  width: 378px;
-	  height: 102px;
-	  border-radius: 36px;
-	  flex-direction: column;
-	  border: 3px solid #262626;
-	  justify-content: center;
-  }
+}
+</script>
 
-  .row {
-	  position:absolute;
-	  left: 32px;
-	  width:358px;
-	  height:77px;
-	  padding:0px 6px;
-	  justify-content: space-between;
-  }
-  </style>
+<style>
+.page {
+	width: 212px;
+	height: 520px;
+	background-color: #000000;
+	align-items: center;
+}
+
+.header-container {
+	width: 212px;
+	height: 82px;
+	flex-direction: column;
+	align-items: center;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+.header-bg {
+	width: 212px;
+	height: 82px;
+	position: absolute;
+}
+
+.time-text {
+	margin-top: 16px;
+	font-size: 18px;
+	font-weight: bold;
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.title-text {
+	font-size: 26px;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+.display-item {
+	margin-top: 90px;
+	width: 188px;
+	height: 80px;
+	background-color: #262626;
+	border-radius: 20px;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	border: 2px solid #333333;
+}
+
+.chapter-value {
+	font-size: 32px;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+.chapter-label {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.6);
+	text-align: center;
+	padding: 0 4px;
+}
+
+.keypad {
+	margin-top: 10px;
+	width: 196px;
+	flex-direction: column;
+}
+
+.key-row {
+	width: 100%;
+	height: 52px;
+	margin-bottom: 6px;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.btn {
+	width: 60px;
+	height: 52px;
+	background-color: #262626;
+	border-radius: 12px;
+	justify-content: center;
+	align-items: center;
+}
+
+.btn-warn {
+	background-color: #8b0000;
+}
+
+.btn-confirm {
+	background-color: #0d6eff;
+}
+
+.btn-text {
+	font-size: 24px;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+.bottom-nav {
+	margin-top: 10px;
+	width: 100%;
+	justify-content: center;
+}
+
+.back-btn {
+	width: 120px;
+	height: 40px;
+	background-color: #333333;
+	border-radius: 20px;
+	justify-content: center;
+	align-items: center;
+}
+
+.back-text {
+	font-size: 18px;
+	color: #ffffff;
+	font-weight: bold;
+}
+</style>
