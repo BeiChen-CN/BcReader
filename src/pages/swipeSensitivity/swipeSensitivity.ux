@@ -94,8 +94,8 @@
   
   <style>
   .page {
-	  weidth: 336px;
-	  hight: 480px;
+	  width: 336px;
+	  height: 480px;
 	  background-color: #000000;
   }
   
