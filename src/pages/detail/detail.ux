@@ -1306,7 +1306,18 @@
 
 		global.runGC();
 	},
-	onBackPress(){ this.back(); return true; },
+	onBackPress(){ 
+		if (this.readMode === 'nostalgic') {
+			if (this.nostalgicPageTurnMode === 'swipe' && this.nostalgicIsTouching) {
+				if (this.nostalgicPageIndex > 0) {
+					this.nostalgicPrevPage();
+				} else if (this.currentChapterIndexInAll > 0) {
+					this.goToPrevChapter();
+				}
+			}
+			return true;
+		}
+	},
 	async back(){
 		
 		if (this.saveDataTimeout) {
@@ -1574,19 +1585,13 @@
 			const deltaY = this.nostalgicTouchEndY - this.nostalgicTouchStartY;
 			const absDeltaX = Math.abs(deltaX);
 			const absDeltaY = Math.abs(deltaY);
-			
+
 			if (absDeltaX > 50 && absDeltaX > absDeltaY) {
-				if (deltaX > 0) {
-					if (this.isAtChapterStart && this.currentChapterIndexInAll > 0) {
-						this.goToPrevChapter();
-					} else {
-						this.nostalgicPrevPage();
-					}
-				} else {
-					if (this.isAtChapterEnd && this.currentChapterIndexInAll < this.totalChapters - 1) {
-						this.goToNextChapter();
-					} else {
+				if (deltaX < 0) {
+					if (this.nostalgicPageIndex < this.nostalgicTotalPages - 1) {
 						this.nostalgicNextPage();
+					} else if (this.currentChapterIndexInAll < this.totalChapters - 1) {
+						this.goToNextChapter();
 					}
 				}
 			}
