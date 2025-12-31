@@ -1,6 +1,27 @@
 <template>
 	<div class="page">
 		<list class="list" style="padding: 86px 6px;">
+			<list-item class="item storage-item" type="info" style="height: 280px; flex-direction: column;">
+				<text class="item-title" style="text-align: left; margin-bottom: 12px;" static>手环存储空间</text>
+				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
+					<text class="item-title" style="font-size: 24px;" static>总空间</text>
+					<text class="item-value" style="font-size: 24px; width: auto;">{{totalStorage}}</text>
+				</div>
+				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
+					<text class="item-title" style="font-size: 24px;" static>已用空间</text>
+					<text class="item-value" style="font-size: 24px; width: auto;">{{usedStorage}}</text>
+				</div>
+				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
+					<text class="item-title" style="font-size: 24px;" static>预留空间</text>
+					<text class="item-value" style="font-size: 24px; width: auto;">{{reservedStorage}}</text>
+				</div>
+				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 12px;">
+					<text class="item-title" style="font-size: 24px;" static>实际可用</text>
+					<text class="item-value" style="font-size: 24px; width: auto; color: {{actualAvailableColor}};">{{actualAvailableStorage}}</text>
+				</div>
+				<progress class="storage-progress" percent="{{storagePercent}}" type="horizontal"></progress>
+				<text class="progress-text" style="text-align: center; margin-top: 4px;">{{usedStorage}} / {{usableStorage}}</text>
+			</list-item>
 			<list-item class="item" type="info" style="height: 280px; flex-direction: column;">
 				<text class="item-title" style="text-align: left;" static>除书籍以外的总占用</text>
 				<text class="item-value" style="width: auto;">{{totalExclBooks}}</text>
@@ -53,30 +74,93 @@
 <script>
 import router from '@system.router'
 import file from '@system.file'
+import device from '@system.device'
 import runAsyncFunc from '../../utils/runAsyncFunc.js'
 import bookStorage from '../../utils/bookStorage.js'
 import readingTimeStorage from '../../utils/readingTimeStorage.js'
+import { calculateStorageInfo, isStorageLow } from '../../utils/storageUtils.js'
 
 export default {
 	private: {
 		nowTime: "00:00",
 		timer: null,
+		totalStorage: '加载中...',
+		usedStorage: '加载中...',
+		reservedStorage: '加载中...',
+		actualAvailableStorage: '加载中...',
+		actualAvailableColor: 'white',
+		storagePercent: 0,
+		totalStorageBytes: 0,
+		actualAvailableBytes: 0,
+		usableStorage: '计算中...',
 		totalExclBooks: '加载中...',
 		bookIndexStorage: '加载中...',
 		readProgressStorage: '加载中...',
 		readingTimeStorage: '加载中...',
 		settingsStorage: '加载中...',
-		timeFormat: '24h'
+		timeFormat: '24h',
+		deviceProduct: null
 	},
 	onInit() {
 		this.updateTime();
 		this.timer = setInterval(() => {
 			this.updateTime();
 		}, 1000);
+		this.loadDeviceInfo();
 		this.calculateStorageOverview();
 	},
 	onShow() {
+		this.loadDeviceInfo();
 		this.calculateStorageOverview();
+	},
+	loadDeviceInfo() {
+		device.getInfo({
+			success: (ret) => {
+				this.deviceProduct = ret.product;
+				this.updateStorageInfo();
+			},
+			fail: () => {
+				this.deviceProduct = null;
+				this.updateStorageInfo();
+			}
+		});
+	},
+	updateStorageInfo() {
+		device.getTotalStorage({
+			success: (data) => {
+				const totalStorage = data.totalStorage || 0;
+				this.totalStorageBytes = totalStorage;
+				this.totalStorage = this.formatFileSize(totalStorage);
+				device.getAvailableStorage({
+					success: (availData) => {
+						const availableStorage = availData.availableStorage || 0;
+						const storageInfo = calculateStorageInfo(totalStorage, availableStorage, this.deviceProduct);
+						this.usedStorage = this.formatFileSize(storageInfo.usedStorage);
+						this.reservedStorage = this.formatFileSize(storageInfo.reservedStorage);
+						this.actualAvailableStorage = this.formatFileSize(storageInfo.actualAvailable);
+						this.actualAvailableBytes = storageInfo.actualAvailable;
+						this.actualAvailableColor = isStorageLow(storageInfo.actualAvailable) ? '#ff4444' : 'white';
+						const usableSpace = totalStorage - storageInfo.reservedStorage;
+						this.usableStorage = this.formatFileSize(usableSpace);
+						if (usableSpace > 0) {
+							this.storagePercent = Math.round((storageInfo.usedStorage / usableSpace) * 100);
+						} else {
+							this.storagePercent = 0;
+						}
+					},
+					fail: () => {
+						this.usedStorage = '获取失败';
+						this.reservedStorage = '获取失败';
+						this.actualAvailableStorage = '获取失败';
+						this.storagePercent = 0;
+					}
+				});
+			},
+			fail: () => {
+				this.totalStorage = '获取失败';
+				this.storagePercent = 0;
+			}
+		});
 	},
 	onDestroy() {
 		if (this.timer) {
@@ -250,6 +334,23 @@ export default {
 	line-height: 37px;
 	font-weight: bold;
 	color: rgba(255,255,255,0.6);
+}
+
+.storage-item {
+	background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+	border: 1px solid rgba(255,255,255,0.1);
+}
+
+.storage-progress {
+	width: 100%;
+	height: 8px;
+	margin-top: 8px;
+}
+
+.progress-text {
+	font-size: 22px;
+	line-height: 30px;
+	color: rgba(255,255,255,0.5);
 }
 </style>
 

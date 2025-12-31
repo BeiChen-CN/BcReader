@@ -1,4 +1,5 @@
 import file from "@system.file";
+import device from "@system.device";
 import runAsyncFunc from "./runAsyncFunc";
 import str2abWrite from "./str2abWrite";
 import bookStorage from '../utils/bookStorage.js';
@@ -78,6 +79,9 @@ export default class interconnfile {
                     break;
                 case "delete_chapters":
                     this.deleteChapters(payload);
+                    break;
+                case "get_storage_info":
+                    this.getStorageInfo();
                     break;
             }
         }
@@ -1079,6 +1083,60 @@ export default class interconnfile {
                 type: "error", 
                 message: `删除章节失败: ${error.message || 'unknown error'}`, 
                 count: 0 
+            });
+        }
+    }
+
+    async getStorageInfo() {
+        try {
+            const { calculateStorageInfo } = require('../utils/storageUtils.js');
+            
+            const deviceInfo = await new Promise((resolve, reject) => {
+                device.getInfo({
+                    success: resolve,
+                    fail: reject
+                });
+            });
+            
+            const deviceProduct = deviceInfo ? deviceInfo.product : null;
+            
+            const totalData = await new Promise((resolve, reject) => {
+                device.getTotalStorage({
+                    success: resolve,
+                    fail: reject
+                });
+            });
+            
+            const totalStorage = totalData && totalData.totalStorage ? totalData.totalStorage : 0;
+            
+            const availData = await new Promise((resolve, reject) => {
+                device.getAvailableStorage({
+                    success: resolve,
+                    fail: reject
+                });
+            });
+            
+            const availableStorage = availData && availData.availableStorage ? availData.availableStorage : 0;
+            const storageInfo = calculateStorageInfo(totalStorage, availableStorage, deviceProduct);
+            
+            this.send({
+                type: "storage_info",
+                product: deviceProduct,
+                totalStorage: storageInfo.totalStorage,
+                availableStorage: storageInfo.availableStorage,
+                reservedStorage: storageInfo.reservedStorage,
+                usedStorage: storageInfo.usedStorage,
+                actualAvailable: storageInfo.actualAvailable
+            });
+        } catch (error) {
+            this.send({
+                type: "storage_info",
+                product: null,
+                totalStorage: 0,
+                availableStorage: 0,
+                reservedStorage: 0,
+                usedStorage: 0,
+                actualAvailable: 0
             });
         }
     }
