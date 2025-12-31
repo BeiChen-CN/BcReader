@@ -1,7 +1,7 @@
 <template>
 	<div class="page">
 		<list class="list" style="padding: 86px 6px;">
-			<list-item class="item storage-item" type="info" style="height: 280px; flex-direction: column;">
+			<list-item class="item storage-item" type="info" style="height: 310px; flex-direction: column;">
 				<text class="item-title" style="text-align: left; margin-bottom: 12px;" static>手环存储空间</text>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
 					<text class="item-title" style="font-size: 24px;" static>总空间</text>
@@ -19,7 +19,7 @@
 					<text class="item-title" style="font-size: 24px;" static>实际可用</text>
 					<text class="item-value" style="font-size: 24px; width: auto; color: {{actualAvailableColor}};">{{actualAvailableStorage}}</text>
 				</div>
-				<progress class="storage-progress" percent="{{storagePercent}}" type="horizontal"></progress>
+				<progress class="storage-progress" percent="{{storagePercent}}" type="horizontal" style="color: #888;"></progress>
 				<text class="progress-text" style="text-align: center; margin-top: 4px;">{{usedStorage}} / {{usableStorage}}</text>
 			</list-item>
 			<list-item class="item" type="info" style="height: 280px; flex-direction: column;">
@@ -139,7 +139,7 @@ export default {
 						this.reservedStorage = this.formatFileSize(storageInfo.reservedStorage);
 						this.actualAvailableStorage = this.formatFileSize(storageInfo.actualAvailable);
 						this.actualAvailableBytes = storageInfo.actualAvailable;
-						this.actualAvailableColor = isStorageLow(storageInfo.actualAvailable) ? '#f14444' : '#aaa';
+						this.actualAvailableColor = isStorageLow(storageInfo.actualAvailable) ? '#f14444' : 'white';
 						const usableSpace = totalStorage - storageInfo.reservedStorage;
 						this.usableStorage = this.formatFileSize(usableSpace);
 						if (usableSpace > 0) {
