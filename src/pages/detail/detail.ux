@@ -372,7 +372,7 @@
 		this.pageHeigh = Math.floor(this.scrollHeight/this.lineHeight) * this.lineHeight;
 	},
 	calculateNostalgicCharsPerPage() {
-		const screenWidth = 336;
+		const screenWidth = 432;
 		const screenHeight = this.scrollHeight;
 		
 		if (screenHeight <= 0 || this.lineHeight <= 0 || this.fontSize <= 0) {
@@ -408,7 +408,7 @@
 			return;
 		}
 		
-		const screenWidth = 336;
+		const screenWidth = 432;
 		const screenHeight = this.scrollHeight;
 		const linesPerPage = Math.floor(screenHeight / this.lineHeight);
 		const charsPerLine = Math.floor(screenWidth / this.fontSize);
@@ -1692,7 +1692,7 @@
 						this.gestureClickTimeout = null;
 						if (!this.showSetting) {
 							const clickX = event.offsetX || (event.detail && event.detail.x) || 0;
-							const containerWidth = 336;
+							const containerWidth = 432;
 							const leftThird = containerWidth / 3;
 							const rightThird = containerWidth * 2 / 3;
 							
@@ -1717,7 +1717,7 @@
 					handleUIToggle();
 				} else {
 					const clickX = event.offsetX || (event.detail && event.detail.x) || 0;
-					const containerWidth = 336;
+					const containerWidth = 432;
 					const leftThird = containerWidth / 3;
 					const rightThird = containerWidth * 2 / 3;
 					
