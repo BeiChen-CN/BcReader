@@ -9,6 +9,13 @@
 			  </div>
 			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
 		  </list-item>
+		  <list-item class="item" @click="toggleBold" type="item">
+			  <div class="item-content">
+				  <text class="itemtext" static>粗体字体</text>
+				  <text class="itemtext2" static>开启字体粗体显示</text>
+			  </div>
+			  <img src="{{boldEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+		  </list-item>
 		  <list-item class="item" @click="routerTo('screenBrightness')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>屏幕亮度</text>
@@ -126,7 +133,8 @@
 	  timer: null,
 	  chapterSwitchStyle: 'button',
     timeFormat: '24h',
-	  readMode: 'scroll'
+	  readMode: 'scroll',
+	  boldEnabled: true
 	},
 	protected: {
 	  cPath: '',
@@ -166,6 +174,15 @@
 	  this.timer = setInterval(() => {
 		this.updateTime();
 	  }, 1000);
+		storage.get({ key: 'EBOOK_BOLD_ENABLED', success: (data) => {
+			if (data !== undefined && data !== '') {
+				this.boldEnabled = data === 'true';
+			} else {
+				this.boldEnabled = true;
+			}
+		}, fail: () => {
+			this.boldEnabled = true;
+		}});
 	},
 	loadSettings() {
 		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_STYLE', success: (data) => { 
@@ -176,6 +193,15 @@
     }});
 		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
 			if (data) this.readMode = data;
+		}});
+		storage.get({ key: 'EBOOK_BOLD_ENABLED', success: (data) => {
+			if (data !== undefined && data !== '') {
+				this.boldEnabled = data === 'true';
+			} else {
+				this.boldEnabled = true;
+			}
+		}, fail: () => {
+			this.boldEnabled = true;
 		}});
 	},
 	onDestroy(){
@@ -209,6 +235,13 @@
 	},
 	exit(){
 		app.terminate();
+	},
+	toggleBold() {
+		this.boldEnabled = !this.boldEnabled;
+		storage.set({
+			key: 'EBOOK_BOLD_ENABLED',
+			value: this.boldEnabled.toString()
+		});
 	}
   }
   </script>

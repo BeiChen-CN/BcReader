@@ -318,6 +318,17 @@ function calculateBookStats(bookData) {
     };
 }
 
+async function clearAllReadingTime() {
+    return new Promise((resolve, reject) => {
+        storage.set({
+            key: READING_TIME_KEY,
+            value: JSON.stringify({}),
+            success: () => resolve(),
+            fail: () => reject()
+        });
+    });
+}
+
 export default {
     recordReadingStart,
     recordReadingEnd,
@@ -326,5 +337,6 @@ export default {
     saveReadingTime,
     formatDuration,
     calculateGlobalStats,
-    calculateBookStats
+    calculateBookStats,
+    clearAllReadingTime
 };
