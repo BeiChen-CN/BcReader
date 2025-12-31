@@ -4,37 +4,43 @@
 		  <list-item class="item" @click="routerTo('list')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>章节列表</text>
-				  <text class="itemtext2" static>查看或跳转章节</text>
+				  <text class="itemtext2" static>查看或者跳转</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
 		  </list-item>
 		  <list-item type="item" class="item" @click="routerTo('readPresent')">
 			  <div class="item-content">
 				  <text class="itemtext" static>跳转章节</text>
 				  <text class="itemtext2" static>按章节号跳转</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
 		  </list-item>
 		  <list-item type="item" class="item" @click="routerTo('readPercent')">
 			  <div class="item-content">
 				  <text class="itemtext" static>跳转百分比</text>
-				  <text class="itemtext2" static>当前章节百分比</text>
+				  <text class="itemtext2" static>按百分比跳转</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+		  </list-item>
+		  <list-item class="item" @click="addBookmark" type="item">
+			  <div class="item-content">
+				  <text class="itemtext" static>添加书签</text>
+				  <text class="itemtext2" static>保存阅读进度</text>
+			  </div>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('bookmarks')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>书签管理</text>
-				  <text class="itemtext2" static>查看或跳转书签</text>
+				  <text class="itemtext2" static>查看跳转书签</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="toggleKeepScreenOnClick" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>屏幕常亮</text>
-				<text class="itemtext2" static>阅读器保持常亮</text>
+				<text class="itemtext2" static>阅读器常亮</text>
 			</div>
-			<img src="{{isKeepScreenOn ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 40px;"/>
+			<img src="{{isKeepScreenOn ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
 		</list-item>
 		  <list-item type="item" class="item" @click="backToFirst">
 			  <div class="item-content">
@@ -47,49 +53,47 @@
 				<text class="itemtext" static>全局设置</text>
 				<text class="itemtext2" static>打开全局设置</text>
 			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
 		</list-item>
 		  <list-item class="item" @click="del" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>删除书籍</text>
 				  <text class="itemtext2" static>删除当前书籍</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('bookinfo')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>书籍详情</text>
-				  <text class="itemtext2" static>封面、占用空间等</text>
+				  <text class="itemtext2" static>封面、简介等</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('readingTime')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>阅读时长</text>
-				  <text class="itemtext2" static>查看阅读统计数据</text>
+				  <text class="itemtext2" static>查看阅读统计</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
+			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
 		  </list-item>
 	  </list>
   
-	  
-	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-	  <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+	  <text style="position: absolute;left: 40px;top: 16px;width: 132px;line-height: 24px;font-weight:bold;font-size:16px;color:rgba(255,255,255,0.6);text-align:center;">
 		{{nowTime}}
 	  </text>
-	  <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+	  <text static style="position: absolute;left: 40px;top: 36px;width: 132px;line-height: 32px;font-weight:bold;font-size:20px;color:white;text-align:center;">
 		  菜单
 	  </text>
 	</div>
-  </template>
-  
-  <script>
+</template>
+
+<script>
   import router from '@system.router'
   import prompt from '@system.prompt'
   import app from '@system.app'
   import bookStorage from '../../utils/bookStorage.js'
-  
+  import chapterManager from '../../utils/chapterManager.js'
   
   export default {
 	private: {
@@ -104,128 +108,84 @@
 	  const date = new Date();
 	  let hours = date.getHours();
 	  let minutes = date.getMinutes();
-  
 	  hours = hours < 10 ? '0' + hours : hours;
 	  minutes = minutes < 10 ? '0' + minutes : minutes;
-  
 	  this.nowTime = `${hours}:${minutes}`;
 	},
 	onInit() {
 	  this.updateTime();
-	  this.timer = setInterval(() => {
-		this.updateTime();
-	  }, 1000);
+	  this.timer = setInterval(() => { this.updateTime(); }, 1000);
 	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
-  
-	},
+	onDestroy(){ if (this.timer) { clearInterval(this.timer); this.timer = null; } },
 	onShow(){
-		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber || globalThis.justJumpedFromPercent) {
-			router.back();
-			return;
-		}
-		if (typeof globalThis.isKeepScreenOn !== 'undefined') {
-			this.isKeepScreenOn = globalThis.isKeepScreenOn;
-		}
+		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber || globalThis.justJumpedFromPercent) { router.back(); return; }
+		if (typeof globalThis.isKeepScreenOn !== 'undefined') this.isKeepScreenOn = globalThis.isKeepScreenOn;
 	},
-	onBackPress(){
-	},
-	del(){
-		router.push({
-            uri: '/pages/confirm',
-            params: {
-                action: 'deleteBook',
-                title: '删除书籍',
-                confirmText: '确认删除吗？',
-                subText: '删除后不可恢复',
-                cPath: 'internal://files/books/' + this.name
-            }
-        });
-	},
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail',
-			params: { name: item.dirName }
-		})
-	},
-	routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url,
-		params: { name: this.name }
-	  })
-	},
-	toggleKeepScreenOnClick() {
-		this.isKeepScreenOn = !this.isKeepScreenOn;
-		globalThis.isKeepScreenOn = this.isKeepScreenOn;
-	},
-	async backToFirst(){
+	async addBookmark() {
 		try {
 			let progress = await bookStorage.get(this.name);
-			if (progress.chapterIndex === null || progress.chapterIndex === undefined) {
-				prompt.showToast({ message: '无法跳转，章节信息错误', duration: 2000 });
+			if (!progress || progress.chapterIndex === null) {
+				prompt.showToast({ message: '无法获取进度' });
 				return;
 			}
-			const currentChapterIndex = progress.chapterIndex;
-			progress.offsetInChapter = 0;
-			progress.scrollOffset = 0;
-			await bookStorage.set(this.name, progress);
-      progress = null;
-			
-			prompt.showToast({ message: '已跳转到第一段', duration: 1500 });
-			globalThis.justJumpedFromPageNumber = true;
-			globalThis.justJumpedChapterIndex = currentChapterIndex;
-			router.back();
+			let bookmarks = await bookStorage.getBookmarks(this.name) || [];
+			const chapter = await chapterManager.getChapterByIndex(this.name, progress.chapterIndex);
+			if (!chapter) {
+				prompt.showToast({ message: '获取章节失败' });
+				return;
+			}
+			const newBookmark = {
+				chapterIndex: chapter.index,
+				chapterName: chapter.name,
+				offsetInChapter: Math.max(0, Math.floor(progress.offsetInChapter || 0)),
+				scrollOffset: Math.max(0, Math.floor(progress.scrollOffset || 0)),
+				time: Date.now(),
+				name: `书签${bookmarks.length + 1}`
+			};
+			bookmarks.push(newBookmark);
+			bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
+			await bookStorage.setBookmarks(this.name, bookmarks);
+			prompt.showToast({ message: '添加书签成功' });
 		} catch (e) {
-			prompt.showToast({ message: '跳转失败', duration: 2000 });
+			prompt.showToast({ message: '添加失败' });
 		}
 	},
-	back(){
-		router.back();
-	},
-	exit(){
-		app.terminate();
-	}
+	del(){ router.push({ uri: '/pages/confirm', params: { action: 'deleteBook', title: '删除书籍', confirmText: '确认删除吗？', subText: '删除后不可恢复', cPath: 'internal://files/books/' + this.name } }); },
+	routerTo(url) { router.push({ uri: '/pages/' + url, params: { name: this.name } }) },
+	toggleKeepScreenOnClick() { this.isKeepScreenOn = !this.isKeepScreenOn; globalThis.isKeepScreenOn = this.isKeepScreenOn; },
+	async backToFirst(){ try { let progress = await bookStorage.get(this.name); if (progress.chapterIndex === null || progress.chapterIndex === undefined) { prompt.showToast({ message: '无法跳转，章节信息错误' }); return; } const currentChapterIndex = progress.chapterIndex; progress.offsetInChapter = 0; progress.scrollOffset = 0; await bookStorage.set(this.name, progress); progress = null; prompt.showToast({ message: '已跳转到第一段' }); globalThis.justJumpedFromPageNumber = true; globalThis.justJumpedChapterIndex = currentChapterIndex; router.back(); } catch (e) { } },
+	back(){ router.back(); }
   }
-  </script>
-  
-  <style>
-  .page {
-	  width: 432px;
-	  height: 514px;
-	  background-color: #000000;
-  }
-  
-  .list {
-	  width: 432px;
-	  height: 514px;
-	  position: absolute;
-	  top:0px;
-	  left:0px;
-	padding: 116px 12px;
-  }
-  
-  .item {
+</script>
+
+<style>
+.page {
+	width: 212px;
+	height: 520px;
+	background-color: #000000;
+}
+
+.list {
+	width: 212px;
+	height: 520px;
+	position: absolute;
+	top:0px;
+	left:0px;
+	padding: 86px 12px;
+}
+.item {
 	  width: 100%;
-	  height: 112px;
-	  padding: 14px 20px;
+	  height: 85px;
+	  padding: 12px 18px;
 	  margin-bottom: 8px;
 	  background-color: #262626;
-	  border-radius: 36px;
+	  border-radius: 26px;
 	  align-items: center;
 	justify-content: space-between;
   }
   
   .itemtext {
-	  font-size: 32px;
-	  line-height:40px;
+	  font-size: 23px;
 	  width: 100%;
 	  font-weight: bold;
 	  color: white;
@@ -234,19 +194,16 @@
   }
   
   .itemtext2 {
-	  font-size: 28px;
-	  line-height: 37px;
+	  font-size: 20px;
 	  font-weight: bold;
 	  color: rgba(255,255,255,0.6);
 	  text-overflow: ellipsis;
 	  lines: 1;
   }
-  
-  
   .item-content {
 	  height: 100%;
 	  flex:1;
 	  flex-direction: column;
 	  justify-content: space-between;
   }
-  </style>
+</style>

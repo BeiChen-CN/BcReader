@@ -1,10 +1,9 @@
 <template>
 	<div class="page">
-		<list class="list" style="padding: 92px 6px 6px 6px;">
+		<list class="list" style="padding: 86px 6px 6px 6px;">
 			<list-item if="{{hasCover}}" type="cover" style="height: 255px; align-items: center; justify-content: center; margin-bottom: 12px;">
 				<img src="{{coverPath}}" style="width: 160px;height: 213px;object-fit: cover;border-radius: 12px;" />
 			</list-item>
-			
 			<list-item class="item" type="info">
 				<text class="item-title" static>文件名</text>
 				<marquee if="{{bookinfoMarqueeEnabled}}" class="item-value" scrollamount="50" text-offset="25">{{fileName}}</marquee>
@@ -15,25 +14,25 @@
 				<marquee if="{{bookinfoMarqueeEnabled}}" class="item-value" scrollamount="50" text-offset="25">{{author}}</marquee>
 				<text else class="item-value">{{author}}</text>
 			</list-item>
-			<list-item class="item" type="info" style="height: 280px; flex-direction: column;">
+			<list-item class="item" type="info" style="height: 240px; flex-direction: column;">
 				<text class="item-title" static>占用空间</text>
 				<text class="item-value" style="width: auto;">{{totalStorage}}</text>
-				<div static style="width: 100%; height: 1px; background-color: rgba(255,255,255,0.2); margin: 8px 0px;"></div>
+				<div static style="width: 100%; height: 1px; background-color: rgba(255,255,255,0.2); margin: 6px 0px;"></div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 24px;" static>章节占用</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{chapterStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>章节占用</text>
+					<text class="item-value" style="font-size: 18px; width: auto;">{{chapterStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 24px;" static>封面占用</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{coverStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>封面占用</text>
+					<text class="item-value" style="font-size: 18px; width: auto;">{{coverStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 24px;" static>索引占用</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{indexStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>索引占用</text>
+					<text class="item-value" style="font-size: 18px; width: auto;">{{indexStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 24px;" static>书签索引占用</text>
-					<text class="item-value" style="font-size: 24px; width: auto;">{{bookmarkIndexStorage}}</text>
+					<text class="item-title" style="font-size: 18px;" static>书签占用</text>
+					<text class="item-value" style="font-size: 18px; width: auto;">{{bookmarkIndexStorage}}</text>
 				</div>
 			</list-item>
 			<list-item class="item" type="info">
@@ -61,18 +60,15 @@
 				<text class="item-value" style="color: rgba(255,255,255,0.8);" static>点击查看 →</text>
 			</list-item>
 		</list>
-
-		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+		<text style="position: absolute;left: 40px;top: 16px;width: 132px;line-height: 24px;font-weight:bold;font-size:16px;color:rgba(255,255,255,0.6);text-align:center;">
 			{{nowTime}}
 		</text>
-		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<text static style="position: absolute;left: 40px;top: 36px;width: 132px;line-height: 42px;font-weight:bold;font-size:24px;color:white;text-align:center;">
 			书籍详情
 		</text>
 	</div>
 </template>
-
 <script>
 import router from '@system.router'
 import file from '@system.file'
@@ -80,9 +76,8 @@ import runAsyncFunc from '../../utils/runAsyncFunc.js'
 import storage from '../../utils/storage.js'
 import chapterManager from '../../utils/chapterManager.js'
 import bookStorage from '../../utils/bookStorage.js'
-
 export default {
-		private: {
+	private: {
 		fileName: '加载中...',
 		totalStorage: '加载中...',
 		chapterStorage: '加载中...',
@@ -100,7 +95,7 @@ export default {
 		category: '',
 		localCategory: '',
 		syncProgress: '计算中...',
-        timeFormat: '24h',
+		timeFormat: '24h',
 		bookinfoMarqueeEnabled: true
 	},
 	protected: {
@@ -111,61 +106,46 @@ export default {
 		const date = new Date();
 		let hours = date.getHours();
 		let minutes = date.getMinutes();
-        if (this.timeFormat === '12h') {
-            let ampm = hours >= 12 ? '下午' : '上午';
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            this.nowTime = `${ampm} ${hours}:${minutes}`;
-        } else {
-            hours = hours < 10 ? '0' + hours : hours;
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            this.nowTime = `${hours}:${minutes}`;
-        }
+		if (this.timeFormat === '12h') {
+			let ampm = hours >= 12 ? '下午' : '上午';
+			hours = hours % 12 || 12;
+			minutes = minutes < 10 ? '0' + minutes : minutes;
+			this.nowTime = `${ampm} ${hours}:${minutes}`;
+		} else {
+			hours = hours < 10 ? '0' + hours : hours;
+			minutes = minutes < 10 ? '0' + minutes : minutes;
+			this.nowTime = `${hours}:${minutes}`;
+		}
 	},
 	onInit() {
-        storage.get({
-            key: 'EBOOK_TIME_FORMAT',
-            success: (data) => {
-                if(data) this.timeFormat = data;
-                this.updateTime();
-            },
-            fail: () => {
-                this.updateTime();
-            }
-        });
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
+		storage.get({
+			key: 'EBOOK_TIME_FORMAT',
+			success: (data) => {
+				if(data) this.timeFormat = data;
+				this.updateTime();
+			},
+			fail: () => { this.updateTime(); }
+		});
+		this.timer = setInterval(() => { this.updateTime(); }, 1000);
 		global.runGC();
 		this.loadFileInfo();
 	},
 	onShow() {
 		storage.get({
 			key: 'EBOOK_BOOKINFO_MARQUEE_ENABLED',
-			success: (data) => {
-				this.bookinfoMarqueeEnabled = data === 'true';
-			},
-			fail: () => {
-				this.bookinfoMarqueeEnabled = true;
-			},
+			success: (data) => { this.bookinfoMarqueeEnabled = data === 'true'; },
+			fail: () => { this.bookinfoMarqueeEnabled = true; },
 			default: 'true'
 		});
 	},
 	onDestroy() {
-		if (this.timer) {
-			clearInterval(this.timer);
-			this.timer = null;
-		}
+		if (this.timer) { clearInterval(this.timer); this.timer = null; }
 		global.runGC();
 	},
 	showSummary() {
 		router.push({
 			uri: 'pages/textReader',
-			params: {
-				pageTitle: '简介',
-				pageContent: this.summary
-			}
+			params: { pageTitle: '简介', pageContent: this.summary }
 		});
 	},
 	async loadFileInfo() {
@@ -176,7 +156,6 @@ export default {
 		const indexesUri = `${bookDirUri}indexes/`;
 		const lindexUri = `${bookDirUri}lindex.txt`;
 		let coverUri = '';
-
 		file.readText({
 			uri: bookInfoUri,
 			success: async function(data) {
@@ -187,84 +166,70 @@ export default {
 					that.hasCover = info.hasCover || false;
 					if (that.hasCover && info.coverFileName) {
 						that.coverPath = bookDirUri + info.coverFileName;
-                        coverUri = that.coverPath;
+						coverUri = that.coverPath;
 					}
 					that.author = info.author || '';
 					that.summary = info.summary || '';
 					that.bookStatus = info.bookStatus || '';
 					that.category = info.category || '';
 					that.localCategory = info.localCategory || '';
-
 					await that.calculateSyncProgress();
-                    await that.calculateStorage(bookDirUri, bookContentDirUri, bookInfoUri, indexesUri, lindexUri, coverUri);
+					await that.calculateStorage(bookDirUri, bookContentDirUri, bookInfoUri, indexesUri, lindexUri, coverUri);
 				} catch (e) {
 					that.fileName = that.name;
 					that.wordCount = '解析失败';
 					that.syncProgress = '未知';
-                    that.totalStorage = '计算失败';
+					that.totalStorage = '计算失败';
 				}
 			},
 			fail: function(data, code) {
 				that.fileName = that.name;
 				that.wordCount = '加载失败';
 				that.syncProgress = '未知';
-                that.totalStorage = '计算失败';
+				that.totalStorage = '计算失败';
 			}
 		});
 	},
-    async calculateStorage(bookDirUri, bookContentDirUri, bookInfoUri, indexesUri, lindexUri, coverUri) {
+	async calculateStorage(bookDirUri, bookContentDirUri, bookInfoUri, indexesUri, lindexUri, coverUri) {
 		this.totalStorage = '计算中...';
 		this.chapterStorage = '计算中...';
 		this.coverStorage = '计算中...';
 		this.indexStorage = '计算中...';
 		try {
-			let totalSize = 0;
-			let chapterSize = 0;
-			let coverSize = 0;
-			let indexSize = 0;
+			let totalSize = 0; let chapterSize = 0; let coverSize = 0; let indexSize = 0;
 			try {
 				let listResult = await runAsyncFunc(file.list, { uri: bookContentDirUri });
 				if (listResult.fileList) {
-					for (const f of listResult.fileList) {
-						if (f.type === 'file') {
-							chapterSize += f.length;
-						}
-					}
+					for (const f of listResult.fileList) { if (f.type === 'file') chapterSize += f.length; }
 				}
-                listResult = null;
+				listResult = null;
 			} catch(e) { }
 			this.chapterStorage = this.formatFileSize(chapterSize);
 			totalSize += chapterSize;
 			try {
-                if (coverUri) {
-				    let coverInfo = await runAsyncFunc(file.get, { uri: coverUri });
-				    coverSize = coverInfo.length;
-                    coverInfo = null;
-                }
-			} catch (e) {
-				coverSize = 0;
-			}
+				if (coverUri) {
+					let coverInfo = await runAsyncFunc(file.get, { uri: coverUri });
+					coverSize = coverInfo.length;
+					coverInfo = null;
+				}
+			} catch (e) { coverSize = 0; }
 			this.coverStorage = this.formatFileSize(coverSize);
 			totalSize += coverSize;
 			try {
 				let bookInfo = await runAsyncFunc(file.get, { uri: bookInfoUri });
 				indexSize += bookInfo.length;
-                bookInfo = null;
+				bookInfo = null;
 			} catch (e) { }
 			try {
 				let lindexInfo = await runAsyncFunc(file.get, { uri: lindexUri });
 				indexSize += lindexInfo.length;
-                lindexInfo = null;
+				lindexInfo = null;
 			} catch (e) { }
 			try {
-                const indexDirResult = await runAsyncFunc(file.list, { uri: indexesUri });
-                for(const f of indexDirResult.fileList) {
-                    if (f.type === 'file') {
-                        indexSize += f.length;
-                    }
-                }
-            } catch(e) {}
-				this.indexStorage = this.formatFileSize(indexSize);
+				const indexDirResult = await runAsyncFunc(file.list, { uri: indexesUri });
+				for(const f of indexDirResult.fileList) { if (f.type === 'file') indexSize += f.length; }
+			} catch(e) {}
+			this.indexStorage = this.formatFileSize(indexSize);
 			totalSize += indexSize;
 			try {
 				const bookshelf = await bookStorage.load();
@@ -272,17 +237,12 @@ export default {
 				if (bookshelf && bookshelf.books) {
 					const book = (bookshelf.books || []).find(b => b.dirName === this.name);
 					if (book && book.progress && book.progress.bookmarks) {
-						try {
-							bookmarkSize = JSON.stringify(book.progress.bookmarks).length;
-						} catch (e) {}
+						try { bookmarkSize = JSON.stringify(book.progress.bookmarks).length; } catch (e) {}
 					}
 				}
 				this.bookmarkIndexStorage = this.formatFileSize(bookmarkSize);
 				totalSize += bookmarkSize;
-			} catch (e) {
-				this.bookmarkIndexStorage = '计算失败';
-			}
-
+			} catch (e) { this.bookmarkIndexStorage = '计算失败'; }
 			this.totalStorage = this.formatFileSize(totalSize);
 		} catch (e) {
 			this.totalStorage = '计算失败';
@@ -290,26 +250,17 @@ export default {
 			this.coverStorage = '计算失败';
 			this.indexStorage = '计算失败';
 		}
-    },
+	},
 	async calculateSyncProgress() {
 		const version = await chapterManager.checkVersion(this.name);
-		if (version === 'none') {
-			this.syncProgress = '无章节信息';
-			return;
-		}
+		if (version === 'none') { this.syncProgress = '无章节信息'; return; }
 		try {
 			const bookIndex = await chapterManager.loadBookIndex(this.name);
 			const { totalChapters, syncedChapters } = bookIndex;
-
-			if (typeof totalChapters !== 'number' || totalChapters <= 0) {
-				this.syncProgress = '无需同步';
-				return;
-			}
+			if (typeof totalChapters !== 'number' || totalChapters <= 0) { this.syncProgress = '无需同步'; return; }
 			const progress = Math.floor((syncedChapters / totalChapters) * 100);
 			this.syncProgress = `${progress}% (${syncedChapters}/${totalChapters}章)`;
-		} catch (e) {
-			this.syncProgress = '计算失败';
-		}
+		} catch (e) { this.syncProgress = '计算失败'; }
 	},
 	formatFileSize(bytes) {
 		if (bytes === 0) return '0 Bytes';
@@ -318,55 +269,42 @@ export default {
 		const i = Math.floor(Math.log(bytes) / Math.log(k));
 		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 	},
-	formatTime(timestamp) {
-		if (!timestamp) return '未知';
-		const date = new Date(timestamp);
-		const year = date.getFullYear();
-		const month = ('0' + (date.getMonth() + 1)).slice(-2);
-		const day = ('0' + date.getDate()).slice(-2);
-		const hours = ('0' + date.getHours()).slice(-2);
-		const minutes = ('0' + date.getMinutes()).slice(-2);
-		return `${year}-${month}-${day} ${hours}:${minutes}`;
-	},
-	back() {
-		router.back();
-	}
+	back() { router.back(); }
 }
 </script>
-
 <style>
 .page {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	background-color: #000000;
 }
 .list {
-	width: 432px;
-	height: 514px;
+	width: 212px;
+	height: 520px;
 	position: absolute;
 	top: 0px;
 	left: 0px;
 }
 .item {
 	width: 100%;
-	height: 112px;
-	padding: 14px 20px;
-	margin-bottom: 8px;
+	height: 102px;
+	padding: 10px 14px;
+	margin-bottom: 6px;
 	background-color: #262626;
-	border-radius: 36px;
+	border-radius: 26px;
 	flex-direction: column;
 	align-items: flex-start;
 	justify-content: space-around;
 }
 .item-title {
-	font-size: 28px;
-	line-height: 37px;
+	font-size: 19px;
+	line-height: 24px;
 	font-weight: bold;
 	color: rgba(255,255,255,0.6);
 }
 .item-value {
-	font-size: 32px;
-	line-height: 40px;
+	font-size: 22px;
+	line-height: 28px;
 	width: 100%;
 	font-weight: bold;
 	color: white;

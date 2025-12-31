@@ -1,8 +1,7 @@
 <template>
   <div class="page" style="flex-direction: column;">
-    <img if="{{allBookmarks.length === 0}}" static src="/common/images/empty.png" style="position: absolute;left: 152px;top: 180px;width: 128px;height: 128px;" />
-    <text if="{{allBookmarks.length === 0}}" static style="position: absolute;left: 0px;top: 332px;width: 432px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">暂无书签</text>
-
+    <img if="{{allBookmarks.length === 0}}" static src="/common/images/empty.png" style="position: absolute;left: 58px;top: 180px;width: 96px;height: 96px;" />
+    <text if="{{allBookmarks.length === 0}}" static style="position: absolute;left: 0px;top: 286px;width: 212px;line-height: 42px;font-weight:bold;font-size:24px;color:white;text-align:center;">暂无书签</text>
     <list class="list" if="{{allBookmarks.length > 0}}">
       <list-item for="{{visibleBookmarks}}" class="item" type="bookmark">
         <div class="text-content" @click="jumpTo($idx)">
@@ -12,8 +11,8 @@
           <text else class="itemtext2" style="lines: 1;">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</text>
         </div>
         <div class="button-container">
-          <img static src="/common/images/edit.png" @click="editBookmark($idx)" style="width: 72px; height: 72px;" />
-          <img static src="/common/images/delete.png" @click="deleteBookmark($idx)" style="width: 72px; height: 72px;" />
+          <img static src="/common/images/edit.png" @click="editBookmark($idx)" style="width: 52px; height: 52px;" />
+          <img static src="/common/images/delete.png" @click="deleteBookmark($idx)" style="width: 52px; height: 52px;" />
         </div>
       </list-item>
       <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
@@ -24,27 +23,21 @@
         </div>
       </list-item>
     </list>
-
-    <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-    <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
-    <img static src="/common/images/info.png" @click="showBookmarkHelp" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-    <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+    <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+    <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
       {{nowTime}}
     </text>
-    <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+    <text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
       书签管理
     </text>
   </div>
 </template>
-
 <script>
 import router from '@system.router'
 import prompt from '@system.prompt'
 import bookStorage from '../../utils/bookStorage.js'
 import storage from '../../utils/storage.js'
-
 const PAGE_SIZE = 8;
-
 export default {
   private: {
     allBookmarks: [],
@@ -57,9 +50,7 @@ export default {
     bookmarkMarqueeEnabled: false,
 	  readMode: 'scroll'
   },
-  protected: {
-    name: ''
-  },
+  protected: { name: '' },
   updateTime() {
     const date = new Date();
     let hours = date.getHours();
@@ -70,41 +61,20 @@ export default {
   },
   onInit() {
     this.updateTime();
-    this.timer = setInterval(() => {
-      this.updateTime();
-    }, 1000);
+    this.timer = setInterval(() => { this.updateTime(); }, 1000);
   },
   async onShow() {
     this.isNavigating = false;
-    
-    storage.get({
-      key: 'EBOOK_BOOKMARK_MARQUEE_ENABLED',
-      success: (data) => {
-        this.bookmarkMarqueeEnabled = data === 'true';
-      },
-      fail: () => {
-        this.bookmarkMarqueeEnabled = false;
-      }
-    });
-		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
-			if (data) this.readMode = data;
-		}});
-    
+    storage.get({ key: 'EBOOK_BOOKMARK_MARQUEE_ENABLED', success: (data) => { this.bookmarkMarqueeEnabled = data === 'true'; } });
+	storage.get({ key: 'EBOOK_READ_MODE', success: (data) => { if (data) this.readMode = data; }});
     await this.loadBookmarks();
   },
   onDestroy() {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-    this.allBookmarks = null;
-    this.visibleBookmarks = null;
-    if (typeof global !== 'undefined' && typeof global.runGC === 'function') {
-      global.runGC();
-    }
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    this.allBookmarks = null; this.visibleBookmarks = null;
+    global.runGC();
   },
   async loadBookmarks() {
-    
     this.allBookmarks = await bookStorage.getBookmarks(this.name);
     this.totalPages = Math.ceil(this.allBookmarks.length / PAGE_SIZE) || 1;
     this.currentPage = 0;
@@ -115,89 +85,32 @@ export default {
     const end = start + PAGE_SIZE;
     this.visibleBookmarks = this.allBookmarks.slice(start, end);
   },
-  prevPage() {
-    if (this.currentPage > 0) {
-        this.currentPage--;
-        this.updateVisibleBookmarks();
-    }
-  },
-  nextPage() {
-    if (this.currentPage < this.totalPages - 1) {
-        this.currentPage++;
-        this.updateVisibleBookmarks();
-    }
-  },
+  prevPage() { if (this.currentPage > 0) { this.currentPage--; this.updateVisibleBookmarks(); } },
+  nextPage() { if (this.currentPage < this.totalPages - 1) { this.currentPage++; this.updateVisibleBookmarks(); } },
   async jumpTo(index) {
     if (this.isNavigating) return;
-
-    if (this.readMode === 'nostalgic') {
-
-      router.push({
-          uri: '/pages/help',
-          params: {
-              title: '怀旧模式',
-              content: '怀旧模式下无法正常使用书签跳转功能。'
-          }
-      });
-      return;
-    }
-
+    if (this.readMode === 'nostalgic') { router.push({ uri: '/pages/help', params: { title: '怀旧模式', content: '怀旧模式下无法正常使用书签跳转功能。' } }); return; }
     this.isNavigating = true;
-
     const realIndex = this.currentPage * PAGE_SIZE + index;
     const bookmark = this.allBookmarks[realIndex];
-    
-    if (!bookmark) {
-      prompt.showToast({ message: '书签不存在', duration: 2000 });
-      this.isNavigating = false;
-      return;
-    }
-
-    
+    if (!bookmark) { prompt.showToast({ message: '书签不存在' }); this.isNavigating = false; return; }
     const progressData = {
-        chapterIndex: bookmark.chapterIndex !== undefined && bookmark.chapterIndex !== null 
-            ? parseInt(bookmark.chapterIndex) 
-            : null,
-        offsetInChapter: typeof bookmark.offsetInChapter === 'number' 
-            ? Math.max(0, Math.floor(bookmark.offsetInChapter)) 
-            : 0,
-        scrollOffset: typeof bookmark.scrollOffset === 'number' 
-            ? Math.max(0, Math.floor(bookmark.scrollOffset)) 
-            : 0
+        chapterIndex: bookmark.chapterIndex !== undefined && bookmark.chapterIndex !== null ? parseInt(bookmark.chapterIndex) : null,
+        offsetInChapter: typeof bookmark.offsetInChapter === 'number' ? Math.max(0, Math.floor(bookmark.offsetInChapter)) : 0,
+        scrollOffset: typeof bookmark.scrollOffset === 'number' ? Math.max(0, Math.floor(bookmark.scrollOffset)) : 0
     };
-
     try {
-      
       await bookStorage.set(this.name, progressData);
-      prompt.showToast({ message: '正在跳转...', duration: 500 });
-      globalThis.justJumpedFromBookmark = true;
-      globalThis.justJumpedBookmarkChapterIndex = progressData.chapterIndex;
+      prompt.showToast({ message: '正在跳转...' });
+      globalThis.justJumpedFromBookmark = true; globalThis.justJumpedBookmarkChapterIndex = progressData.chapterIndex;
       router.back();
-    } catch (e) {
-      prompt.showToast({ message: '跳转失败', duration: 2000 });
-      this.isNavigating = false;
-    }
+    } catch (e) { prompt.showToast({ message: '跳转失败' }); this.isNavigating = false; }
   },
   deleteBookmark(index) {
     const realIndex = this.currentPage * PAGE_SIZE + index;
-    router.push({
-        uri: '/pages/confirm',
-        params: {
-            action: 'deleteBookmark',
-            title: '删除书签',
-            confirmText: `确认删除此书签吗？`,
-            subText: '此操作不可恢复',
-            bookName: this.name,
-            bookmarkIndex: realIndex
-        }
-    });
+    router.push({ uri: '/pages/confirm', params: { action: 'deleteBookmark', title: '删除书签', confirmText: `确认删除此书签吗？`, subText: '此操作不可恢复', bookName: this.name, bookmarkIndex: realIndex } });
   },
-  formatBookmarkLocation(bookmark) {
-    if (bookmark && bookmark.chapterName) {
-        return bookmark.chapterName;
-    }
-    return '未知章节';
-  },
+  formatBookmarkLocation(bookmark) { return bookmark && bookmark.chapterName ? bookmark.chapterName : '未知章节'; },
   formatTime(timestamp) {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -207,117 +120,52 @@ export default {
     const minutes = ('0' + date.getMinutes()).slice(-2);
     return `${month}-${day} ${hours}:${minutes}`;
   },
-  showBookmarkHelp() {
-      router.push({
-          uri: '/pages/help',
-          params: {
-              title: '书签帮助',
-              content: '长按书签可修改书签名称。\n长按阅读页的书签按钮可快速进入书签管理页面。'
-          }
-      });
-  },
+  showBookmarkHelp() { router.push({ uri: '/pages/help', params: { title: '书签帮助', content: '点击左侧编辑书签名称。' } }); },
   editBookmark(index) {
       const realIndex = this.currentPage * PAGE_SIZE + index;
       const bookmark = this.allBookmarks[realIndex];
-      router.push({
-          uri: '/pages/editBookmark',
-          params: {
-              bookName: this.name,
-              bookmarkIndex: realIndex,
-              currentName: bookmark.name
-          }
-      });
+      router.push({ uri: '/pages/editBookmark', params: { bookName: this.name, bookmarkIndex: realIndex, currentName: bookmark.name } });
   },
-  back() {
-    router.back();
-  }
+  back() { router.back(); }
 }
 </script>
-
 <style>
 .page {
-  width: 432px;
-  height: 514px;
+  width: 212px;
+  height: 520px;
   background-color: #000000;
 }
-
 .list {
-  width: 432px;
-  height: 514px;
+  width: 212px;
+  height: 520px;
   position: absolute;
   top: 0px;
   left: 0px;
-  padding: 116px 12px;
+  padding: 86px 12px;
 }
-
 .item {
   width: 100%;
-  height: 190px;
-  padding: 14px 20px;
-  margin-bottom: 8px;
+  height: 140px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
   background-color: #262626;
-  border-radius: 36px;
+  border-radius: 26px;
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
 }
-
 .text-content {
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
   width: 100%;
-  padding: 5px;
   flex-grow: 1;
 }
-
-.itemtext {
-  font-size: 32px;
-  line-height: 40px;
-  width: 100%;
-  font-weight: bold;
-  color: white;
-}
-
-.itemtext2 {
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 4px;
-  lines: 2;
-}
-
-.button-container {
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-around;
-  width: 100%;
-  margin-top: 8px;
-  flex-shrink: 0;
-}
-
-.pagination-container {
-    width: 100%;
-    height: 80px;
-    justify-content: center;
-    align-items: center;
-}
-
-.pagination-controls {
-    width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-    padding: 0 8px;
-}
-.pagination-button {
-    width: 72px;
-    height: 72px;
-}
-.pagination-text {
-    font-size: 28px;
-    font-weight: bold;
-    color: white;
-}
+.itemtext { font-size: 23px; line-height: 28px; width: 100%; font-weight: bold; color: white; }
+.itemtext2 { font-size: 18px; line-height: 24px; font-weight: bold; color: rgba(255, 255, 255, 0.6); margin-top: 2px; lines: 1; }
+.button-container { flex-direction: row; align-items: center; justify-content: space-around; width: 100%; margin-top: 4px; flex-shrink: 0; }
+.pagination-container { width: 100%; height: 72px; justify-content: center; align-items: center; }
+.pagination-controls { width: 100%; flex-direction: row; align-items: center; justify-content: space-around; padding: 0 6px; }
+.pagination-button { width: 52px; height: 52px; }
+.pagination-text { font-size: 20px; font-weight: bold; color: white; }
 </style>
