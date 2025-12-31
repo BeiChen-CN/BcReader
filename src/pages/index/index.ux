@@ -8,8 +8,8 @@
 
       <list class="list" if="{{shelfStyle === 'list' && displayMode === 'all'}}">
         
-        <list-item type="tip" if="{{showStorageWarning}}" class="item" style="background-color: #ad0000;">
-          <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
+        <list-item type="tip" if="{{showStorageWarning}}" class="item" style="background-color: #ad0000;padding: 2px 20px;">
+          <text class="itemtext" style="lines: 2;font-size: 24px;line-height:32px;">实际可用存储空间不足，电子书将无法正常使用。</text>
         </list-item>
 
           <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
@@ -29,9 +29,9 @@
 
       <list class="list" if="{{shelfStyle === 'cover' && displayMode === 'all'}}">
                 
-          <list-item type="tip" if="{{showStorageWarning}}" class="item" style="background-color: #ad0000;">
-            <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
-          </list-item>
+        <list-item type="tip" if="{{showStorageWarning}}" class="item" style="background-color: #ad0000;padding: 2px 20px;">
+          <text class="itemtext" style="lines: 2;font-size: 24px;line-height:32px;">实际可用存储空间不足，电子书将无法正常使用。</text>
+        </list-item>
 
           <list-item for="{{visibleBooks}}" class="item cover-item" @click="selectFile($item)" type="nook">
             <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
@@ -53,8 +53,8 @@
 
       <list class="list" if="{{displayMode === 'category'}}">
 
-        <list-item type="tip" if="{{showStorageWarning && !selectedCategory}}" class="item" style="background-color: #ad0000;">
-          <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
+        <list-item type="tip" if="{{showStorageWarning}}" class="item" style="background-color: #ad0000;padding: 2px 20px;">
+          <text class="itemtext" style="lines: 2;font-size: 24px;line-height:32px;">实际可用存储空间不足，电子书将无法正常使用。</text>
         </list-item>
 
         <list-item if="{{selectedCategory}}" class="item" @click="backToCategoryList" type="nook" style="height: 72px;">
