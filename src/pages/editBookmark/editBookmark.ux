@@ -2,11 +2,11 @@
 <template>
   <div class="page">
     <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 70px;top: 30px;width: 72px;height: 72px;" />
-    <img static src="/common/images/conform.png" @click="save" style="position: absolute;left: 67px;top: 418px;width: 72px;height: 72px;" />
-    <text style="position: absolute;top: 106px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
+    <img static src="/common/images/conform.png" @click="save" style="position: absolute;left: 60px;top: 418px;width: 72px;height: 72px;" />
+    <text style="position: absolute;top: 106px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
       {{nowTime}}
     </text>
-    <text static style="position: absolute;top: 126px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
+    <text static style="position: absolute;top: 126px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
       编辑名称
     </text>
     <div class="input-container">
@@ -120,14 +120,14 @@ export default {
 }
 
 .input-text {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
   color: #FFFFFF;
   line-height: 28px;
 }
 
 .input-placeholder {
-  font-size: 20px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.3);
   line-height: 28px;
 }

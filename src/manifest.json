@@ -1,7 +1,7 @@
 {
   "package": "com.bandbbs.ebook.plus",
   "name": "电子书",
-  "versionName": "4.6.5.BAND10",
+  "versionName": "4.6.5.BAND9",
   "versionCode": 260101,
   "minPlatformVersion": 1100,
   "icon": "/common/logo.png",
@@ -55,7 +55,7 @@
   ],
   "config": {
     "logLevel": "log",
-    "designWidth": 212
+    "designWidth": 192
   },
   "router": {
     "entry": "pages/index",

@@ -7,7 +7,7 @@
 				  <text class="itemtext" static>字体亮度</text>
 				  <text class="itemtext2" static>阅读字体亮度</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="toggleBold" type="item">
 			  <div class="item-content">
@@ -21,100 +21,100 @@
 				  <text class="itemtext" static>屏幕亮度</text>
 				  <text class="itemtext2" static>设置屏幕亮度</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('timeSetting')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>时间常驻</text>
 				  <text class="itemtext2" static>始终显示时间</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('fontSetting')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>字号</text>
 				  <text class="itemtext2" static>阅读字体大小</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('marginSetting')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>垂直边距</text>
 				  <text class="itemtext2" static>调整屏幕留白</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('extraContentSetting')" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>额外内容</text>
 				<text class="itemtext2" static>开头增加内容</text>
 			</div>
-			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			<img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('chapterSwitchStyle')" type="item" if="{{readMode !== 'nostalgic'}}">
 			<div class="item-content">
 				<text class="itemtext" static>翻章方式</text>
 				<text class="itemtext2" static>切换翻章方式</text>
 			</div>
-			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			<img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 	  	</list-item>
 		  <list-item class="item" @click="routerTo('chapterSwitchSetting')" type="item" if="{{chapterSwitchStyle == 'button' && readMode !== 'nostalgic'}}">
 			<div class="item-content">
 				<text class="itemtext" static>换章按钮</text>
 				<text class="itemtext2" static>调整翻章按钮</text>
 			</div>
-			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			<img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 	  	</list-item>
 		  <list-item class="item" @click="routerTo('chapterSwitchSensitivity')" type="item" if="{{chapterSwitchStyle == 'boundary' && readMode !== 'nostalgic'}}">
 			<div class="item-content">
 				<text class="itemtext" static>换章灵敏度</text>
 				<text class="itemtext2" static>换章的灵敏度</text>
 			</div>
-			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			<img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		</list-item>
 		<list-item class="item" @click="routerTo('swipeSensitivity')" type="item" if="{{chapterSwitchStyle == 'swipe' && readMode !== 'nostalgic'}}">
 			<div class="item-content">
 				<text class="itemtext" static>换章灵敏度</text>
 				<text class="itemtext2" static>滑动的灵敏度</text>
 			</div>
-			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			<img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		</list-item>
 		  <list-item class="item" @click="routerTo('swipe')" type="item" if="{{readMode !== 'nostalgic'}}">
 			  <div class="item-content">
 				  <text class="itemtext" static>滑动翻页</text>
 				  <text class="itemtext2" static>管理滑动翻页</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('autoRead')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>自动翻页</text>
 				  <text class="itemtext2" static>设置自动翻页</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('autoReadDistanceSetting')" type="item" if="{{readMode !== 'nostalgic'}}">
 			<div class="item-content">
 				<text class="itemtext" static>翻页距离</text>
 				<text class="itemtext2" static>自动翻页距离</text>
 			</div>
-			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			<img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 	  	</list-item>
 		  <list-item class="item" @click="routerTo('readModeSetting')" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>阅读模式</text>
 				<text class="itemtext2" static>仿旧版电子书</text>
 			</div>
-			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			<img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		</list-item>
 	  </list>
   
 	  
-	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
-	  <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
+	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
+	  <text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
 		  {{nowTime}}
 	  </text>
-	  <text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
+	  <text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
 		  阅读设置
 	  </text>
 	</div>
@@ -244,14 +244,14 @@
   
   <style>
 .page {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	background-color: #000000;
 }
 
 .list {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	position: absolute;
 	top:0px;
 	left:0px;
@@ -279,7 +279,7 @@
   }
   
   .itemtext2 {
-	  font-size: 20px;
+	  font-size: 16px;
 	  font-weight: bold;
 	  color: rgba(255,255,255,0.6);
 	  text-overflow: ellipsis;

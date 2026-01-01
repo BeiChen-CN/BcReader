@@ -1,21 +1,21 @@
 <template>
 	<div class="page">
-    <scroll scroll-y="{{true}}" bounces="{{true}}" style="position: absolute;width: 212px;height: 520px;padding-bottom: 50px;">
+    <scroll scroll-y="{{true}}" bounces="{{true}}" style="position: absolute;width: 192px;height: 490px;padding-bottom: 50px;">
       <img static src="/common/images/about_img.png" style="width: 100%;"/>
 
-      <text style="position: absolute;left: 24px;top: 102px;width: 164px;height: 35px;font-size: 29px;font-weight: bold;color: #FFFFFF;">
+      <text style="position: absolute;left: 24px;top: 112px;width: 164px;height: 35px;font-size: 29px;font-weight: bold;color: #FFFFFF;">
         弦{{appName}}
       </text>
-      <text style="position: absolute;left: 24px;top: 138px;width: 164px;height: 35px;font-size: 26px;font-weight: bold;color: rgba(255, 255, 255, 0.6);">
+      <text style="position: absolute;left: 24px;top: 148px;width: 164px;height: 35px;font-size: 26px;font-weight: bold;color: rgba(255, 255, 255, 0.6);">
         {{displayVersion}}
       </text>
-      <text style="position: absolute;left: 24px;top: 166px;width: 164px;height: 36px;font-size: 20px;font-weight: bold;color: rgba(255, 255, 255, 0.4);">
+      <text style="position: absolute;left: 24px;top: 176px;width: 164px;height: 36px;font-size: 16px;font-weight: bold;color: rgba(255, 255, 255, 0.4);">
         {{versionType}}
       </text>
     </scroll>
-    <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
-    <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">{{nowTime}}</text>
-    <text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">关于</text>
+    <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
+    <text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">{{nowTime}}</text>
+    <text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">关于</text>
 	</div>
   </template>
   
@@ -109,6 +109,9 @@
         } else if (thirdPart.includes('BAND10')) {
           mainVersion = thirdPart.replace('BAND10', '');
           versionTypeCode = 'BAND10';
+        } else if (thirdPart.includes('BAND9')) {
+          mainVersion = thirdPart.replace('BAND9', '');
+          versionTypeCode = 'BAND9';
         } else if (thirdPart.includes('BAND')) {
           mainVersion = thirdPart.replace('BAND', '');
           versionTypeCode = 'BAND';
@@ -126,6 +129,9 @@
         break;
       case 'BAND10':
         this.versionType = '米环10版';
+        break;
+      case 'BAND9':
+        this.versionType = '米环9版';
         break;
       default:
       case 'BAND':

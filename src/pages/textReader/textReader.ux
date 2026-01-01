@@ -1,11 +1,11 @@
 <template>
     <div class="page">
-      <scroll scroll-y="{{true}}" style="position: absolute;width: 212px;height: {{520 - verticalMargin * 2}};top: {{verticalMargin}}px;">
+      <scroll scroll-y="{{true}}" style="position: absolute;width: 192px;height: {{490 - verticalMargin * 2}};top: {{verticalMargin}}px;">
         <div class="content-container">
           <text class="content" style="font-size: {{fontSize}}px; color: rgba(255,255,255,{{opacity/100}}); line-height: {{lineHeight}}px;">{{content}}</text>
         </div>
       </scroll>
-      <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+      <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
       <text style="position: absolute;left: 40px;top: 16px;width: 132px;line-height: 24px;font-weight:bold;font-size:16px;color:rgba(255,255,255,0.6);text-align:center;">{{nowTime}}</text>
       <marquee if="{{detailMarqueeEnabled}}" text-offset="25" scrollamount="40" style="position: absolute;left: 40px;top: 36px;width: 132px;line-height: 32px;font-weight:bold;font-size:20px;color:white;text-align:center;">{{title}}</marquee>
       <text else style="position: absolute;left: 40px;top: 36px;width: 132px;line-height: 32px;font-weight:bold;font-size:20px;color:white;text-align:center;lines: 1;">{{title}}</text>
@@ -56,18 +56,18 @@
   .page {
     flex-direction: column;
     background-color: #000000;
-    width: 212px;
-    height: 520px;
+    width: 192px;
+    height: 490px;
   }
   
   .content-container {
     position: absolute;
-    width: 212px;
+    width: 192px;
     top: 82px;
   }
   
   .content {
-    width: 212px;
+    width: 192px;
     text-align: left;
     font-weight: bold;
   }

@@ -1,38 +1,38 @@
 <template>
 	<div class="page">
-	  <scroll id="scrollId" if="{{readMode !== 'nostalgic'}}" style="position: absolute; width: 212px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;" scroll-y="{{true}}" scroll-top="{{scrollTopValue}}" @scroll="onScroll" @scrolltop="onScrollTop" @scrollbottom="onScrollBottom" @click="onTxtClick" onlongpress="onTxtLongPress" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd" bounces="{{(isAtChapterStart || isAtChapterEnd) && (chapterSwitchStyle == 'boundary')}}">
-		<div id="contentContainer" style="position: absolute; width:212px; flex-direction: column;">
+	  <scroll id="scrollId" if="{{readMode !== 'nostalgic'}}" style="position: absolute; width: 192px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;" scroll-y="{{true}}" scroll-top="{{scrollTopValue}}" @scroll="onScroll" @scrolltop="onScrollTop" @scrollbottom="onScrollBottom" @click="onTxtClick" onlongpress="onTxtLongPress" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd" bounces="{{(isAtChapterStart || isAtChapterEnd) && (chapterSwitchStyle == 'boundary')}}">
+		<div id="contentContainer" style="position: absolute; width:192px; flex-direction: column;">
 		  <div if="{{chapterSwitchStyle == 'button' && isAtChapterStart && !showSetting && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="goToPrevChapter">
-			<text static style="color: #aaa; font-size: 20px; font-weight: bold;">上一章</text>
+			<text static style="color: #aaa; font-size: 16px; font-weight: bold;">上一章</text>
 				<text if="{{chapterSwitchShowInfo && prevChapterName}}" style="color: #666; font-size: 14px; lines: 1; text-overflow: ellipsis; max-width: 80%;">{{prevChapterName}}</text>
 		  </div>
 			
 			<div if="{{page1 && page1.offset === 0}}" style="flex-direction: column; width: 100%; padding-bottom: 20px;">
 				<div if="{{chapterStartEmptyLines}}" style="height: 100px; width: 100%;"></div>
-				<text if="{{chapterStartNumber}}" style="width: 212px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 0.8}}px; font-weight: bold; margin-bottom: 10px;">第 {{currentChapterIndexInAll + 1}} 章</text>
-				<text if="{{chapterStartName}}" style="width: 212px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 1.2}}px; font-weight: bold; margin-bottom: 20px;">{{currentChapterName}}</text>
+				<text if="{{chapterStartNumber}}" style="width: 192px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 0.8}}px; font-weight: bold; margin-bottom: 10px;">第 {{currentChapterIndexInAll + 1}} 章</text>
+				<text if="{{chapterStartName}}" style="width: 192px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 1.2}}px; font-weight: bold; margin-bottom: 20px;">{{currentChapterName}}</text>
 			</div>
 
 		  <div id="page1" style="flex-direction: column; width: 100%; flex-shrink: 0;">
-			<text style="width: 212px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; ">{{ page1.text }}</text>
+			<text style="width: 192px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; ">{{ page1.text }}</text>
 		  </div>
 		  <div id="page2" if="{{page2}}" style="flex-direction: column; width: 100%; flex-shrink: 0;">
-			<text style="width: 212px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; ">{{ page2.text }}</text>
+			<text style="width: 192px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; ">{{ page2.text }}</text>
 		  </div>
 		  <div if="{{chapterSwitchStyle == 'button' && isAtChapterEnd && !showSetting && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="goToNextChapter">
-			<text static style="color: #aaa; font-size: 20px; font-weight: bold;">下一章</text>
+			<text static style="color: #aaa; font-size: 16px; font-weight: bold;">下一章</text>
 				<text if="{{chapterSwitchShowInfo && nextChapterName}}" style="color: #666; font-size: 14px; lines: 1; text-overflow: ellipsis; max-width: 80%;">{{nextChapterName}}</text>
 		  </div>
 		</div>
 	  </scroll>
-	  <div if="{{readMode === 'nostalgic'}}" id="nostalgicContainer" style="position: absolute; width: 212px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;" @click="onNostalgicClick" @touchstart="onNostalgicTouchStart" @touchmove="onNostalgicTouchMove" @touchend="onNostalgicTouchEnd" onlongpress="onTxtLongPress">
-		<div id="nostalgicContent" style="position: absolute; width:212px; height: {{scrollHeight}}px; flex-direction: column; justify-content: flex-start; pointer-events: none;">
+	  <div if="{{readMode === 'nostalgic'}}" id="nostalgicContainer" style="position: absolute; width: 192px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;" @click="onNostalgicClick" @touchstart="onNostalgicTouchStart" @touchmove="onNostalgicTouchMove" @touchend="onNostalgicTouchEnd" onlongpress="onTxtLongPress">
+		<div id="nostalgicContent" style="position: absolute; width:192px; height: {{scrollHeight}}px; flex-direction: column; justify-content: flex-start; pointer-events: none;">
 		  <div id="nostalgicPage" style="flex-direction: column; width: 100%; height: 100%; pointer-events: none;">
-			<text style="width: 212px; height: {{scrollHeight}}px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; overflow: hidden; pointer-events: none;">{{ nostalgicPageText }}</text>
+			<text style="width: 192px; height: {{scrollHeight}}px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; overflow: hidden; pointer-events: none;">{{ nostalgicPageText }}</text>
 		  </div>
 		</div>
 	  </div>
-	  <img show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 142px;" />
+	  <img show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 142px;" />
 	  <div show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" style="position: absolute; left: 60px; top: 8px; width: 92px; flex-direction: column; align-items: center;">
 		<text if="{{showSetting || (alwaysShowBattery && alwaysShowTime && !isNearTopForHd)}}" style="line-height: 18px; font-weight: bold; font-size: 14px; color: rgba(255,255,255,0.6); text-align: center;">
 		  {{batteryLevel}}
@@ -47,7 +47,7 @@
 	  <text else show="{{showSetting}}" style="position: absolute;left: 60px;top: 40px;width: 92px;line-height: 32px;font-weight:bold;font-size:20px;color:white;text-align:center;lines: 1;">
 		{{currentChapterName}}
 	  </text>
-	  <img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 212px;height: 142px;" />
+	  <img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 192px;height: 142px;" />
 	  <div show="{{showSetting}}" style="position: absolute; top: 412px; left: 30px; width: 152px; height: 100px; flex-direction: column; justify-content: flex-start; align-items: center;">
 		<marquee if="{{detailProgressMarqueeEnabled}}" scrollamount="40" text-offset="25" style="line-height: 32px;font-weight:bold;font-size:22px;color:white;text-align:center;">
 		  {{currentPage}} / {{totalPages}}
@@ -298,7 +298,7 @@
 	updateContentHeight() { setTimeout(() => { this.$element("contentContainer").getBoundingClientRect({ success: (rect) => { this.contentHeight = rect.height; } }); }, 50); },
 	updateScrollHeight() { this.scrollHeight = 514 - this.verticalMargin * 2; this.pageHeigh = Math.floor(this.scrollHeight / this.lineHeight) * this.lineHeight; },
 	calculateNostalgicCharsPerPage() {
-	  const screenWidth = 212;
+	  const screenWidth = 192;
 	  const screenHeight = this.scrollHeight;
 	  if (screenHeight <= 0 || this.lineHeight <= 0 || this.fontSize <= 0) { this.nostalgicCharsPerPage = 100; return; }
 	  const linesPerPage = Math.floor(screenHeight / this.lineHeight);
@@ -311,7 +311,7 @@
 	},
 	calculateNostalgicTotalPages() {
 	  if (!this.nostalgicFullContent || this.nostalgicCharsPerPage <= 0) { this.nostalgicTotalPages = 0; return; }
-	  const screenWidth = 212; const screenHeight = this.scrollHeight; const linesPerPage = Math.floor(screenHeight / this.lineHeight); const charsPerLine = Math.floor(screenWidth / this.fontSize);
+	  const screenWidth = 192; const screenHeight = this.scrollHeight; const linesPerPage = Math.floor(screenHeight / this.lineHeight); const charsPerLine = Math.floor(screenWidth / this.fontSize);
 	  if (linesPerPage <= 0 || charsPerLine <= 0) { this.nostalgicTotalPages = 1; return; }
 	  let totalPages = 0; let pos = 0; const contentLength = this.nostalgicFullContent.length;
 	  while (pos < contentLength) {
@@ -413,7 +413,7 @@
 			this.$element("page1").getBoundingClientRect({
 			  success: (page1Rect) => {
 				const page1StartOffset = this.page1.offset; const page1EndOffset = page1StartOffset + this.page1.length;
-				if (targetOffset >= page1StartOffset && targetOffset < page1EndOffset) { const offsetInPage1 = targetOffset - page1StartOffset; const charsInPage1 = offsetInPage1 / 2; const avgCharWidth = this.fontSize * 0.6; const charsPerLine = Math.floor(212 / avgCharWidth); const linesInPage1 = Math.ceil(charsInPage1 / charsPerLine); const heightInPage1 = linesInPage1 * this.lineHeight; const totalScroll = heightInPage1 + this.savedScrollOffset; this.scrollTopValue = Math.max(0, Math.floor(totalScroll)); this.currentScrollTop = Math.max(0, Math.floor(totalScroll)); }
+				if (targetOffset >= page1StartOffset && targetOffset < page1EndOffset) { const offsetInPage1 = targetOffset - page1StartOffset; const charsInPage1 = offsetInPage1 / 2; const avgCharWidth = this.fontSize * 0.6; const charsPerLine = Math.floor(192 / avgCharWidth); const linesInPage1 = Math.ceil(charsInPage1 / charsPerLine); const heightInPage1 = linesInPage1 * this.lineHeight; const totalScroll = heightInPage1 + this.savedScrollOffset; this.scrollTopValue = Math.max(0, Math.floor(totalScroll)); this.currentScrollTop = Math.max(0, Math.floor(totalScroll)); }
 				else { this.scrollTopValue = Math.max(0, Math.floor(this.savedScrollOffset)); this.currentScrollTop = Math.max(0, Math.floor(this.savedScrollOffset)); }
 				this.finalizeScrollRestore();
 			  },
@@ -454,7 +454,7 @@
 	loadNostalgicChapter(offsetInChapter) { if (!this.nostalgicFullContent) { this.nostalgicPageText = "加载中..."; this.nostalgicPageIndex = 0; this.nostalgicTotalPages = 0; this.wait = false; return; } this.calculateNostalgicCharsPerPage(); this.calculateNostalgicTotalPages(); if (offsetInChapter === -1) this.nostalgicPageIndex = Math.max(0, this.nostalgicTotalPages - 1); else if (offsetInChapter > 0 && this.nostalgicFullContent.length > 0 && this.nostalgicCharsPerPage > 0) { const charOffset = offsetInChapter / 2; const targetPageIndex = Math.floor(charOffset / this.nostalgicCharsPerPage); this.nostalgicPageIndex = Math.min(targetPageIndex, Math.max(0, this.nostalgicTotalPages - 1)); } else this.nostalgicPageIndex = 0; this.updateNostalgicPage(); this.isAtChapterStart = this.nostalgicPageIndex === 0; this.isAtChapterEnd = this.nostalgicPageIndex >= this.nostalgicTotalPages - 1; this.isNearTopForHd = this.nostalgicPageIndex === 0; this.wait = false; },
 	getNostalgicPageText(pageIndex) {
 	  if (!this.nostalgicFullContent || this.nostalgicCharsPerPage <= 0 || pageIndex < 0 || pageIndex >= this.nostalgicTotalPages) return "";
-	  const screenWidth = 212; const screenHeight = this.scrollHeight; const linesPerPage = Math.floor(screenHeight / this.lineHeight); const charsPerLine = Math.floor(screenWidth / this.fontSize);
+	  const screenWidth = 192; const screenHeight = this.scrollHeight; const linesPerPage = Math.floor(screenHeight / this.lineHeight); const charsPerLine = Math.floor(screenWidth / this.fontSize);
 	  if (linesPerPage <= 0 || charsPerLine <= 0) return this.nostalgicFullContent;
 	  const contentLength = this.nostalgicFullContent.length; let pos = 0; let currentPage = 0;
 	  if (pageIndex > 0) { pos = pageIndex < 50 ? 0 : Math.max(0, Math.min(pageIndex * this.nostalgicCharsPerPage, contentLength) - this.nostalgicCharsPerPage * 2); currentPage = pageIndex < 50 ? 0 : Math.floor(pos / this.nostalgicCharsPerPage); }
@@ -487,8 +487,8 @@
   </script>
   <style>
   .page {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	background-color: #000000;
   }
   </style>

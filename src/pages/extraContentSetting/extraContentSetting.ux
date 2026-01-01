@@ -24,7 +24,7 @@
             </list-item>
         </list>
 
-        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
         <text style="position: absolute;left: 40px;top: 16px;width: 132px;line-height: 24px;font-weight:bold;font-size:16px;color:rgba(255,255,255,0.6);text-align:center;">
           {{nowTime}}
         </text>
@@ -135,14 +135,14 @@
 
 <style>
 .page {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	background-color: #000000;
 }
 
 .list {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	position: absolute;
 	top:0px;
 	left:0px;
@@ -169,7 +169,7 @@
   }
   
   .itemtext2 {
-	  font-size: 20px;
+	  font-size: 16px;
 	  font-weight: bold;
 	  color: rgba(255,255,255,0.6);
 	  text-overflow: ellipsis;

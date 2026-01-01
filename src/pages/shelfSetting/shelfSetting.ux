@@ -10,14 +10,14 @@
                     <text class="itemtext" static>列表样式</text>
                     <text class="itemtext2" static>默认的列表样式</text>
                 </div>
-                <img if="{{shelfStyle === 'list'}}" src="/common/images/check.png" style="width:32px;height: 32px;" static />
+                <img if="{{shelfStyle === 'list'}}" src="/common/images/check.png" style="width:24px;height: 24px;" static />
             </list-item>
             <list-item class="item {{shelfStyle === 'cover' ? 'item2' : ''}}" @click="selectShelfStyle('cover')" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>封面样式</text>
                     <text class="itemtext2" static>展示书籍封面</text>
                 </div>
-                <img if="{{shelfStyle === 'cover'}}" src="/common/images/check.png" style="width:32px;height: 32px;" static />
+                <img if="{{shelfStyle === 'cover'}}" src="/common/images/check.png" style="width:24px;height: 24px;" static />
             </list-item>
 
             <list-item class="item" @click="toggleLastRead" type="item">
@@ -44,14 +44,14 @@
                     <text class="itemtext" static>展示全部书籍</text>
                     <text class="itemtext2" static>显示所有书籍</text>
                 </div>
-                <img if="{{displayMode === 'all'}}" src="/common/images/check.png" style="width:32px;height: 32px;" static />
+                <img if="{{displayMode === 'all'}}" src="/common/images/check.png" style="width:24px;height: 24px;" static />
             </list-item>
             <list-item class="item {{displayMode === 'category' ? 'item2' : ''}}" @click="selectDisplayMode('category')" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>展示分类列表</text>
                     <text class="itemtext2" static>显示分类列表</text>
                 </div>
-                <img if="{{displayMode === 'category'}}" src="/common/images/check.png" style="width:32px;height: 32px;" static />
+                <img if="{{displayMode === 'category'}}" src="/common/images/check.png" style="width:24px;height: 24px;" static />
             </list-item>
             
             <list-item class="item" @click="toggleCategoryPagination" type="item" if="{{displayMode === 'category'}}">
@@ -78,25 +78,25 @@
                     <text class="itemtext" static>章节进度</text>
                     <text class="itemtext2" static>仅当前章进度</text>
                 </div>
-                <img if="{{progressMode === 'chapter'}}" src="/common/images/check.png" style="width:32px;height: 32px;" static />
+                <img if="{{progressMode === 'chapter'}}" src="/common/images/check.png" style="width:24px;height: 24px;" static />
             </list-item>
             <list-item class="item {{progressMode === 'book' ? 'item2' : ''}}" @click="selectProgressMode('book')" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>整本进度</text>
                     <text class="itemtext2" static>全书阅读进度</text>
                 </div>
-                <img if="{{progressMode === 'book'}}" src="/common/images/check.png" style="width:32px;height: 32px;" static />
+                <img if="{{progressMode === 'book'}}" src="/common/images/check.png" style="width:24px;height: 24px;" static />
             </list-item>
         </list>
 
-        <img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 338px;width: 212px;height: 182px;" />
+        <img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 338px;width: 192px;height: 182px;" />
         <number style="position: absolute;top:365px" max.static="15" min.static="2" step.static="1" value="{{shelfPageSize}}" @change="changePageSize" unit.static="本" name.static="每页数量"></number>
 
-        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
-        <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
+        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
+        <text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
           {{nowTime}}
         </text>
-        <text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
+        <text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
             书架设置
         </text>
     </div>
@@ -289,14 +289,14 @@
 
 <style>
 .page {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	background-color: #000000;
 }
 
 .list {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	position: absolute;
 	top:0px;
 	left:0px;
@@ -328,7 +328,7 @@
   }
   
   .itemtext2 {
-	  font-size: 20px;
+	  font-size: 16px;
 	  font-weight: bold;
 	  color: rgba(255,255,255,0.6);
 	  text-overflow: ellipsis;
@@ -343,7 +343,7 @@
     }
 
     .section-title {
-        font-size: 24px;
+        font-size: 21px;
         line-height: 36px;
         font-weight: bold;
         color: rgba(255, 255, 255, 0.5);

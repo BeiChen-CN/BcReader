@@ -6,21 +6,21 @@
 				  <text class="itemtext" static>章节列表</text>
 				  <text class="itemtext2" static>查看或者跳转</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item type="item" class="item" @click="routerTo('readPresent')">
 			  <div class="item-content">
 				  <text class="itemtext" static>跳转章节</text>
 				  <text class="itemtext2" static>按章节号跳转</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item type="item" class="item" @click="routerTo('readPercent')">
 			  <div class="item-content">
 				  <text class="itemtext" static>跳转百分比</text>
 				  <text class="itemtext2" static>按百分比跳转</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="addBookmark" type="item">
 			  <div class="item-content">
@@ -33,7 +33,7 @@
 				  <text class="itemtext" static>书签管理</text>
 				  <text class="itemtext2" static>查看跳转书签</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="toggleKeepScreenOnClick" type="item">
 			<div class="item-content">
@@ -53,32 +53,32 @@
 				<text class="itemtext" static>全局设置</text>
 				<text class="itemtext2" static>打开全局设置</text>
 			</div>
-			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			<img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		</list-item>
 		  <list-item class="item" @click="del" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>删除书籍</text>
 				  <text class="itemtext2" static>删除当前书籍</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('bookinfo')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>书籍详情</text>
 				  <text class="itemtext2" static>封面、简介等</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 		  <list-item class="item" @click="routerTo('readingTime')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>阅读时长</text>
 				  <text class="itemtext2" static>查看阅读统计</text>
 			  </div>
-			  <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+			  <img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		  </list-item>
 	  </list>
   
-	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
 	  <text style="position: absolute;left: 40px;top: 16px;width: 132px;line-height: 24px;font-weight:bold;font-size:16px;color:rgba(255,255,255,0.6);text-align:center;">
 		{{nowTime}}
 	  </text>
@@ -160,14 +160,14 @@
 
 <style>
 .page {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	background-color: #000000;
 }
 
 .list {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	position: absolute;
 	top:0px;
 	left:0px;
@@ -194,7 +194,7 @@
   }
   
   .itemtext2 {
-	  font-size: 20px;
+	  font-size: 16px;
 	  font-weight: bold;
 	  color: rgba(255,255,255,0.6);
 	  text-overflow: ellipsis;

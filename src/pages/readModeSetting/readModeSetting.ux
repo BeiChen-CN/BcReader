@@ -7,14 +7,14 @@
 				<text class="itemtext" static>滚动模式</text>
 				<text class="itemtext2" static>标准滚动阅读</text>
 			</div>
-			<img src="/common/images/check.png" style="width:32px;height: 32px;" if="{{readMode === 'scroll'}}"/>
+			<img src="/common/images/check.png" style="width:24px;height: 24px;" if="{{readMode === 'scroll'}}"/>
 		</list-item>
 		  <list-item class="item {{readMode === 'nostalgic' ? 'item2' : ''}}" @click="select('nostalgic')" type="item">
 			<div class="item-content">
 				<text class="itemtext" static>怀旧模式</text>
 				<text class="itemtext2" static>一屏一页字</text>
 			</div>
-			  <img src="/common/images/check.png" style="width:32px;height: 32px;" if="{{readMode === 'nostalgic'}}"/>
+			  <img src="/common/images/check.png" style="width:24px;height: 24px;" if="{{readMode === 'nostalgic'}}"/>
 		  </list-item>
 
 		  <list-item if="{{readMode === 'nostalgic'}}" class="item" style="padding: 7px 16px; height: 50px;" type="tip">
@@ -25,32 +25,32 @@
 				  <text class="itemtext" static>左右滑动</text>
 				  <text class="itemtext2" static>左右滑动翻页</text>
 			  </div>
-			  <img src="/common/images/check.png" style="width:32px;height: 32px;" if="{{nostalgicPageTurnMode === 'swipe'}}"/>
+			  <img src="/common/images/check.png" style="width:24px;height: 24px;" if="{{nostalgicPageTurnMode === 'swipe'}}"/>
 		  </list-item>
 		  <list-item if="{{readMode === 'nostalgic'}}" class="item {{nostalgicPageTurnMode === 'sideClick' ? 'item2' : ''}}" @click="selectPageTurnMode('sideClick')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>两侧点击</text>
 				  <text class="itemtext2" static>点击两侧翻页</text>
 			  </div>
-			  <img src="/common/images/check.png" style="width:32px;height: 32px;" if="{{nostalgicPageTurnMode === 'sideClick'}}"/>
+			  <img src="/common/images/check.png" style="width:24px;height: 24px;" if="{{nostalgicPageTurnMode === 'sideClick'}}"/>
 		  </list-item>
 		  <list-item if="{{readMode === 'nostalgic'}}" class="item {{nostalgicPageTurnMode === 'topBottomClick' ? 'item2' : ''}}" @click="selectPageTurnMode('topBottomClick')" type="item">
 			  <div class="item-content">
 				  <text class="itemtext" static>上下点击</text>
 				  <text class="itemtext2" static>点击上下翻页</text>
 			  </div>
-			  <img src="/common/images/check.png" style="width:32px;height: 32px;" if="{{nostalgicPageTurnMode === 'topBottomClick'}}"/>
+			  <img src="/common/images/check.png" style="width:24px;height: 24px;" if="{{nostalgicPageTurnMode === 'topBottomClick'}}"/>
 		  </list-item>
 
 	  </list>
 	  
-	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
 	  <text style="position: absolute;top:-100px;left:0px;">{{txtNum}}</text>
 
-	  <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
+	  <text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
 		{{nowTime}}
 	  </text>
-	  <text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
+	  <text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
 			阅读模式
 		</text>
 	</div>
@@ -204,14 +204,14 @@
 
 <style>
 .page {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	background-color: #000000;
 }
 
 .list {
-	width: 212px;
-	height: 520px;
+	width: 192px;
+	height: 490px;
 	position: absolute;
 	top:0px;
 	left:0px;
@@ -243,7 +243,7 @@
   }
   
   .itemtext2 {
-	  font-size: 20px;
+	  font-size: 16px;
 	  font-weight: bold;
 	  color: rgba(255,255,255,0.6);
 	  text-overflow: ellipsis;
@@ -259,7 +259,7 @@
 }
 
 .section-title {
-  font-size: 24px;
+  font-size: 21px;
   line-height: 36px;
   font-weight: bold;
   color: rgba(255, 255, 255, 0.5);
