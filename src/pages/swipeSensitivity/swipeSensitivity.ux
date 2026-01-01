@@ -99,9 +99,9 @@
   
 .preview-container {
 	position: absolute;
-	left: 2px;
+	left: 10px;
 	top: 86px;
-	width: 208px;
+	width: 172px;
 	height: 280px;
 	flex-direction: row;
 	justify-content: space-between;

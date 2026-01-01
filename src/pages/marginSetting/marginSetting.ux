@@ -108,9 +108,9 @@ export default {
 
 .preview-container {
   position: absolute;
-  left: 2px;
-  top: 86px;
-  width: 208px;
+	left: 10px;
+	top: 82px;
+	width: 172px;
   height: 280px;
   flex-direction: row;
   justify-content: space-between;
