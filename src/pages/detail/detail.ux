@@ -16,17 +16,26 @@
 		bounces="{{(isAtChapterStart || isAtChapterEnd) && (chapterSwitchStyle == 'boundary')}}"
 		>
 		<div id="contentContainer" style="position: absolute; width:336px; flex-direction: column;">
-			<div if="{{chapterSwitchStyle == 'button' && isAtChapterStart && !showSetting && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToPrevChapter">
+			<div if="{{chapterSwitchStyle == 'button' && isAtChapterStart && !showSetting && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="goToPrevChapter">
 				<text static style="color: #aaa; font-size: 28px; font-weight: bold;">上一章</text>
+				<text if="{{chapterSwitchShowInfo && prevChapterName}}" style="color: #666; font-size: 20px; lines: 1; text-overflow: ellipsis; max-width: 80%;">{{prevChapterName}}</text>
 			</div>
+			
+			<div if="{{page1 && page1.offset === 0}}" style="flex-direction: column; width: 100%; padding-bottom: 20px;">
+				<div if="{{chapterStartEmptyLines}}" style="height: 100px; width: 100%;"></div>
+				<text if="{{chapterStartNumber}}" style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 0.8}}px; font-weight: bold; margin-bottom: 10px;">第 {{currentChapterIndexInAll + 1}} 章</text>
+				<text if="{{chapterStartName}}" style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 1.2}}px; font-weight: bold; margin-bottom: 20px;">{{currentChapterName}}</text>
+			</div>
+
 		  <div id="page1" style="flex-direction: column; width: 100%; flex-shrink: 0;">
 			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; ">{{ page1.text }}</text>
 		  </div>
 		  <div id="page2" if="{{page2}}" style="flex-direction: column; width: 100%; flex-shrink: 0;">
 			<text style="width: 336px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; ">{{ page2.text }}</text>
 		  </div>
-			<div if="{{chapterSwitchStyle == 'button' && isAtChapterEnd && !showSetting && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center;" @click="goToNextChapter">
+			<div if="{{chapterSwitchStyle == 'button' && isAtChapterEnd && !showSetting && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="goToNextChapter">
 				<text static style="color: #aaa; font-size: 28px; font-weight: bold;">下一章</text>
+				<text if="{{chapterSwitchShowInfo && nextChapterName}}" style="color: #666; font-size: 20px; lines: 1; text-overflow: ellipsis; max-width: 80%;">{{nextChapterName}}</text>
 			</div>
 		</div>
 	  </scroll>
@@ -185,6 +194,12 @@
         allSize: 0,
         autoInterval: null,
         cPath: "",
+		chapterStartEmptyLines: false,
+		chapterStartNumber: false,
+		chapterStartName: false,
+		chapterSwitchShowInfo: false,
+		prevChapterName: '',
+		nextChapterName: ''
 	  },
 	  protected: {
 		name: '',
@@ -305,7 +320,11 @@
 			{ key: 'EBOOK_TEXT_READER_MARQUEE_ENABLED', prop: 'textReaderMarqueeEnabled', type: 'bool', default: false },
 			{ key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED', prop: 'detailProgressMarqueeEnabled', type: 'bool', default: false },
 			{ key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE', prop: 'nostalgicPageTurnMode', type: 'string', default: 'topBottomClick' },
-			{ key: 'EBOOK_BOLD_ENABLED', prop: 'boldEnabled', type: 'bool', default: true }
+			{ key: 'EBOOK_BOLD_ENABLED', prop: 'boldEnabled', type: 'bool', default: true },
+			{ key: 'EBOOK_CHAPTER_START_EMPTY_LINES', prop: 'chapterStartEmptyLines', type: 'bool', default: false },
+			{ key: 'EBOOK_CHAPTER_START_NUMBER', prop: 'chapterStartNumber', type: 'bool', default: false },
+			{ key: 'EBOOK_CHAPTER_START_NAME', prop: 'chapterStartName', type: 'bool', default: false },
+			{ key: 'EBOOK_CHAPTER_SWITCH_SHOW_INFO', prop: 'chapterSwitchShowInfo', type: 'bool', default: false }
 		];
 	
 		const promises = settingsConfig.map(s => getSetting(s.key, s.default));
@@ -624,6 +643,21 @@
 		this.currentChapterName = chapter.name;
 		this.cPath = `internal://files/books/${this.name}/content/${chapter.index}.txt`;
         this.chapterContentCache = null;
+
+		if (this.chapterSwitchShowInfo) {
+			if (chapterIdxInAll > 0) {
+				const prev = await chapterManager.getChapterByIndex(this.name, chapterIdxInAll - 1);
+				this.prevChapterName = prev ? prev.name : '';
+			} else {
+				this.prevChapterName = '';
+			}
+			if (chapterIdxInAll < this.totalChapters - 1) {
+				const next = await chapterManager.getChapterByIndex(this.name, chapterIdxInAll + 1);
+				this.nextChapterName = next ? next.name : '';
+			} else {
+				this.nextChapterName = '';
+			}
+		}
 
 		file.get({
 			uri: this.cPath,

@@ -28,6 +28,14 @@
                 <img src="{{lastReadOnTop ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
             </list-item>
             
+            <list-item class="item" @click="toggleStorageWarning" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>存储提示</text>
+                    <text class="itemtext2" static>存储不足时提示</text>
+                </div>
+                <img src="{{showStorageWarning ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+            </list-item>
+
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
                 <text class="section-title" static>首页展示方式</text>
             </list-item>
@@ -44,6 +52,14 @@
                     <text class="itemtext2" static>显示分类列表</text>
                 </div>
                 <img if="{{displayMode === 'category'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+            </list-item>
+            
+            <list-item class="item" @click="toggleCategoryPagination" type="item" if="{{displayMode === 'category'}}">
+                <div class="item-content">
+                    <text class="itemtext" static>分类分页</text>
+                    <text class="itemtext2" static>分类列表开启分页</text>
+                </div>
+                <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
             </list-item>
             
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
@@ -93,7 +109,9 @@
             shelfPageSize: 6,
             lastReadOnTop: true,
             displayMode: 'all',
-            progressMode: 'book'
+            progressMode: 'book',
+            showStorageWarning: true,
+            categoryPagination: false
         },
         updateTime() {
             const date = new Date();
@@ -129,67 +147,43 @@
                 this.updateTime();
             }, 1000);
             
-            
+            this.loadSettings();
+        },
+        loadSettings() {
             storage.get({
                 key: 'EBOOK_SHELF_STYLE',
-                success: (data) => {
-                    if (data) {
-                        this.shelfStyle = data;
-                    }
-                },
-                fail: () => {
-                    this.shelfStyle = 'list';
-                }
+                success: (data) => { if (data) this.shelfStyle = data; },
+                fail: () => { this.shelfStyle = 'list'; }
             });
-            
-            
             storage.get({
                 key: 'EBOOK_SHELF_PAGE_SIZE',
-                success: (data) => {
-                    if (data) {
-                        this.shelfPageSize = parseInt(data);
-                    }
-                },
-                fail: () => {
-                    this.shelfPageSize = 6;
-                }
+                success: (data) => { if (data) this.shelfPageSize = parseInt(data); },
+                fail: () => { this.shelfPageSize = 6; }
             });
-            
-            
             storage.get({
                 key: 'EBOOK_TOP_LAST_READ',
-                success: (data) => {
-                    this.lastReadOnTop = data === 'true';
-                },
-                fail: () => {
-                    this.lastReadOnTop = true;
-                }
+                success: (data) => { this.lastReadOnTop = data === 'true'; },
+                fail: () => { this.lastReadOnTop = true; }
             });
-            
-            
             storage.get({
                 key: 'EBOOK_HOME_DISPLAY_MODE',
-                success: (data) => {
-                    if (data) {
-                        this.displayMode = data;
-                    }
-                },
-                fail: () => {
-                    this.displayMode = 'all';
-                }
+                success: (data) => { if (data) this.displayMode = data; },
+                fail: () => { this.displayMode = 'all'; }
             });
-            
-            
             storage.get({
                 key: 'EBOOK_HOME_PROGRESS_MODE',
-                success: (data) => {
-                    if (data) {
-                        this.progressMode = data;
-                    }
-                },
-                fail: () => {
-                    this.progressMode = 'book';
-                }
+                success: (data) => { if (data) this.progressMode = data; },
+                fail: () => { this.progressMode = 'book'; }
+            });
+            storage.get({
+                key: 'EBOOK_SHOW_STORAGE_WARNING',
+                success: (data) => { this.showStorageWarning = data !== 'false'; },
+                fail: () => { this.showStorageWarning = true; }
+            });
+            storage.get({
+                key: 'EBOOK_CATEGORY_PAGINATION',
+                success: (data) => { this.categoryPagination = data === 'true'; },
+                fail: () => { this.categoryPagination = false; }
             });
         },
         onDestroy() {
@@ -231,6 +225,20 @@
                 value: this.lastReadOnTop.toString()
             });
         },
+        toggleStorageWarning() {
+            this.showStorageWarning = !this.showStorageWarning;
+            storage.set({
+                key: 'EBOOK_SHOW_STORAGE_WARNING',
+                value: this.showStorageWarning.toString()
+            });
+        },
+        toggleCategoryPagination() {
+            this.categoryPagination = !this.categoryPagination;
+            storage.set({
+                key: 'EBOOK_CATEGORY_PAGINATION',
+                value: this.categoryPagination.toString()
+            });
+        },
         selectDisplayMode(mode) {
             if (this.displayMode === mode) {
                 return;
@@ -257,11 +265,15 @@
             this.lastReadOnTop = true;
             this.displayMode = 'all';
             this.progressMode = 'book';
+            this.showStorageWarning = true;
+            this.categoryPagination = false;
             storage.set({ key: "EBOOK_SHELF_STYLE", value: 'list' });
             storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '6' });
             storage.set({ key: "EBOOK_TOP_LAST_READ", value: 'true' });
             storage.set({ key: "EBOOK_HOME_DISPLAY_MODE", value: 'all' });
             storage.set({ key: "EBOOK_HOME_PROGRESS_MODE", value: 'book' });
+            storage.set({ key: "EBOOK_SHOW_STORAGE_WARNING", value: 'true' });
+            storage.set({ key: "EBOOK_CATEGORY_PAGINATION", value: 'false' });
         },
         back() {
             router.back();
