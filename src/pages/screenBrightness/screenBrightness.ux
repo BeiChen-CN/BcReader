@@ -118,10 +118,9 @@ export default {
 
 .item {
 	position: absolute;
-	left: 4px;
+	left: 10px;
 	top: 82px;
-	width: 204px;
-	height: 282px;
+	width: 172px;
 	border-radius: 26px;
 	flex-direction: column;
 	border: 3px solid #262626;
