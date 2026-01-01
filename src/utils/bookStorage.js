@@ -5,7 +5,13 @@ import router from '@system.router';
 const BOOKSHELF_URI = 'internal://files/books/bookshelf.json';
 const BOOKSHELF_VERSION = 3;
 
+let bookshelfCache = null;
+
 async function loadBookshelf() {
+    if (bookshelfCache) {
+        return JSON.parse(JSON.stringify(bookshelfCache));
+    }
+    
     try {
         const data = await runAsyncFunc(file.readText, { uri: BOOKSHELF_URI });
         const parsedData = JSON.parse(data.text);
@@ -20,14 +26,18 @@ async function loadBookshelf() {
             });
             return { version: BOOKSHELF_VERSION, books: [] };
         }
-        return parsedData;
+        bookshelfCache = parsedData;
+        return JSON.parse(JSON.stringify(parsedData));
     } catch (e) {
-        return { version: BOOKSHELF_VERSION, books: [] };
+        const defaultData = { version: BOOKSHELF_VERSION, books: [] };
+        bookshelfCache = defaultData;
+        return JSON.parse(JSON.stringify(defaultData));
     }
 }
 
 async function saveBookshelf(bookshelfData) {
     try {
+        bookshelfCache = JSON.parse(JSON.stringify(bookshelfData));
         await runAsyncFunc(file.writeText, {
             uri: BOOKSHELF_URI,
             text: JSON.stringify(bookshelfData),

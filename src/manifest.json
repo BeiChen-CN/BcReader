@@ -180,6 +180,9 @@
       },
       "pages/storageManagement": {
         "component": "storageManagement"
+      },
+      "pages/extraContentSetting": {
+        "component": "extraContentSetting"
       }
     }
   },
