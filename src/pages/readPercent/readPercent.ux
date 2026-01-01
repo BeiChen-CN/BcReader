@@ -30,7 +30,7 @@
 			<div class="key-row">
 				<div class="btn btn-warn" @click="onClick('del')"><text class="btn-text">删</text></div>
 				<div class="btn" @click="onClick('0')"><text class="btn-text">0</text></div>
-				<div class="btn btn-confirm" @click="onClick('conform')"><text class="btn-text">定</text></div>
+				<div class="btn btn-confirm" @click="onClick('conform')"><text class="btn-text">→</text></div>
 			</div>
 		</div>
 
