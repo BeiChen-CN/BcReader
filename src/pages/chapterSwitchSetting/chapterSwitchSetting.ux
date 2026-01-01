@@ -2,12 +2,6 @@
 <template>
 	<div class="page" style="flex-direction: column">
         <list class="list">
-            <list-item class="item" style="height: auto; padding: 20px;" type="tip">
-			    <text static class="description">
-				    调整阅读器页面中的“上一章”和“下一章”按钮的高度和触发灵敏度。
-			    </text>
-            </list-item>
-            
             <list-item class="item" @click="toggleShowInfo" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>章节预览</text>
