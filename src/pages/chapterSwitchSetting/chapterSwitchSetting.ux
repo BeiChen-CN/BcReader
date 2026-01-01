@@ -11,7 +11,7 @@
             <list-item class="item" @click="toggleShowInfo" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>章节预览</text>
-                    <text class="itemtext2" static>按钮中显示章节名</text>
+                    <text class="itemtext2" static>显示章节名称</text>
                 </div>
                 <img src="{{showChapterInfo ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
             </list-item>
@@ -148,26 +148,23 @@ export default {
 }
 
 .list {
-    width: 432px;
-    height: 514px;
+    width: 336px;
+    height: 480px;
     position: absolute;
     top: 0px;
     left: 0px;
-    padding: 116px 12px;
+    padding: 86px 6px;
 }
 
 .item {
-	position: absolute;
-	left: 6px;
-	top: 86px;
-	width: 324px;
-	height: 228px;
-	border-radius: 36px;
-	flex-direction: column;
-	border: 3px solid #262626;
-	align-items: center;
-	justify-content: center;
-	padding: 20px;
+    width: 100%;
+    height: 112px;
+    padding: 14px 20px;
+    margin-bottom: 8px;
+    background-color: #262626;
+    border-radius: 36px;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .description {
@@ -176,4 +173,31 @@ export default {
 	text-align: left;
 	width: 100%;
 }
+
+
+.itemtext {
+    font-size: 32px;
+    line-height: 40px;
+    width: 100%;
+    font-weight: bold;
+    color: white;
+    text-overflow: ellipsis;
+    lines: 1;
+}
+
+.itemtext2 {
+    font-size: 28px;
+    line-height: 37px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.6);
+    text-overflow: ellipsis;
+    lines: 1;
+}
+
+    .item-content {
+        height: 100%;
+        flex: 1;
+        flex-direction: column;
+        justify-content: space-between;
+    }
 </style>

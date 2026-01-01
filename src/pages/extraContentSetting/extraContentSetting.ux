@@ -4,21 +4,21 @@
             <list-item class="item" @click="toggleEmptyLines" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>章节开头空行</text>
-                    <text class="itemtext2" static>每章开头增加空行</text>
+                    <text class="itemtext2" static>章头增加空行</text>
                 </div>
                 <img src="{{emptyLines ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
             </list-item>
             <list-item class="item" @click="toggleNumber" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>显示章节编号</text>
-                    <text class="itemtext2" static>每章开头显示编号</text>
+                    <text class="itemtext2" static>章头显示编号</text>
                 </div>
                 <img src="{{showNumber ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
             </list-item>
             <list-item class="item" @click="toggleName" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>显示章节名称</text>
-                    <text class="itemtext2" static>每章开头显示名称</text>
+                    <text class="itemtext2" static>章头显示名称</text>
                 </div>
                 <img src="{{showName ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
             </list-item>
