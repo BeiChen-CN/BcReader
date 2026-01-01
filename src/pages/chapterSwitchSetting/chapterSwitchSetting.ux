@@ -2,12 +2,6 @@
 <template>
 	<div class="page" style="flex-direction: column">
         <list class="list">
-            <list-item class="item" style="height: auto; padding: 20px;" type="tip">
-			    <text static class="description">
-				    阅读器页面中的“上一章”和“下一章”按钮。
-			    </text>
-            </list-item>
-            
             <list-item class="item" @click="toggleShowInfo" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>章节预览</text>
@@ -185,11 +179,4 @@ export default {
 	  flex-direction: column;
 	  justify-content: space-between;
   }
-
-.description {
-	font-size: 19px;
-	color: white;
-	text-align: left;
-	width: 100%;
-}
 </style>
