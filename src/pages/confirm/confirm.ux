@@ -1,7 +1,7 @@
 <template>
     <div class="page">
-        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 70px;top: 30px;width: 72px;height: 72px;"/>
-        <img static if="{{action!=='versionError'}}" src="/common/images/delete.png" @click="confirmAction" style="position: absolute;left: 60px;top: 418px;width: 72px;height: 72px;"/>
+        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 59px;top: 20px;width: 72px;height: 72px;"/>
+        <img static if="{{action!=='versionError'}}" src="/common/images/delete.png" @click="confirmAction" style="position: absolute;left: 59px;top: 418px;width: 72px;height: 72px;"/>
         <text style="position: absolute;top: 106px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
             {{nowTime}}
         </text>
@@ -9,7 +9,7 @@
             {{title}}
         </text>
 
-        <img static src="/common/images/bin.png" style="position: absolute;left: 66px;top: 186px;width: 80px;height: 80px;"/>
+         <img static src="/common/images/bin.png" style="position: absolute;left: 55px;top: 186px;width: 80px;height: 80px;"/>
         <text style="position: absolute;left: 0px;top: 269px;width: 192px;font-weight:bold;font-size:20px;color:white;text-align:center;">{{confirmText}}</text>
         <text style="position: absolute;left: 0px;top: 299px;width: 192px;font-weight:bold;font-size:20px;color:rgba(255,255,255,0.6);text-align:center;">{{subText}}</text>
     </div>

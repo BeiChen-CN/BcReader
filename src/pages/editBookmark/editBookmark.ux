@@ -1,8 +1,8 @@
 <import name="input-method" src="../../components/InputMethod/InputMethod.ux"></import>
 <template>
   <div class="page">
-    <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 70px;top: 30px;width: 72px;height: 72px;" />
-    <img static src="/common/images/conform.png" @click="save" style="position: absolute;left: 60px;top: 418px;width: 72px;height: 72px;" />
+    <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 59px;top: 20px;width: 72px;height: 72px;" />
+    <img static src="/common/images/conform.png" @click="save" style="position: absolute;left: 59px;top: 418px;width: 72px;height: 72px;" />
     <text style="position: absolute;top: 106px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
       {{nowTime}}
     </text>
@@ -91,7 +91,7 @@ export default {
   position: absolute;
   top: 180px;
   left: 12px;
-  width: 188px;
+  width: 167px;
   flex-direction: column;
 }
 

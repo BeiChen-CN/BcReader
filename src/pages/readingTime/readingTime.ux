@@ -45,33 +45,33 @@
 		<list class="list" if="{{name}}">
 			<list-item class="item" type="info">
 				<div class="stat-item">
-					<text class="item-title" static>本书总阅读时长</text>
+					<text class="item-title" static>本书总阅读时</text>
 					<text class="item-value">{{totalReadingTimeFormatted}}</text>
 				</div>
 				<div class="stat-item" style="margin-top: 4px;">
-					<text class="item-title" static>本书总阅读天数</text>
+					<text class="item-title" static>本书总阅读天</text>
 					<text class="item-value">{{totalReadingDays}}天</text>
 				</div>
 			</list-item>
 			
 			<list-item class="item" type="info">
 				<div class="stat-item">
-					<text class="item-title" static>今日本书阅读时长</text>
+					<text class="item-title" static>今日本书阅读</text>
 					<text class="item-value">{{todayReadingTimeFormatted}}</text>
 				</div>
 				<div class="stat-item" style="margin-top: 4px;">
-					<text class="item-title" static>平均每天本书阅读时长</text>
+					<text class="item-title" static>平均本书每天</text>
 					<text class="item-value">{{averageDailyTimeFormatted}}</text>
 				</div>
 			</list-item>
 			
 			<list-item class="item" type="info">
 				<div class="stat-item">
-					<text class="item-title" static>本书本周阅读时长</text>
+					<text class="item-title" static>本周本书阅读</text>
 					<text class="item-value">{{weekReadingTimeFormatted}}</text>
 				</div>
 				<div class="stat-item" style="margin-top: 4px;">
-					<text class="item-title" static>平均每周本书阅读时长</text>
+					<text class="item-title" static>平均本书每周</text>
 					<text class="item-value">{{averageWeekTimeFormatted}}</text>
 				</div>
 			</list-item>

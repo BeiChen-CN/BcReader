@@ -68,7 +68,7 @@
       </list-item>
     </list>
     <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 102px;" />
-    <img static src="/common/images/more.png" @click="routerTo('more')" style="position: absolute;left: 60px;top: 418px;width: 72px;height: 72px;" />
+    <img static src="/common/images/more.png" @click="routerTo('more')" style="position: absolute;left: 59px;top: 418px;width: 72px;height: 72px;" />
     <text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
       {{nowTime}}
     </text>
