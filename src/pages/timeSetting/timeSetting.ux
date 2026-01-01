@@ -9,13 +9,6 @@
 			</div>
 			<img src="{{alwaysShowTime ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
 		</list-item>
-		<list-item class="item" @click="onClickBattery" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>显示电量</text>
-				<text class="itemtext2" static>常驻时</text>
-			</div>
-			<img src="{{alwaysShowBattery ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-		</list-item>
 	</list>
 	
 	<img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 438px;width: 192px;height: 82px;" />
@@ -41,7 +34,6 @@ const DEFAULT_DISTANCE = 200;
 export default {
   private: {
     alwaysShowTime: false,
-    alwaysShowBattery: true,
     distanceValue: DEFAULT_DISTANCE,
     nowTime: "00:00",
     timer: null,
@@ -86,17 +78,6 @@ export default {
         }
       }
     });
-    storage.get({
-      key: 'EBOOK_ALWAYS_SHOW_BATTERY',
-      success: (data) => {
-        if (data !== null && data !== '') {
-          this.alwaysShowBattery = data === 'true';
-        }
-      },
-			fail: () => {
-				this.alwaysShowBattery = true;
-			},
-    });
 		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
 			if (data) this.readMode = data;
 		}});
@@ -128,13 +109,6 @@ export default {
     this.alwaysShowTime = !this.alwaysShowTime;
     this.save()
   },
-  onClickBattery(){
-    this.alwaysShowBattery = !this.alwaysShowBattery;
-    storage.set({
-      key: 'EBOOK_ALWAYS_SHOW_BATTERY',
-      value: this.alwaysShowBattery.toString()
-    })
-  },
   changeDistance(e) {
     this.distanceValue = e.detail.value;
     storage.set({
@@ -145,10 +119,8 @@ export default {
   reset() {
     this.distanceValue = DEFAULT_DISTANCE;
     this.alwaysShowTime = false;
-    this.alwaysShowBattery = true;
     storage.set({ key: DISTANCE_KEY, value: this.distanceValue.toString() });
     storage.set({ key: "EBOOK_ALWAYS_SHOW_TIME", value: 'false' });
-    storage.set({ key: "EBOOK_ALWAYS_SHOW_BATTERY", value: 'false' });
   },
   routerTo(url) {
 	  router.push({

@@ -33,10 +33,7 @@
 		</div>
 	  </div>
 	  <img show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 142px;" />
-	  <div show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" style="position: absolute; left: 40px; top: 8px; width: 111px; flex-direction: column; align-items: center;">
-		<text if="{{showSetting || (alwaysShowBattery && alwaysShowTime && !isNearTopForHd)}}" style="line-height: 18px; font-weight: bold; font-size: 14px; color: rgba(255,255,255,0.6); text-align: center;">
-		  {{batteryLevel}}
-		</text>
+	  <div show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" style="position: absolute; left: 40px; top: 18px; width: 111px; flex-direction: column; align-items: center;">
 		<text style="line-height: 22px; font-weight: bold; font-size: 18px; color: rgba(255,255,255,0.6); text-align: center;">
 		  {{nowTime}}
 		</text>
@@ -69,7 +66,6 @@
   import brightness from '@system.brightness'
   import app from '@system.app'
   import readingTimeStorage from '../../utils/readingTimeStorage.js'
-  import battery from '@system.battery'
   export default {
 	allSize: 0,
 	autoInterval: null,
@@ -91,9 +87,7 @@
 	  swipe: 'column',
 	  auto: false,
 	  nowTime: "00:00",
-	  batteryLevel: "",
 	  timer: null,
-	  timeCounter: 0,
 	  savedScrollOffset: 0,
 	  currentScrollTop: 0,
 	  totalPages: 0,
@@ -142,7 +136,6 @@
 	  saveIntervalValue: 10,
 	  alwaysShowTime: false,
 	  alwaysShowTimeSensitivity: 50,
-	  alwaysShowBattery: true,
 	  isNearTopForHd: false,
 	  lastTxtSizePage: 400,
 	  lastFontSize: 24,
@@ -183,28 +176,14 @@
 		this.nowTime = `${hours}:${minutes}`;
 	  }
 	},
-	updateBatteryStatus() {
-	  battery.getStatus({
-		success: (data) => {
-		  let level = Math.round(data.level * 100);
-		  this.batteryLevel = data.charging ? `充电中 ${level}%` : `电量 ${level}%`;
-		}
-	  })
-	},
 	updatePageNumber() {
 	  this.currentPage = this.currentChapterIndexInAll + 1;
 	  this.totalPages = this.totalChapters;
 	},
 	onInit() {
 	  this.updateTime();
-	  this.updateBatteryStatus();
 	  this.timer = setInterval(() => {
 		this.updateTime();
-		this.timeCounter++;
-		if (this.timeCounter >= 60) {
-		  this.updateBatteryStatus();
-		  this.timeCounter = 0;
-		}
 	  }, 1000);
 	  globalThis.isKeepScreenOn = this.isKeepScreenOn;
 	  global.runGC();
@@ -212,7 +191,6 @@
 	async onShow() {
 	  await this.loadSettings();
 	  const settingsChanged = this.isInitialized && (this.lastTxtSizePage !== this.txtSizePage || this.lastFontSize !== this.fontSize);
-	  this.updateBatteryStatus();
 	  if (typeof globalThis.isKeepScreenOn !== 'undefined') {
 		if (this.isKeepScreenOn !== globalThis.isKeepScreenOn) {
 		  this.isKeepScreenOn = globalThis.isKeepScreenOn;
@@ -262,7 +240,6 @@
 		{ key: 'EBOOK_PROGRESS_SAVE_INTERVAL', prop: 'saveIntervalValue', type: 'int', default: 10 },
 		{ key: 'EBOOK_ALWAYS_SHOW_TIME', prop: 'alwaysShowTime', type: 'bool', default: false },
 		{ key: 'EBOOK_ALWAYS_SHOW_TIME_SENSITIVITY', prop: 'alwaysShowTimeSensitivity', type: 'int', default: 200 },
-		{ key: 'EBOOK_ALWAYS_SHOW_BATTERY', prop: 'alwaysShowBattery', type: 'bool', default: true },
 		{ key: 'EBOOK_READ_MODE', prop: 'readMode', type: 'string', default: 'scroll' },
 		{ key: 'EBOOK_TEXT_READER_MARQUEE_ENABLED', prop: 'textReaderMarqueeEnabled', type: 'bool', default: false },
 		{ key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED', prop: 'detailProgressMarqueeEnabled', type: 'bool', default: false },
@@ -492,4 +469,3 @@
 	background-color: #000000;
   }
   </style>
-  
