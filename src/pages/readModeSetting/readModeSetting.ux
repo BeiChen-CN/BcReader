@@ -217,11 +217,6 @@
 	left:0px;
 	padding: 86px 12px;
 }
-
-.item2 {
-  background-color: #0D6EFF !important;
-}
-
 .item {
 	  width: 100%;
 	  height: 85px;
@@ -232,6 +227,11 @@
 	  align-items: center;
 	justify-content: space-between;
   }
+
+.item2 {
+  background-color: #0D6EFF !important;
+}
+
   
   .itemtext {
 	  font-size: 23px;

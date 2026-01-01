@@ -1,0 +1,184 @@
+<template>
+    <div class="page" style="flex-direction: column;">
+        <list class="list">
+            <list-item class="item" @click="toggleEmptyLines" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>章节开头空行</text>
+                    <text class="itemtext2" static>每章开头增加空行</text>
+                </div>
+                <img src="{{emptyLines ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
+            </list-item>
+            <list-item class="item" @click="toggleNumber" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>显示章节编号</text>
+                    <text class="itemtext2" static>每章开头显示编号</text>
+                </div>
+                <img src="{{showNumber ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
+            </list-item>
+            <list-item class="item" @click="toggleName" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>显示章节名称</text>
+                    <text class="itemtext2" static>每章开头显示名称</text>
+                </div>
+                <img src="{{showName ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
+            </list-item>
+        </list>
+
+        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+        <text style="position: absolute;left: 40px;top: 16px;width: 132px;line-height: 24px;font-weight:bold;font-size:16px;color:rgba(255,255,255,0.6);text-align:center;">
+          {{nowTime}}
+        </text>
+        <text static style="position: absolute;left: 40px;top: 36px;width: 132px;line-height: 32px;font-weight:bold;font-size:20px;color:white;text-align:center;">
+            额外内容
+        </text>
+    </div>
+</template>
+
+<script>
+    import router from '@system.router'
+    import storage from '../../utils/storage.js'
+
+    export default {
+        private: {
+            nowTime: "00:00",
+            timer: null,
+            timeFormat: '24h',
+            emptyLines: false,
+            showNumber: false,
+            showName: false
+        },
+        updateTime() {
+            const date = new Date();
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+
+            if (this.timeFormat === '12h') {
+                let ampm = hours >= 12 ? '下午' : '上午';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                this.nowTime = `${ampm} ${hours}:${minutes}`;
+            } else {
+                hours = hours < 10 ? '0' + hours : hours;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                this.nowTime = `${hours}:${minutes}`;
+            }
+        },
+        onInit() {
+            storage.get({
+                key: 'EBOOK_TIME_FORMAT',
+                success: (data) => {
+                    if (data) {
+                        this.timeFormat = data;
+                    }
+                    this.updateTime();
+                },
+                fail: () => {
+                    this.updateTime();
+                }
+            });
+            this.timer = setInterval(() => {
+                this.updateTime();
+            }, 1000);
+            
+            storage.get({
+                key: 'EBOOK_CHAPTER_START_EMPTY_LINES',
+                success: (data) => {
+                    this.emptyLines = data === 'true';
+                }
+            });
+            storage.get({
+                key: 'EBOOK_CHAPTER_START_NUMBER',
+                success: (data) => {
+                    this.showNumber = data === 'true';
+                }
+            });
+            storage.get({
+                key: 'EBOOK_CHAPTER_START_NAME',
+                success: (data) => {
+                    this.showName = data === 'true';
+                }
+            });
+        },
+        onDestroy() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+        },
+        toggleEmptyLines() {
+            this.emptyLines = !this.emptyLines;
+            storage.set({
+                key: 'EBOOK_CHAPTER_START_EMPTY_LINES',
+                value: this.emptyLines.toString()
+            });
+        },
+        toggleNumber() {
+            this.showNumber = !this.showNumber;
+            storage.set({
+                key: 'EBOOK_CHAPTER_START_NUMBER',
+                value: this.showNumber.toString()
+            });
+        },
+        toggleName() {
+            this.showName = !this.showName;
+            storage.set({
+                key: 'EBOOK_CHAPTER_START_NAME',
+                value: this.showName.toString()
+            });
+        },
+        back() {
+            router.back();
+        }
+    }
+</script>
+
+<style>
+.page {
+	width: 212px;
+	height: 520px;
+	background-color: #000000;
+}
+
+.list {
+	width: 212px;
+	height: 520px;
+	position: absolute;
+	top:0px;
+	left:0px;
+	padding: 86px 12px;
+}
+.item {
+	  width: 100%;
+	  height: 85px;
+	  padding: 12px 18px;
+	  margin-bottom: 8px;
+	  background-color: #262626;
+	  border-radius: 26px;
+	  align-items: center;
+	justify-content: space-between;
+  }
+  
+  .itemtext {
+	  font-size: 23px;
+	  width: 100%;
+	  font-weight: bold;
+	  color: white;
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  
+  .itemtext2 {
+	  font-size: 20px;
+	  font-weight: bold;
+	  color: rgba(255,255,255,0.6);
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  .item-content {
+	  height: 100%;
+	  flex:1;
+	  flex-direction: column;
+	  justify-content: space-between;
+  }
+</style>

@@ -1,11 +1,22 @@
 <import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page" style="flex-direction: column">
-		<div class="item">
-			<text static class="description">
-				阅读器页面中的“上一章”和“下一章”按钮。
-			</text>
-		</div>
+        <list class="list">
+            <list-item class="item" style="height: auto; padding: 20px;" type="tip">
+			    <text static class="description">
+				    阅读器页面中的“上一章”和“下一章”按钮。
+			    </text>
+            </list-item>
+            
+            <list-item class="item" @click="toggleShowInfo" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>章节预览</text>
+                    <text class="itemtext2" static>显示章节名称</text>
+                </div>
+                <img src="{{showChapterInfo ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
+            </list-item>
+        </list>
+
 		<number style="position: absolute;top:255px;" max.static="200" min.static="0" step.static="5" unit.static="px" value="{{scrollSensitivity}}" @change="onSensitivityChange" name.static="触发灵敏度">
 		</number>
 		<number style="position: absolute;top:365px;" max.static="200" min.static="25" step.static="5" unit.static="px" value="{{buttonHeight}}" @change="onHeightChange" name.static="按钮高度">
@@ -26,6 +37,7 @@ import storage from '../../utils/storage.js';
 
 const HEIGHT_STORAGE_KEY = "EBOOK_CHAPTER_SWITCH_HEIGHT";
 const SENSITIVITY_STORAGE_KEY = "EBOOK_CHAPTER_SWITCH_SENSITIVITY";
+const SHOW_INFO_STORAGE_KEY = "EBOOK_CHAPTER_SWITCH_SHOW_INFO";
 const DEFAULT_HEIGHT = 80;
 const DEFAULT_SENSITIVITY = 50;
 
@@ -33,6 +45,7 @@ export default {
 	private: {
 		buttonHeight: DEFAULT_HEIGHT,
 		scrollSensitivity: DEFAULT_SENSITIVITY,
+        showChapterInfo: false,
 		nowTime: "00:00",
 		timer: null
 	},
@@ -65,6 +78,15 @@ export default {
 				}
 			},
 		});
+        storage.get({
+            key: SHOW_INFO_STORAGE_KEY,
+            success: (data) => {
+                this.showChapterInfo = data === 'true';
+            },
+            fail: () => {
+                this.showChapterInfo = false;
+            }
+        });
 	},
 	onDestroy(){
 	  if (this.timer) {
@@ -86,9 +108,17 @@ export default {
 			value: this.scrollSensitivity.toString(),
 		});
 	},
+    toggleShowInfo() {
+        this.showChapterInfo = !this.showChapterInfo;
+        storage.set({
+            key: SHOW_INFO_STORAGE_KEY,
+            value: this.showChapterInfo.toString()
+        });
+    },
 	reset() {
 		this.buttonHeight = DEFAULT_HEIGHT;
 		this.scrollSensitivity = DEFAULT_SENSITIVITY;
+        this.showChapterInfo = false;
 		storage.set({
 			key: HEIGHT_STORAGE_KEY,
 			value: this.buttonHeight.toString(),
@@ -97,6 +127,10 @@ export default {
 			key: SENSITIVITY_STORAGE_KEY,
 			value: this.scrollSensitivity.toString(),
 		});
+        storage.set({
+            key: SHOW_INFO_STORAGE_KEY,
+            value: 'false'
+        });
 	},
 	back() {
 		router.back();
@@ -110,26 +144,52 @@ export default {
 	height: 520px;
 	background-color: #000000;
 }
-
-.item {
+.list {
+	width: 212px;
+	height: 520px;
 	position: absolute;
-	left: 4px;
-	top: 82px;
-	width: 204px;
-	height: 162px;
-	border-radius: 26px;
-	flex-direction: column;
-	border: 3px solid #262626;
-	align-items: center;
-	justify-content: center;
-	padding: 12px;
+	top:0px;
+	left:0px;
+	padding: 86px 12px;
 }
+.item {
+	  width: 100%;
+	  height: 85px;
+	  padding: 12px 18px;
+	  margin-bottom: 8px;
+	  background-color: #262626;
+	  border-radius: 26px;
+	  align-items: center;
+	justify-content: space-between;
+  }
+  
+  .itemtext {
+	  font-size: 23px;
+	  width: 100%;
+	  font-weight: bold;
+	  color: white;
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  
+  .itemtext2 {
+	  font-size: 20px;
+	  font-weight: bold;
+	  color: rgba(255,255,255,0.6);
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  .item-content {
+	  height: 100%;
+	  flex:1;
+	  flex-direction: column;
+	  justify-content: space-between;
+  }
 
 .description {
 	font-size: 19px;
 	color: white;
 	text-align: left;
-	padding: 10px;
 	width: 100%;
 }
 </style>
