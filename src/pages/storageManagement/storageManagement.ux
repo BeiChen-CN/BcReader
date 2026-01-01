@@ -5,19 +5,19 @@
 				<text class="item-title" style="text-align: left;" static>手环存储空间</text>
 				<div static style="width: 100%; height: 1px; background-color: rgba(255,255,255,0.2); margin: 8px 0px;"></div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
-					<text class="item-title" style="font-size: 18px;" static>总空间</text>
+					<text class="item-title" style="font-size: 18px;" static>总共</text>
 					<text class="item-value" style="font-size: 17px; width: auto;">{{totalStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
-					<text class="item-title" style="font-size: 18px;" static>已用空间</text>
+					<text class="item-title" style="font-size: 18px;" static>已用</text>
 					<text class="item-value" style="font-size: 17px; width: auto;">{{usedStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 8px;">
-					<text class="item-title" style="font-size: 18px;" static>预留空间</text>
+					<text class="item-title" style="font-size: 18px;" static>预留</text>
 					<text class="item-value" style="font-size: 17px; width: auto;">{{reservedStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin-bottom: 12px;">
-					<text class="item-title" style="font-size: 18px;" static>实际可用</text>
+					<text class="item-title" style="font-size: 18px;" static>可用</text>
 					<text class="item-value" style="font-size: 17px; width: auto; color: {{actualAvailableColor}};">{{actualAvailableStorage}}</text>
 				</div>
 				<progress class="storage-progress" percent="{{storagePercent}}" type="horizontal" style="color: #888;"></progress>
@@ -28,15 +28,15 @@
 				<text class="item-value" style="width: auto;font-size: 19px;">{{totalExclBooks}}</text>
 				<div static style="width: 100%; height: 1px; background-color: rgba(255,255,255,0.2); margin: 8px 0px;"></div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 18px;" static>书籍索引</text>
+					<text class="item-title" style="font-size: 18px;" static>索引</text>
 					<text class="item-value" style="font-size: 17px; width: auto;">{{bookIndexStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 18px;" static>阅读进度</text>
+					<text class="item-title" style="font-size: 18px;" static>进度</text>
 					<text class="item-value" style="font-size: 17px; width: auto;">{{readProgressStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
-					<text class="item-title" style="font-size: 18px;" static>阅读时长</text>
+					<text class="item-title" style="font-size: 18px;" static>时长</text>
 					<text class="item-value" style="font-size: 17px; width: auto;">{{readingTimeStorage}}</text>
 				</div>
 				<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;">
