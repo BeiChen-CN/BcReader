@@ -370,23 +370,66 @@
 			}
 		}
 
-	  file.get({
-		uri: this.cPath,
-		success: (data) => {
-		  this.allSize = data.length; this.updatePageNumber();
-		  if (this.readMode === 'nostalgic' || (this.preloadChapter && this.allSize > 0)) {
-			file.readArrayBuffer({
-			  uri: this.cPath,
-			  success: (arrData) => {
-				try { if (!arrData.buffer || arrData.buffer.byteLength === 0) this.chapterContentCache = ""; else { const buffer = new Uint8Array(arrData.buffer); const chars = []; for (let i = 0; i < buffer.length; i += 2) chars.push(String.fromCharCode(buffer[i + 1] * 256 + buffer[i])); this.chapterContentCache = chars.join(''); if (this.readMode === 'nostalgic') this.nostalgicFullContent = this.chapterContentCache; } } catch (e) { this.chapterContentCache = null; if (this.readMode === 'nostalgic') this.nostalgicFullContent = ""; }
-				if (callback) callback();
-			  },
-			  fail: (data, code) => { this.chapterContentCache = null; if (this.readMode === 'nostalgic') this.nostalgicFullContent = ""; if (callback) callback(); }
-			});
-		  } else { if (callback) callback(); }
-		},
-		fail: (data, code) => { this.allSize = 0; if (callback) callback(); }
-	  });
+		file.get({
+			uri: this.cPath,
+			success: (data) => {
+				this.allSize = data.length;
+				
+                if (this.readMode === 'nostalgic' || (this.preloadChapter && this.allSize > 0)) {
+                    file.readArrayBuffer({
+                        uri: this.cPath,
+                        success: (arrData) => {
+                            try {
+                                if (!arrData.buffer || arrData.buffer.byteLength === 0) {
+                                    this.chapterContentCache = "";
+                                } else {
+                                    const buffer = new Uint8Array(arrData.buffer);
+                                    const chars = [];
+                                    for(let i = 0; i < buffer.length; i += 2){
+                                      chars.push(String.fromCharCode(buffer[i+1]*256 + buffer[i]));
+                                    }
+                                    this.chapterContentCache = chars.join('');
+                                    if (this.readMode === 'nostalgic') {
+                                        let prefix = "";
+                                        if (this.chapterStartEmptyLines) prefix += "\n\n\n";
+                                        if (this.chapterStartNumber) prefix += `第 ${this.currentChapterIndexInAll + 1} 章\n`;
+                                        if (this.chapterStartName) prefix += `${this.currentChapterName}\n\n`;
+                                        this.nostalgicFullContent = prefix + this.chapterContentCache;
+                                    }
+                                }
+                            } catch(e) {
+                                this.chapterContentCache = null;
+                                if (this.readMode === 'nostalgic') {
+                                    this.nostalgicFullContent = "";
+                                }
+                            }
+                            if(callback) callback();
+                        },
+                        fail: (data, code) => {
+                            this.chapterContentCache = null;
+                            if (this.readMode === 'nostalgic') {
+                                this.nostalgicFullContent = "";
+                            }
+							if (code === 301) {
+								prompt.showToast({ message: '文件不存在，请重新同步该章节' });
+							}
+                            if(callback) callback();
+                        }
+                    });
+                } else {
+				    if(callback) callback();
+                }
+			},
+			fail: (data, code) => {
+				this.allSize = 0;
+				let errorMessage = `加载章节失败: ${code}`;
+				if (code === 301) {
+					errorMessage = '文件不存在，请重新同步该章节';
+				}
+                prompt.showToast({ message: errorMessage });
+				if(callback) callback();
+			}
+		});
 	},
 	loadInitialSegments() { var that = this; this.wait = true; this.readFileText(this.currentFileOffset, function (str, bytesRead) { that.page1 = { text: str, offset: that.currentFileOffset, length: bytesRead }; that.loadNextSegmentNoScroll(); that.updateContentHeight(); }); },
 	loadNextSegmentNoScroll() { var that = this; let lastSeg = that.page2 || that.page1; let newOffset = lastSeg.offset + lastSeg.length; if (newOffset >= this.allSize) { that.isAtChapterEnd = true; that.page2 = null; that.restoreScrollPosition(); return; } that.readFileText(newOffset, function (str, bytesRead) { if (str) that.page2 = { text: str, offset: newOffset, length: bytesRead }; else that.page2 = null; that.restoreScrollPosition(); that.updateContentHeight(); }); },
