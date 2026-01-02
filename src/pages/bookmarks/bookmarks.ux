@@ -67,8 +67,6 @@ export default {
     this.isNavigating = false;
     storage.get({ key: 'EBOOK_BOOKMARK_MARQUEE_ENABLED', success: (data) => { this.bookmarkMarqueeEnabled = data === 'true'; } });
 	storage.get({ key: 'EBOOK_READ_MODE', success: (data) => { if (data) this.readMode = data; }});
-    this.allBookmarks = [];
-    this.visibleBookmarks = [];
     await this.loadBookmarks();
   },
   onDestroy() {
@@ -77,6 +75,9 @@ export default {
     global.runGC();
   },
   async loadBookmarks() {
+    this.allBookmarks = [];
+    this.visibleBookmarks = [];
+
     this.allBookmarks = await bookStorage.getBookmarks(this.name);
     this.totalPages = Math.ceil(this.allBookmarks.length / PAGE_SIZE) || 1;
     this.currentPage = 0;
