@@ -1,234 +1,109 @@
+<import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
   <div class="page" style="flex-direction: column;">
-	<list class="list">
-		<list-item class="item" @click="toggleShelfMarquee" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>书架</text>
-				<text class="itemtext2" static>内容滚动显示</text>
-			</div>
-			<img src="{{shelfMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-		</list-item>
-		<list-item class="item" @click="toggleBookmarkMarquee" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>书签列表</text>
-				<text class="itemtext2" static>页面标题滚动</text>
-			</div>
-			<img src="{{bookmarkMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-		</list-item>
-		<list-item class="item" @click="toggleBookinfoMarquee" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>书籍详情</text>
-				<text class="itemtext2" static>内容滚动显示</text>
-			</div>
-			<img src="{{bookinfoMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-		</list-item>
-		<list-item class="item" @click="toggleChapterListMarquee" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>章节列表</text>
-				<text class="itemtext2" static>页面标题滚动</text>
-			</div>
-			<img src="{{chapterListMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-		</list-item>
-		<list-item class="item" @click="toggleChapterListItemMarquee" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>章节列表项</text>
-				<text class="itemtext2" static>列表内容滚动</text>
-			</div>
-			<img src="{{chapterListItemMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-		</list-item>
-		<list-item class="item" @click="toggleTextReaderMarquee" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>书籍阅读器</text>
-				<text class="itemtext2" static>页面标题滚动</text>
-			</div>
-			<img src="{{textReaderMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-		</list-item>
-		<list-item class="item" @click="toggleDetailProgressMarquee" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>书籍阅读器</text>
-				<text class="itemtext2" static>底部进度滚动</text>
-			</div>
-			<img src="{{detailProgressMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-		</list-item>
-		<list-item class="item" @click="toggleDetailMarquee" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>文本阅读页</text>
-				<text class="itemtext2" static>页面标题滚动</text>
-			</div>
-			<img src="{{detailMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-		</list-item>
-	</list>
-	
-	<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
-	<text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
-	  {{nowTime}}
-	</text>
-	<text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
-		跑马灯设置
-	</text>
+    <div class="preview-container">
+      <div class="preview-screen">
+        <div class="margin-indicator top" style="height: {{verticalMargin / 3}}px;"></div>
+        <div class="content-area">
+          <text static class="preview-text" style="opacity:{{opacity/100}};">
+            文本内容区域
+          </text>
+        </div>
+        <div class="margin-indicator bottom" style="height: {{verticalMargin / 3}}px;"></div>
+      </div>
+      <div class="info-panel">
+        <text static class="info-title">垂直边距</text>
+        <text class="info-value">{{verticalMargin}}px</text>
+        <text class="info-desc">上下各留白 {{verticalMargin}}px</text>
+      </div>
+    </div>
+    <number style="position: absolute;top:365px;" max.static="200" min.static="0" step.static="5" value="{{verticalMargin}}" unit.static="px" @change="changeMargin" name.static="调整边距"></number>
+    <text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
+      {{nowTime}}
+    </text>
+    <text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
+      边距
+    </text>
   </div>
 </template>
-
 <script>
 import router from '@system.router'
 import storage from '../../utils/storage.js'
-
+import app from '@system.app'
 export default {
   private: {
-	shelfMarqueeEnabled: false,
-	bookmarkMarqueeEnabled: false,
-	bookinfoMarqueeEnabled: true,
-	chapterListMarqueeEnabled: false,
-	chapterListItemMarqueeEnabled: false,
-	textReaderMarqueeEnabled: false,
-	detailMarqueeEnabled: false,
-	detailProgressMarqueeEnabled: false,
-	nowTime: "00:00",
-	timer: null
+    verticalMargin: 20,
+    opacity: 100,
+    nowTime: "00:00",
+    timer: null
   },
   updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		hours = hours < 10 ? '0' + hours : hours;
-		minutes = minutes < 10 ? '0' + minutes : minutes;
-		this.nowTime = `${hours}:${minutes}`;
-	},
-  onInit() {
-	this.updateTime();
-	this.timer = setInterval(() => {
-		this.updateTime();
-	}, 1000);
-    storage.get({
-      key: 'EBOOK_SHELF_MARQUEE_ENABLED',
-      success:(data)=>{
-        this.shelfMarqueeEnabled = data === 'true'
-      },
-	  default: 'false'
-	});
-	storage.get({
-      key: 'EBOOK_BOOKMARK_MARQUEE_ENABLED',
-      success:(data)=>{
-        this.bookmarkMarqueeEnabled = data === 'true'
-      },
-	  default: 'false'
-	});
-	storage.get({
-      key: 'EBOOK_BOOKINFO_MARQUEE_ENABLED',
-      success:(data)=>{
-        this.bookinfoMarqueeEnabled = data === 'true'
-      },
-	  default: 'true'
-	});
-	storage.get({
-      key: 'EBOOK_CHAPTER_LIST_MARQUEE_ENABLED',
-      success:(data)=>{
-        this.chapterListMarqueeEnabled = data === 'true'
-      },
-	  default: 'false'
-	});
-	storage.get({
-      key: 'EBOOK_CHAPTER_LIST_ITEM_MARQUEE_ENABLED',
-      success:(data)=>{
-        this.chapterListItemMarqueeEnabled = data === 'true'
-      },
-	  default: 'false'
-	});
-	storage.get({
-      key: 'EBOOK_TEXT_READER_MARQUEE_ENABLED',
-      success:(data)=>{
-        this.textReaderMarqueeEnabled = data === 'true'
-      },
-	  default: 'false'
-	});
-	storage.get({
-      key: 'EBOOK_DETAIL_MARQUEE_ENABLED',
-      success:(data)=>{
-        this.detailMarqueeEnabled = data === 'true'
-      },
-	  default: 'false'
-	});
-	storage.get({
-      key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED',
-      success:(data)=>{
-        this.detailProgressMarqueeEnabled = data === 'true'
-      },
-	  default: 'false'
-	});
+    const date = new Date();
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    hours = hours < 10 ? '0' + hours : hours;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    this.nowTime = `${hours}:${minutes}`;
   },
-  onDestroy(){
-	  if (this.timer) {
+  onInit() {
+    this.updateTime();
+    this.timer = setInterval(() => {
+      this.updateTime();
+    }, 1000);
+    storage.get({
+      key: 'EBOOK_VERTICAL_MARGIN',
+      success: (data) => {
+        if (data) {
+          this.verticalMargin = parseInt(data)
+        }
+      }
+    })
+    storage.get({
+      key: "EBOOK_OPACITY",
+      success: (data) => {
+        if (data) {
+          this.opacity = parseFloat(data);
+        }
+      },
+    })
+  },
+  onDestroy() {
+    if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
-	},
-  back(){
-  	router.back();
   },
-  toggleShelfMarquee() {
-	this.shelfMarqueeEnabled = !this.shelfMarqueeEnabled;
-	storage.set({
-		key: 'EBOOK_SHELF_MARQUEE_ENABLED',
-		value: this.shelfMarqueeEnabled.toString()
-	});
+  changeMargin(e) {
+    this.verticalMargin = e.detail.value
+    storage.set({
+      key: 'EBOOK_VERTICAL_MARGIN',
+      value: this.verticalMargin.toString()
+    })
   },
-  toggleBookmarkMarquee() {
-	this.bookmarkMarqueeEnabled = !this.bookmarkMarqueeEnabled;
-	storage.set({
-		key: 'EBOOK_BOOKMARK_MARQUEE_ENABLED',
-		value: this.bookmarkMarqueeEnabled.toString()
-	});
+  reset() {
+    this.verticalMargin = 20;
+    storage.set({
+      key: "EBOOK_VERTICAL_MARGIN",
+      value: this.verticalMargin.toString(),
+    });
   },
-  toggleBookinfoMarquee() {
-	this.bookinfoMarqueeEnabled = !this.bookinfoMarqueeEnabled;
-	storage.set({
-		key: 'EBOOK_BOOKINFO_MARQUEE_ENABLED',
-		value: this.bookinfoMarqueeEnabled.toString()
-	});
+  back() {
+    storage.set({
+      key: 'EBOOK_VERTICAL_MARGIN',
+      value: this.verticalMargin.toString(),
+    })
+    router.back();
   },
-  toggleChapterListMarquee() {
-	this.chapterListMarqueeEnabled = !this.chapterListMarqueeEnabled;
-	storage.set({
-		key: 'EBOOK_CHAPTER_LIST_MARQUEE_ENABLED',
-		value: this.chapterListMarqueeEnabled.toString()
-	});
-  },
-  toggleChapterListItemMarquee() {
-	this.chapterListItemMarqueeEnabled = !this.chapterListItemMarqueeEnabled;
-	storage.set({
-		key: 'EBOOK_CHAPTER_LIST_ITEM_MARQUEE_ENABLED',
-		value: this.chapterListItemMarqueeEnabled.toString()
-	});
-  },
-  toggleTextReaderMarquee() {
-	this.textReaderMarqueeEnabled = !this.textReaderMarqueeEnabled;
-	storage.set({
-		key: 'EBOOK_TEXT_READER_MARQUEE_ENABLED',
-		value: this.textReaderMarqueeEnabled.toString()
-	});
-  },
-  toggleDetailMarquee() {
-	this.detailMarqueeEnabled = !this.detailMarqueeEnabled;
-	storage.set({
-		key: 'EBOOK_DETAIL_MARQUEE_ENABLED',
-		value: this.detailMarqueeEnabled.toString()
-	});
-  },
-  toggleDetailProgressMarquee() {
-	this.detailProgressMarqueeEnabled = !this.detailProgressMarqueeEnabled;
-	storage.set({
-		key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED',
-		value: this.detailProgressMarqueeEnabled.toString()
-	});
+  exit() {
+    app.terminate();
   }
 }
 </script>
-
 <style>
 .page {
-	width: 192px;
-	height: 490px;
-	background-color: #000000;
+  width: 192px;
+  height: 490px;
+  background-color: #000000;
 }
 
 .preview-container {
@@ -243,39 +118,66 @@ export default {
   padding: 10px;
 }
 
-.item {
-	  width: 100%;
-	  height: 85px;
-	  padding: 12px 18px;
-	  margin-bottom: 8px;
-	  background-color: #262626;
-	  border-radius: 26px;
-	  align-items: center;
-	justify-content: space-between;
-  }
-  
-  .itemtext {
-	  font-size: 23px;
-	  width: 100%;
-	  font-weight: bold;
-	  color: white;
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
-  
-  .itemtext2 {
-	  font-size: 20px;
-	  font-weight: bold;
-	  color: rgba(255,255,255,0.6);
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
-  
-  
-  .item-content {
-	  height: 100%;
-	  flex:1;
-	  flex-direction: column;
-	  justify-content: space-between;
-  }
+.preview-screen {
+  width: 106px;
+  height: 260px;
+  background-color: #1a1a1a;
+  border-radius: 53px;
+  border: 3px solid #333333;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.margin-indicator {
+  width: 100%;
+  background: linear-gradient(180deg, #0D6EFF 0%, #0D6EFF 100%);
+  opacity: 0.3;
+}
+
+.content-area {
+  flex: 1;
+  width: 100%;
+  background-color: #262626;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.preview-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  text-overflow: ellipsis;
+}
+
+.info-panel {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  margin-left: 10px;
+}
+
+.info-title {
+  font-size: 21px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.info-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #0D6EFF;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.info-desc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
 </style>
