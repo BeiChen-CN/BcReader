@@ -90,6 +90,8 @@ export default {
 			if (data) this.readMode = data;
 		}});
     
+    this.allBookmarks = [];
+    this.visibleBookmarks = [];
     await this.loadBookmarks();
   },
   onDestroy() {

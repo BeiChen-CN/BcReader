@@ -703,7 +703,11 @@
                                     }
                                     this.chapterContentCache = chars.join('');
                                     if (this.readMode === 'nostalgic') {
-                                        this.nostalgicFullContent = this.chapterContentCache;
+                                        let prefix = "";
+                                        if (this.chapterStartEmptyLines) prefix += "\n\n\n";
+                                        if (this.chapterStartNumber) prefix += `第 ${this.currentChapterIndexInAll + 1} 章\n`;
+                                        if (this.chapterStartName) prefix += `${this.currentChapterName}\n\n`;
+                                        this.nostalgicFullContent = prefix + this.chapterContentCache;
                                     }
                                 }
                             } catch(e) {
