@@ -31,35 +31,35 @@
 		  </list-item>
 		  <list-item class="item" @click="toggleChapterListItemMarquee" type="item">
 			  <div class="item-content">
-				  <text class="itemtext" static>章节列表项</text>
+				  <text class="itemtext" static>章节列表</text>
 				  <text class="itemtext2" static>列表内容滚动</text>
 			  </div>
 			  <img src="{{chapterListItemMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
 		  </list-item>
 		  <list-item class="item" @click="toggleTextReaderMarquee" type="item">
 			  <div class="item-content">
-				  <text class="itemtext" static>书籍阅读器</text>
+				  <text class="itemtext" static>书籍阅读</text>
 				  <text class="itemtext2" static>页面标题滚动</text>
 			  </div>
 			  <img src="{{textReaderMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
 		  </list-item>
 		  <list-item class="item" @click="toggleDetailProgressMarquee" type="item">
 			  <div class="item-content">
-				  <text class="itemtext" static>书籍阅读器</text>
+				  <text class="itemtext" static>书籍阅读</text>
 				  <text class="itemtext2" static>底部进度滚动</text>
 			  </div>
 			  <img src="{{detailProgressMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
 		  </list-item>
 		  <list-item class="item" @click="toggleDetailMarquee" type="item">
 			  <div class="item-content">
-				  <text class="itemtext" static>文本阅读页</text>
+				  <text class="itemtext" static>文本阅读</text>
 				  <text class="itemtext2" static>页面标题滚动</text>
 			  </div>
 			  <img src="{{detailMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
 		  </list-item>
 	  </list>
 	  
-	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
 	  <text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
 		{{nowTime}}
 	  </text>
@@ -225,58 +225,54 @@
   </script>
   
   <style>
-  .page {
-	  width: 192px;
-	  height: 490px;
-	  background-color: #000000;
-  }
-  
-  .preview-container {
+.page {
+	width: 192px;
+	height: 490px;
+	background-color: #000000;
+}
+
+.list {
+	width: 192px;
+	height: 490px;
 	position: absolute;
-	  left: 10px;
-	  top: 82px;
-	  width: 172px;
-	height: 280px;
-	flex-direction: row;
+	top:0px;
+	left:0px;
+	padding: 86px 12px;
+}
+
+.item {
+	  width: 100%;
+	  height: 85px;
+	  padding: 12px 18px;
+	  margin-bottom: 8px;
+	  background-color: #262626;
+	  border-radius: 26px;
+	  align-items: center;
 	justify-content: space-between;
-	align-items: center;
-	padding: 10px;
   }
   
-  .item {
-		width: 100%;
-		height: 85px;
-		padding: 12px 18px;
-		margin-bottom: 8px;
-		background-color: #262626;
-		border-radius: 26px;
-		align-items: center;
-	  justify-content: space-between;
-	}
-	
-	.itemtext {
-		font-size: 23px;
-		width: 100%;
-		font-weight: bold;
-		color: white;
-		text-overflow: ellipsis;
-		lines: 1;
-	}
-	
-	.itemtext2 {
-		font-size: 20px;
-		font-weight: bold;
-		color: rgba(255,255,255,0.6);
-		text-overflow: ellipsis;
-		lines: 1;
-	}
-	
-	
-	.item-content {
-		height: 100%;
-		flex:1;
-		flex-direction: column;
-		justify-content: space-between;
-	}
+  .itemtext {
+	  font-size: 23px;
+	  width: 100%;
+	  font-weight: bold;
+	  color: white;
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  
+  .itemtext2 {
+	  font-size: 16px;
+	  font-weight: bold;
+	  color: rgba(255,255,255,0.6);
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+
+    .item-content {
+        height: 100%;
+        flex: 1;
+        flex-direction: column;
+        justify-content: space-between;
+    }
   </style>
   

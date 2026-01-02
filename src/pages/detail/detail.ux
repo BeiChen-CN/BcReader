@@ -47,7 +47,7 @@
 		</text>
 	  </div>
 	  <img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 212px;height: 142px;" />
-	  <div show="{{showSetting}}" style="position: absolute; top: 412px; left: 30px; width: 152px; height: 100px; flex-direction: column; justify-content: flex-start; align-items: center;">
+	  <div show="{{showSetting}}" style="position: absolute; top: 412px; left: 20px; width: 152px; height: 100px; flex-direction: column; justify-content: flex-start; align-items: center;">
 		<marquee if="{{detailProgressMarqueeEnabled}}" scrollamount="40" text-offset="25" style="line-height: 32px;font-weight:bold;font-size:22px;color:white;text-align:center;">
 		  {{currentPage}} / {{totalPages}}
 		</marquee>
