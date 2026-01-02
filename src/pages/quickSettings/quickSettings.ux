@@ -4,21 +4,21 @@
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
                 <text class="section-title" static>标题栏手势</text>
             </list-item>
-            <list-item class="item" style="height: 120px;" @click="toggleLongPress" type="item">
+            <list-item class="item" @click="toggleLongPress" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>长按标题</text>
                     <text class="itemtext2" static>切换屏幕常亮</text>
                 </div>
                 <img src="{{shortcutLongPressScreenOn ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
             </list-item>
-            <list-item class="item" style="height: 120px;" @click="toggleDoubleClick" type="item">
+            <list-item class="item" @click="toggleDoubleClick" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>双击标题</text>
                     <text class="itemtext2" static>添加书签</text>
                 </div>
                 <img src="{{shortcutDoubleClickBookmark ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
             </list-item>
-            <list-item class="item" style="height: 120px;" @click="toggleTripleClick" type="item">
+            <list-item class="item" @click="toggleTripleClick" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>三击标题</text>
                     <text class="itemtext2" static>跳转书签管理</text>
