@@ -51,7 +51,7 @@
       </list-item>
       <list-item for="{{visibleBooks}}" class="item {{shelfStyle === 'cover' ? 'cover-item' : ''}}" @click="handleCategoryItemClick($item)" type="nook">
         <img if="{{shelfStyle === 'cover' && $item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
-        <div if="{{shelfStyle === 'cover' && !$item.hasRealCover}}" class="cover-image-placeholder"></div>
+        <div if="{{shelfStyle === 'cover' && !$item.hasRealCover && !$item.isCategory}}" class="cover-image-placeholder"></div>
         <div class="{{shelfStyle === 'cover' ? 'cover-content' : 'category-item-content'}}">
           <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" text-offset="25" class="itemtext">{{$item.name}}</marquee>
           <text else class="itemtext">{{$item.name}}</text>

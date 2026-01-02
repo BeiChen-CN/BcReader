@@ -1,0 +1,191 @@
+<template>
+    <div class="page" style="flex-direction: column;">
+        <list class="list">
+            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
+                <text class="section-title" static>标题栏手势</text>
+            </list-item>
+            <list-item class="item" style="height: 120px;" @click="toggleLongPress" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>长按标题</text>
+                    <text class="itemtext2" static>切换屏幕常亮</text>
+                </div>
+                <img src="{{shortcutLongPressScreenOn ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
+            </list-item>
+            <list-item class="item" style="height: 120px;" @click="toggleDoubleClick" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>双击标题</text>
+                    <text class="itemtext2" static>添加书签</text>
+                </div>
+                <img src="{{shortcutDoubleClickBookmark ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
+            </list-item>
+            <list-item class="item" style="height: 120px;" @click="toggleTripleClick" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>三击标题</text>
+                    <text class="itemtext2" static>跳转书签管理</text>
+                </div>
+                <img src="{{shortcutTripleClickBookmarkManager ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
+            </list-item>
+        </list>
+
+        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
+        <text style="position: absolute;top: 16px;width: 212px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
+          {{nowTime}}
+        </text>
+        <text static style="position: absolute;top: 36px;width: 212px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
+            快捷功能
+        </text>
+    </div>
+</template>
+
+<script>
+    import router from '@system.router'
+    import storage from '../../utils/storage.js'
+
+    export default {
+        private: {
+            nowTime: "00:00",
+            timer: null,
+            timeFormat: '24h',
+            shortcutLongPressScreenOn: false,
+            shortcutDoubleClickBookmark: false,
+            shortcutTripleClickBookmarkManager: false
+        },
+        updateTime() {
+            const date = new Date();
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+
+            if (this.timeFormat === '12h') {
+                let ampm = hours >= 12 ? '下午' : '上午';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                this.nowTime = `${ampm} ${hours}:${minutes}`;
+            } else {
+                hours = hours < 10 ? '0' + hours : hours;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                this.nowTime = `${hours}:${minutes}`;
+            }
+        },
+        onInit() {
+            storage.get({
+                key: 'EBOOK_TIME_FORMAT',
+                success: (data) => {
+                    if (data) {
+                        this.timeFormat = data;
+                    }
+                    this.updateTime();
+                },
+                fail: () => {
+                    this.updateTime();
+                }
+            });
+            this.timer = setInterval(() => {
+                this.updateTime();
+            }, 1000);
+            
+            storage.get({
+                key: 'EBOOK_SHORTCUT_LONG_PRESS_SCREEN_ON',
+                success: (data) => { this.shortcutLongPressScreenOn = data === 'true'; }
+            });
+            storage.get({
+                key: 'EBOOK_SHORTCUT_DOUBLE_CLICK_BOOKMARK',
+                success: (data) => { this.shortcutDoubleClickBookmark = data === 'true'; }
+            });
+            storage.get({
+                key: 'EBOOK_SHORTCUT_TRIPLE_CLICK_BOOKMARK_MANAGER',
+                success: (data) => { this.shortcutTripleClickBookmarkManager = data === 'true'; }
+            });
+        },
+        onDestroy() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+        },
+        toggleLongPress() {
+            this.shortcutLongPressScreenOn = !this.shortcutLongPressScreenOn;
+            storage.set({
+                key: 'EBOOK_SHORTCUT_LONG_PRESS_SCREEN_ON',
+                value: this.shortcutLongPressScreenOn.toString()
+            });
+        },
+        toggleDoubleClick() {
+            this.shortcutDoubleClickBookmark = !this.shortcutDoubleClickBookmark;
+            storage.set({
+                key: 'EBOOK_SHORTCUT_DOUBLE_CLICK_BOOKMARK',
+                value: this.shortcutDoubleClickBookmark.toString()
+            });
+        },
+        toggleTripleClick() {
+            this.shortcutTripleClickBookmarkManager = !this.shortcutTripleClickBookmarkManager;
+            storage.set({
+                key: 'EBOOK_SHORTCUT_TRIPLE_CLICK_BOOKMARK_MANAGER',
+                value: this.shortcutTripleClickBookmarkManager.toString()
+            });
+        },
+        back() {
+            router.back();
+        }
+    }
+</script>
+
+<style>
+.page {
+	width: 212px;
+	height: 520px;
+	background-color: #000000;
+}
+
+.list {
+	width: 212px;
+	height: 520px;
+	position: absolute;
+	top:0px;
+	left:0px;
+	padding: 86px 12px;
+}
+
+  
+.item {
+	  width: 100%;
+	  height: 85px;
+	  padding: 12px 18px;
+	  margin-bottom: 8px;
+	  background-color: #262626;
+	  border-radius: 26px;
+	  align-items: center;
+	justify-content: space-between;
+  }
+  
+  .itemtext {
+	  font-size: 23px;
+	  width: 100%;
+	  font-weight: bold;
+	  color: white;
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  
+  .itemtext2 {
+	  font-size: 20px;
+	  font-weight: bold;
+	  color: rgba(255,255,255,0.6);
+	  text-overflow: ellipsis;
+	  lines: 1;
+  }
+  
+  .item-content {
+	  height: 100%;
+	  flex:1;
+	  flex-direction: column;
+	  justify-content: space-between;
+  }
+
+    .section-title {
+        font-size: 24px;
+        line-height: 36px;
+        font-weight: bold;
+        color: rgba(255, 255, 255, 0.5);
+    }
+</style>

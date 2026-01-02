@@ -3,7 +3,8 @@
     <list class="list">
       <list-item for="{{visibleChapters}}" class="item" @click="selectChapter($item)" onlongpress="deleteChapter($item)" type="chapter">
         <div class="chapter-info">
-            <text class="itemtext {{currentChapterIndex == $item.index ? 'itemtext-current' : ''}}">{{$item.name}}</text>
+            <marquee if="{{chapterListItemMarqueeEnabled}}" class="itemtext {{currentChapterIndex == $item.index ? 'itemtext-current' : ''}}" scrollamount="30" text-offset="25">{{$item.name}}</marquee>
+            <text else class="itemtext {{currentChapterIndex == $item.index ? 'itemtext-current' : ''}}">{{$item.name}}</text>
             <text class="itemtext2">{{$item.wordCount}} 字</text>
         </div>
       </list-item>
@@ -48,6 +49,7 @@ export default {
     loading: false,
     timeFormat: '24h',
     chapterListMarqueeEnabled: false,
+    chapterListItemMarqueeEnabled: false,
     longPressTriggered: false,
     longPressTimeout: null
   },
@@ -78,6 +80,11 @@ export default {
         success: (data) => { this.chapterListMarqueeEnabled = data === 'true'; },
         fail: () => { this.chapterListMarqueeEnabled = false; }
     });
+    storage.get({
+        key: 'EBOOK_CHAPTER_LIST_ITEM_MARQUEE_ENABLED',
+        success: (data) => { this.chapterListItemMarqueeEnabled = data === 'true'; },
+        fail: () => { this.chapterListItemMarqueeEnabled = false; }
+    });
     this.timer = setInterval(() => { this.updateTime(); }, 1000);
     this.loadBookInfo();
     this.initChapterList();
@@ -86,6 +93,10 @@ export default {
     storage.get({
         key: 'EBOOK_CHAPTER_LIST_MARQUEE_ENABLED',
         success: (data) => { this.chapterListMarqueeEnabled = data === 'true'; }
+    });
+    storage.get({
+        key: 'EBOOK_CHAPTER_LIST_ITEM_MARQUEE_ENABLED',
+        success: (data) => { this.chapterListItemMarqueeEnabled = data === 'true'; }
     });
     this.initChapterList();
   },
