@@ -23,19 +23,7 @@
       "name": "system.file"
     },
     {
-      "name": "system.request"
-    },
-    {
-      "name": "system.fetch"
-    },
-    {
-      "name": "system.network"
-    },
-    {
       "name": "system.interconnect"
-    },
-    {
-      "name": "system.configuration"
     },
     {
       "name": "system.app"
