@@ -224,6 +224,8 @@ async function deleteChapter(bookName, chapterIndex) {
         const chunkIndex = Math.floor(chapterIndex / CHAPTERS_PER_FILE) + 1;
         const chunkUri = `internal://files/books/${bookName}/indexes/${chunkIndex}.txt`;
         
+        let removed = false;
+
         try {
             const chunkData = await runAsyncFunc(file.readText, { uri: chunkUri });
             const lines = chunkData.text.split('\n');
@@ -233,21 +235,37 @@ async function deleteChapter(bookName, chapterIndex) {
                 const parts = trimmed.split('\t');
                 if (parts.length >= 2) {
                     const index = parseInt(parts[0], 10);
-                    return index !== chapterIndex;
+                    if (index === chapterIndex) {
+                        removed = true;
+                        return false;
+                    }
                 }
                 return true;
             });
             
-            if (filteredLines.length > 0) {
-                const newContent = filteredLines.join('\n') + '\n';
-                await runAsyncFunc(file.writeText, { 
-                    uri: chunkUri, 
-                    text: newContent 
-                });
-            } else {
+            if (removed) {
+                if (filteredLines.length > 0) {
+                    const newContent = filteredLines.join('\n') + '\n';
+                    await runAsyncFunc(file.writeText, { 
+                        uri: chunkUri, 
+                        text: newContent 
+                    });
+                } else {
+                    try {
+                        await runAsyncFunc(file.delete, { uri: chunkUri });
+                    } catch (e) {
+                    }
+                }
+
+                const lindexUri = `internal://files/books/${bookName}/lindex.txt`;
                 try {
-                    await runAsyncFunc(file.delete, { uri: chunkUri });
-                } catch (e) {
+                    const lindexData = await runAsyncFunc(file.readText, { uri: lindexUri });
+                    const lLines = lindexData.text.split('\n');
+                    let syncedCount = parseInt(lLines[1], 10) || 0;
+                    if (syncedCount > 0) syncedCount--;
+                    lLines[1] = syncedCount.toString();
+                    await runAsyncFunc(file.writeText, { uri: lindexUri, text: lLines.join('\n') });
+                } catch(e) {
                 }
             }
         } catch (e) {

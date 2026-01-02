@@ -817,33 +817,44 @@ export default class interconnfile {
             for (const [chunkIndex, metas] of metasByChunk.entries()) {
                 const chunkUri = `${this.baseUri}${this.currentBookDir}/indexes/${chunkIndex}.txt`;
                 
-                const metaLines = metas.map(meta => `${meta.index}\t${meta.name}\t${meta.wordCount || 0}`).join('\n') + '\n';
-                const newBuffer = this._strToUtf8Ab(metaLines);
-
-                let existingBuffer = new Uint8Array(0);
+                let existingContent = "";
                 try {
-                    const existingData = await runAsyncFunc(file.readArrayBuffer, { uri: chunkUri });
-                    existingBuffer = new Uint8Array(existingData.buffer);
-                } catch (e) {
+                    const res = await runAsyncFunc(file.readText, { uri: chunkUri });
+                    existingContent = res.text;
+                } catch(e) {}
+
+                const lines = existingContent.split('\n');
+                const existingMap = new Map();
+                for(const line of lines) {
+                    if (!line.trim()) continue;
+                    const parts = line.split('\t');
+                    if (parts.length >= 1) {
+                        const idx = parseInt(parts[0], 10);
+                        if (!isNaN(idx)) {
+                            existingMap.set(idx, line);
+                        }
+                    }
                 }
 
-                const finalBuffer = new Uint8Array(existingBuffer.length + newBuffer.length);
-                finalBuffer.set(existingBuffer, 0);
-                finalBuffer.set(newBuffer, existingBuffer.length);
+                for(const meta of metas) {
+                    const newLine = `${meta.index}\t${meta.name}\t${meta.wordCount || 0}`;
+                    existingMap.set(meta.index, newLine);
+                }
+
+                const sortedIndices = Array.from(existingMap.keys()).sort((a,b) => a-b);
+                const newContent = sortedIndices.map(idx => existingMap.get(idx)).join('\n') + '\n';
+
                 try {
                     await runAsyncFunc(file.delete, { uri: chunkUri });
-                } catch (e) {
-                }
-                await runAsyncFunc(file.writeArrayBuffer, {
+                } catch (e) {}
+                await runAsyncFunc(file.writeText, {
                     uri: chunkUri,
-                    buffer: finalBuffer,
-                    append: false,
+                    text: newContent
                 });
             }
 
             const lindexUri = `${this.baseUri}${this.currentBookDir}/lindex.txt`;
             try {
-                
                 let lines;
                 if (this.lindexContent) {
                     lines = this.lindexContent.split('\n');
@@ -851,11 +862,10 @@ export default class interconnfile {
                     const lindexData = await runAsyncFunc(file.readText, { uri: lindexUri });
                     lines = lindexData.text.split('\n');
                 }
-                let currentSynced = parseInt(lines[1], 10) || 0;
-                currentSynced += this.pendingChapterMetas.length;
                 
                 lines[0] = this.totalChapters.toString();
-                lines[1] = currentSynced.toString();
+                lines[1] = this.syncedChapterIndices.size.toString();
+                
                 this.lindexContent = lines.join('\n');
                 try {
                     await runAsyncFunc(file.delete, { uri: lindexUri });
