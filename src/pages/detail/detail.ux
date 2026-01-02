@@ -38,14 +38,16 @@
 		  {{nowTime}}
 		</text>
 	  </div>
-	  <marquee if="{{textReaderMarqueeEnabled}}" scrollamount="50" text-offset="25" show="{{showSetting}}" style="position: absolute;left: 40px;top: 45px;width: 111px;line-height: 32px;font-weight:bold;font-size:20px;color:white;text-align:center;">
-		{{currentChapterName}}
-	  </marquee>
-	  <text else show="{{showSetting}}" style="position: absolute;left: 40px;top: 45px;width: 111px;line-height: 32px;font-weight:bold;font-size:20px;color:white;text-align:center;lines: 1;">
-		{{currentChapterName}}
-	  </text>
-	  <img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 192px;height: 142px;" />
-	  <div show="{{showSetting}}" style="position: absolute; top: 412px; left: 30px; width: 131px; height: 100px; flex-direction: column; justify-content: flex-start; align-items: center;">
+	  <div show="{{showSetting}}" style="position: absolute;left: 40px;top: 45px;width: 111px;height: 32px;justify-content: center; align-items: center;" @click="onTitleClick" onlongpress="onTitleLongPress">
+		<marquee if="{{textReaderMarqueeEnabled}}" scrollamount="50" text-offset="25" style="width: 100%; height: 100%; line-height: 32px;font-weight:bold;font-size:20px;color:white;text-align:center;">
+			{{currentChapterName}}
+		</marquee>
+		<text else style="width: 100%; height: 100%; line-height: 32px;font-weight:bold;font-size:20px;color:white;text-align:center;lines: 1;">
+			{{currentChapterName}}
+		</text>
+	  </div>
+	  <img show="{{showSetting}}" src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 212px;height: 142px;" />
+	  <div show="{{showSetting}}" style="position: absolute; top: 412px; left: 30px; width: 152px; height: 100px; flex-direction: column; justify-content: flex-start; align-items: center;">
 		<marquee if="{{detailProgressMarqueeEnabled}}" scrollamount="40" text-offset="25" style="line-height: 32px;font-weight:bold;font-size:22px;color:white;text-align:center;">
 		  {{currentPage}} / {{totalPages}}
 		</marquee>
@@ -154,7 +156,12 @@
 		chapterStartName: false,
 		chapterSwitchShowInfo: false,
 		prevChapterName: '',
-		nextChapterName: ''
+		nextChapterName: '',
+		shortcutLongPressScreenOn: false,
+		shortcutDoubleClickBookmark: false,
+		shortcutTripleClickBookmarkManager: false,
+		titleClickCount: 0,
+		titleClickTimeout: null
 	},
 	protected: {
 	  name: '',
@@ -248,7 +255,10 @@
 			{ key: 'EBOOK_CHAPTER_START_EMPTY_LINES', prop: 'chapterStartEmptyLines', type: 'bool', default: false },
 			{ key: 'EBOOK_CHAPTER_START_NUMBER', prop: 'chapterStartNumber', type: 'bool', default: false },
 			{ key: 'EBOOK_CHAPTER_START_NAME', prop: 'chapterStartName', type: 'bool', default: false },
-			{ key: 'EBOOK_CHAPTER_SWITCH_SHOW_INFO', prop: 'chapterSwitchShowInfo', type: 'bool', default: false }
+			{ key: 'EBOOK_CHAPTER_SWITCH_SHOW_INFO', prop: 'chapterSwitchShowInfo', type: 'bool', default: false },
+			{ key: 'EBOOK_SHORTCUT_LONG_PRESS_SCREEN_ON', prop: 'shortcutLongPressScreenOn', type: 'bool', default: false },
+			{ key: 'EBOOK_SHORTCUT_DOUBLE_CLICK_BOOKMARK', prop: 'shortcutDoubleClickBookmark', type: 'bool', default: false },
+			{ key: 'EBOOK_SHORTCUT_TRIPLE_CLICK_BOOKMARK_MANAGER', prop: 'shortcutTripleClickBookmarkManager', type: 'bool', default: false }
 	  ];
 	  const promises = settingsConfig.map(s => getSetting(s.key, s.default));
 	  const results = await Promise.all(promises);
@@ -459,7 +469,67 @@
 	  }
 	},
 	lastPage() { this.$element("scrollId").scrollBy({ top: - (this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); },
-	nextPage() { this.$element("scrollId").scrollBy({ top: (this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); }
+	nextPage() { this.$element("scrollId").scrollBy({ top: (this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); },
+	onTitleClick() {
+		this.titleClickCount++;
+		if (this.titleClickTimeout) clearTimeout(this.titleClickTimeout);
+
+		if (this.titleClickCount === 2) {
+			if (this.shortcutDoubleClickBookmark) {
+				this.addBookmark();
+			}
+		} else if (this.titleClickCount === 3) {
+			if (this.shortcutTripleClickBookmarkManager) {
+				router.push({uri: '/pages/bookmarks', params: {name: this.name}});
+			}
+			this.titleClickCount = 0;
+			return;
+		}
+
+		this.titleClickTimeout = setTimeout(() => {
+			this.titleClickCount = 0;
+		}, 400);
+	},
+	onTitleLongPress() {
+		if (this.shortcutLongPressScreenOn) {
+			this.toggleKeepScreenOn();
+		}
+	},
+	toggleKeepScreenOn() {
+		this.isKeepScreenOn = !this.isKeepScreenOn;
+		globalThis.isKeepScreenOn = this.isKeepScreenOn;
+		brightness.setKeepScreenOn({ keepScreenOn: this.isKeepScreenOn });
+		prompt.showToast({ message: this.isKeepScreenOn ? '屏幕常亮已开启' : '屏幕常亮已关闭' });
+	},
+	async addBookmark() {
+		try {
+			let bookmarks = await bookStorage.getBookmarks(this.name) || [];
+			const newBookmark = {
+				chapterIndex: this.currentChapterIndexInAll,
+				chapterName: this.currentChapterName,
+				offsetInChapter: Math.max(0, Math.floor(this.currentFileOffset || 0)),
+				scrollOffset: Math.max(0, Math.floor(this.currentScrollTop || 0)),
+				time: Date.now(),
+				name: `书签${bookmarks.length + 1}`
+			};
+			if (this.readMode === 'nostalgic') {
+				if (this.nostalgicPageIndex >= 0 && this.nostalgicTotalPages > 0) {
+					const charOffset = this.nostalgicPageIndex * this.nostalgicCharsPerPage;
+					newBookmark.offsetInChapter = Math.max(0, charOffset * 2);
+					newBookmark.scrollOffset = 0;
+				} else {
+					newBookmark.offsetInChapter = 0;
+					newBookmark.scrollOffset = 0;
+				}
+			}
+			bookmarks.push(newBookmark);
+			bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
+			await bookStorage.setBookmarks(this.name, bookmarks);
+			prompt.showToast({ message: '添加书签成功' });
+		} catch (e) {
+			prompt.showToast({ message: '添加失败' });
+		}
+	}
   }
   </script>
   <style>

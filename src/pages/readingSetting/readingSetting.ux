@@ -107,6 +107,13 @@
 			</div>
 			<img src="/common/images/enter.png" style="width:24px;height: 24px;" static/>
 		</list-item>
+		<list-item class="item" @click="routerTo('quickSettings')" type="item">
+			<div class="item-content">
+				<text class="itemtext" static>快捷功能</text>
+				<text class="itemtext2" static>标题栏快捷操作</text>
+			</div>
+			<img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
+		</list-item>
 	  </list>
   
 	  
