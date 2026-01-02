@@ -67,6 +67,8 @@ export default {
     this.isNavigating = false;
     storage.get({ key: 'EBOOK_BOOKMARK_MARQUEE_ENABLED', success: (data) => { this.bookmarkMarqueeEnabled = data === 'true'; } });
 	storage.get({ key: 'EBOOK_READ_MODE', success: (data) => { if (data) this.readMode = data; }});
+    this.allBookmarks = [];
+    this.visibleBookmarks = [];
     await this.loadBookmarks();
   },
   onDestroy() {
