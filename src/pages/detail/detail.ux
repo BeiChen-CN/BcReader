@@ -207,7 +207,8 @@
 		chapterStartName: false,
 		chapterSwitchShowInfo: false,
 		prevChapterName: '',
-		nextChapterName: ''
+		nextChapterName: '',
+		periodicSaveTimer: null
 	  },
 	  protected: {
 		name: '',
@@ -305,6 +306,8 @@
 				
 			}
 		}
+		
+		this.setupAutoSave();
 	},
 	async loadSettings() {
 		const getSetting = (key, defaultValue) => new Promise(resolve => {
@@ -379,6 +382,17 @@
 				this.calculateNostalgicTotalPages();
 				this.updateNostalgicPage();
 			}
+		}
+	},
+	setupAutoSave() {
+		if (this.periodicSaveTimer) {
+			clearInterval(this.periodicSaveTimer);
+			this.periodicSaveTimer = null;
+		}
+		if (this.saveMode === 'periodic' && this.saveIntervalValue > 0) {
+			this.periodicSaveTimer = setInterval(() => {
+				this._performSave();
+			}, this.saveIntervalValue * 1000);
 		}
 	},
 	updateContentHeight() {
@@ -1236,23 +1250,10 @@
 		});
 	},
 	saveData(forceImmediate = false){
-		if (this.saveDataTimeout) {
-			clearTimeout(this.saveDataTimeout);
-			this.saveDataTimeout = null;
-		}
-		if (forceImmediate) {
-			
-			this._performSave();
-		} else {
-			
-			if (this.saveMode === 'periodic' && this.saveIntervalValue > 0) {
-				this.saveDataTimeout = setTimeout(() => {
-					this._performSave();
-					this.saveDataTimeout = null;
-				}, this.saveIntervalValue * 1000);
-			}
-			
-		}
+		if (this.saveMode === 'periodic' && !forceImmediate) {
+            return;
+        }
+        this._performSave();
 	},
 	async _performSave() {
 		if (!this.name || this.totalChapters === 0) return;
@@ -1293,9 +1294,9 @@
 	},
 	async onHide(){
 		
-		if (this.saveDataTimeout) {
-			clearTimeout(this.saveDataTimeout);
-			this.saveDataTimeout = null;
+		if (this.periodicSaveTimer) {
+			clearInterval(this.periodicSaveTimer);
+			this.periodicSaveTimer = null;
 		}
 		if (this.autoInterval) { 
 			clearInterval(this.autoInterval); 
@@ -1322,9 +1323,9 @@
 	},
 	async onDestroy(){ 
 		
-		if (this.saveDataTimeout) {
-			clearTimeout(this.saveDataTimeout);
-			this.saveDataTimeout = null;
+		if (this.periodicSaveTimer) {
+			clearInterval(this.periodicSaveTimer);
+			this.periodicSaveTimer = null;
 		}
 		if (this.timer) {
 			clearInterval(this.timer); 
@@ -1384,9 +1385,9 @@
 	},
 	async back(){
 		
-		if (this.saveDataTimeout) {
-			clearTimeout(this.saveDataTimeout);
-			this.saveDataTimeout = null;
+		if (this.periodicSaveTimer) {
+			clearInterval(this.periodicSaveTimer);
+			this.periodicSaveTimer = null;
 		}
 		if (this.clickTimeout) {
 			clearTimeout(this.clickTimeout);
@@ -1451,9 +1452,9 @@
 	},
 	async exitAppForTeacherScreen() {
 		
-		if (this.saveDataTimeout) {
-			clearTimeout(this.saveDataTimeout);
-			this.saveDataTimeout = null;
+		if (this.periodicSaveTimer) {
+			clearInterval(this.periodicSaveTimer);
+			this.periodicSaveTimer = null;
 		}
 		if (this.autoInterval) {
 			clearInterval(this.autoInterval);
