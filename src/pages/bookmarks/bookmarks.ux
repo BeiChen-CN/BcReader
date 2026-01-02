@@ -90,8 +90,6 @@ export default {
 			if (data) this.readMode = data;
 		}});
     
-    this.allBookmarks = [];
-    this.visibleBookmarks = [];
     await this.loadBookmarks();
   },
   onDestroy() {
@@ -106,7 +104,9 @@ export default {
     }
   },
   async loadBookmarks() {
-    
+    this.allBookmarks = [];
+    this.visibleBookmarks = [];
+
     this.allBookmarks = await bookStorage.getBookmarks(this.name);
     this.totalPages = Math.ceil(this.allBookmarks.length / PAGE_SIZE) || 1;
     this.currentPage = 0;
@@ -169,7 +169,6 @@ export default {
     };
 
     try {
-      
       await bookStorage.set(this.name, progressData);
       prompt.showToast({ message: '正在跳转...', duration: 500 });
       globalThis.justJumpedFromBookmark = true;
