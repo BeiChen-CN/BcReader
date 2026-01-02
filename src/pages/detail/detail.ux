@@ -390,6 +390,7 @@
 	  this.page1 = { text: "", offset: 0, length: 0 }; this.page2 = null;
 	  this.isAtChapterStart = false; this.isAtChapterEnd = false;
 	  this.currentChapterIndexInAll = chapterIdxInAll; this.currentChapterName = chapter.name;
+	  this.updatePageNumber();
 	  this.cPath = `internal://files/books/${this.name}/content/${chapter.index}.txt`;
 	  this.chapterContentCache = null;
 		if (this.chapterSwitchShowInfo) {
