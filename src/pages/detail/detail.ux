@@ -1177,45 +1177,95 @@
             } else {
                 this.page1 = { text: "加载中...", offset: 0, length: 0 };
                 this.page2 = null;
-                this.loadInitialSegments();
-                this.isAtChapterStart = true;
-                this.isNearTopForHd = true;
+                this.loadEndAndScroll();
+                this.isAtChapterStart = false;
+                this.isNearTopForHd = false;
             }
-            this.chapterProgress = 0;
+            this.chapterProgress = 100;
             this.saveData(true);
         });
     },
     loadEndAndScroll() {
         this.wait = true;
+        var that = this;
+        
         const readSize = this.txtSizePage * 3;
         const readOffset = Math.max(0, this.allSize - readSize);
-
         this.currentFileOffset = readOffset;
 
         this.readFileText(readOffset, (str, bytesRead) => {
-            if (this.page1) this.page1.text = null;
-            if (this.page2) this.page2.text = null;
-            this.page2 = null;
+            if (that.page1) that.page1.text = null;
+            if (that.page2) that.page2.text = null;
+            that.page2 = null;
             
-            this.page1 = { text: str, offset: readOffset, length: bytesRead };
-            this.isAtChapterEnd = true;
-            this.isAtChapterStart = (readOffset === 0);
+            that.page1 = { text: str, offset: readOffset, length: bytesRead };
+            that.isAtChapterStart = (readOffset === 0);
             
-            setTimeout(() => {
-                this.$element("contentContainer").getBoundingClientRect({
-                    success: (rect) => {
-                        this.contentHeight = rect.height;
-                        const scrollPos = this.contentHeight - this.scrollHeight;
-                        this.scrollTopValue = scrollPos > 0 ? scrollPos : 0;
-                        this.currentScrollTop = this.scrollTopValue;
-                        this.wait = false;
-                        this.updateChapterProgress();
-                        this.saveData(true);
-                    },
-                    fail: () => { this.wait = false; }
+            const actualEndOffset = readOffset + bytesRead;
+            if (actualEndOffset >= that.allSize) {
+                that.isAtChapterEnd = true;
+                that.scrollToBottom();
+            } else {
+                that.loadUntilEnd(() => {
+                    that.isAtChapterEnd = true;
+                    that.scrollToBottom();
                 });
-            }, 150);
+            }
         });
+    },
+    loadUntilEnd(callback) {
+        var that = this;
+        let lastSeg = that.page2 || that.page1;
+        let newOffset = lastSeg.offset + lastSeg.length;
+        
+        if (newOffset >= that.allSize) {
+            if (callback) callback();
+            return;
+        }
+        
+        that.readFileText(newOffset, function(str, bytesRead) {
+            if (str) {
+                if (!that.page2) {
+                    that.page2 = { text: str, offset: newOffset, length: bytesRead };
+                } else {
+                    that.page2.text = str;
+                    that.page2.offset = newOffset;
+                    that.page2.length = bytesRead;
+                }
+                that.updateContentHeight();
+                
+                const actualEndOffset = newOffset + bytesRead;
+                if (actualEndOffset >= that.allSize) {
+                    if (callback) callback();
+                } else {
+                    that.loadUntilEnd(callback);
+                }
+            } else {
+                if (callback) callback();
+            }
+        });
+    },
+    scrollToBottom() {
+        var that = this;
+        that.updateContentHeight();
+        
+        setTimeout(() => {
+            that.$element("contentContainer").getBoundingClientRect({
+                success: (rect) => {
+                    that.contentHeight = rect.height;
+                    const maxScrollPos = Math.max(0, that.contentHeight - that.scrollHeight);
+                    that.scrollTopValue = maxScrollPos;
+                    that.currentScrollTop = maxScrollPos;
+                    that.savedScrollOffset = maxScrollPos;
+                    that.wait = false;
+                    that.updateChapterProgress();
+                    that.saveData(true);
+                },
+                fail: () => { 
+                    that.wait = false; 
+                }
+            });
+        }, 300);
     },
 	goToNextChapter() {
 		if (this.wait) return;
