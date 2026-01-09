@@ -6,6 +6,7 @@ import bookStorage from '../utils/bookStorage.js';
 import readingTimeStorage from '../utils/readingTimeStorage.js';
 import chapterManager from '../utils/chapterManager.js';
 import { calculateStorageInfo } from '../utils/storageUtils.js';
+import storage from '../utils/storage.js';
 
 export default class interconnfile {
     static "__interconnModule__" = true;
@@ -77,6 +78,12 @@ export default class interconnfile {
                     break;
                 case "get_storage_info":
                     await this.getStorageInfo();
+                    break;
+                case "get_settings":
+                    await this.getSettings(payload);
+                    break;
+                case "set_settings":
+                    await this.setSettings(payload);
                     break;
             }
         };
@@ -853,6 +860,55 @@ export default class interconnfile {
                 usedStorage: 0,
                 actualAvailable: 0
             });
+        }
+    }
+
+    async getSettings({ keys }) {
+        try {
+            const settings = {};
+            for (const key of keys) {
+                try {
+                    await new Promise((resolve) => {
+                        storage.get({
+                            key: key,
+                            success: (data) => {
+                                settings[key] = data;
+                                resolve();
+                            },
+                            fail: () => {
+                                settings[key] = null;
+                                resolve();
+                            }
+                        });
+                    });
+                } catch (e) {
+                    settings[key] = null;
+                }
+            }
+            this.send({ type: "settings_data", settings });
+        } catch (error) {
+            this.send({ type: "error", message: `获取设置失败: ${error.message}`, count: 0 });
+        }
+    }
+
+    async setSettings({ settings }) {
+        try {
+            for (const key in settings) {
+                if (settings.hasOwnProperty(key)) {
+                    const value = settings[key];
+                    await new Promise((resolve) => {
+                        storage.set({
+                            key: key,
+                            value: value ? value.toString() : '',
+                            success: resolve,
+                            fail: resolve
+                        });
+                    });
+                }
+            }
+            this.send({ type: "success", message: "设置已更新", count: 0 });
+        } catch (error) {
+            this.send({ type: "error", message: `更新设置失败: ${error.message}`, count: 0 });
         }
     }
 
