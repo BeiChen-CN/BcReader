@@ -1327,6 +1327,8 @@
 			}
 		}
 		
+		this.setRefreshFlag();
+		
 		brightness.setKeepScreenOn({ keepScreenOn: false }); 
 	},
 	async onDestroy(){ 
@@ -1430,12 +1432,26 @@
 			}
 		}
 		
+		this.setRefreshFlag();
+		
 		
 		if (globalThis.fromCategoryPage && globalThis.selectedCategory) {
 			
 		}
 		
 		router.back();
+	},
+	setRefreshFlag() {
+		storage.get({
+			key: 'EBOOK_SHELF_REFRESH_MODE',
+			success: (data) => {
+				if (data === 'onExit') {
+					globalThis.shouldRefreshShelf = true;
+				}
+			},
+			fail: () => {
+			}
+		});
 	},
 	async gotoSetting(){
 		if (this.isProcessingClick) return;

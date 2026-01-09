@@ -124,7 +124,8 @@ export default {
     showStorageWarning: true,
     isStorageLow: false,
     categoryPagination: false,
-    currentModeList: []
+    currentModeList: [],
+    refreshMode: 'onExit'
   },
   exit(){
 	  app.terminate();
@@ -160,31 +161,53 @@ export default {
     
     const shouldRestoreCategory = globalThis.fromCategoryPage && globalThis.selectedCategory;
     const categoryToRestore = shouldRestoreCategory ? globalThis.selectedCategory : null;
+    const categoryPageToRestore = shouldRestoreCategory && typeof globalThis.categoryPage === 'number' ? globalThis.categoryPage : null;
     const shouldRestoreHomePage = globalThis.fromHomePage && typeof globalThis.homePage === 'number';
     const homePageToRestore = shouldRestoreHomePage ? globalThis.homePage : null;
     
     if (shouldRestoreCategory) {
       globalThis.fromCategoryPage = false;
       globalThis.selectedCategory = null;
+      globalThis.categoryPage = null;
     }
     if (shouldRestoreHomePage) {
       globalThis.fromHomePage = false;
       globalThis.homePage = null;
     }
     
-    if (!shouldRestoreHomePage) {
+    if (!shouldRestoreHomePage && !shouldRestoreCategory) {
       this.currentPage = 0;
     }
     
     this.loadSettingsAndFiles().then(() => {
-      if (shouldRestoreCategory && categoryToRestore) {
-        this.displayMode = 'category';
-        this.selectedCategory = categoryToRestore;
-        this.updateCategoryView();
-      } else if (shouldRestoreHomePage && homePageToRestore !== null && this.displayMode === 'all') {
-        this.loadPage(homePageToRestore);
+      const shouldRefresh = this.shouldRefreshShelf();
+      if (shouldRefresh) {
+        this.loadFileList().then(() => {
+          if (shouldRestoreCategory && categoryToRestore) {
+            this.displayMode = 'category';
+            this.selectedCategory = categoryToRestore;
+            if (categoryPageToRestore !== null) {
+              this.currentPage = categoryPageToRestore;
+            }
+            this.updateCategoryView();
+          } else if (shouldRestoreHomePage && homePageToRestore !== null && this.displayMode === 'all') {
+            this.loadPage(homePageToRestore);
+          }
+          this.loadDeviceInfo();
+        });
+      } else {
+        if (shouldRestoreCategory && categoryToRestore) {
+          this.displayMode = 'category';
+          this.selectedCategory = categoryToRestore;
+          if (categoryPageToRestore !== null) {
+            this.currentPage = categoryPageToRestore;
+          }
+          this.updateCategoryView();
+        } else if (shouldRestoreHomePage && homePageToRestore !== null && this.displayMode === 'all') {
+          this.loadPage(homePageToRestore);
+        }
+        this.loadDeviceInfo();
       }
-      this.loadDeviceInfo();
     });
   },
   getStorage(key, defaultValue) {
@@ -201,7 +224,7 @@ export default {
     });
   },
   async loadSettingsAndFiles() {
-    const [pageSize, shelfStyle, lastReadOnTop, shelfMarqueeEnabled, displayMode, homeProgressMode, showStorageWarning, categoryPagination] = await Promise.all([
+    const [pageSize, shelfStyle, lastReadOnTop, shelfMarqueeEnabled, displayMode, homeProgressMode, showStorageWarning, categoryPagination, refreshMode] = await Promise.all([
       this.getStorage('EBOOK_SHELF_PAGE_SIZE', '12'),
       this.getStorage('EBOOK_SHELF_STYLE', 'list'),
       this.getStorage('EBOOK_TOP_LAST_READ', 'true'),
@@ -209,7 +232,8 @@ export default {
       this.getStorage('EBOOK_HOME_DISPLAY_MODE', 'all'),
       this.getStorage('EBOOK_HOME_PROGRESS_MODE', 'book'),
       this.getStorage('EBOOK_SHOW_STORAGE_WARNING', 'true'),
-      this.getStorage('EBOOK_CATEGORY_PAGINATION', 'false')
+      this.getStorage('EBOOK_CATEGORY_PAGINATION', 'false'),
+      this.getStorage('EBOOK_SHELF_REFRESH_MODE', 'onExit')
     ]);
 
     this.pageSize = parseInt(pageSize);
@@ -220,8 +244,21 @@ export default {
     this.homeProgressMode = homeProgressMode || 'book';
     this.showStorageWarning = showStorageWarning === 'true';
     this.categoryPagination = categoryPagination === 'true';
+    this.refreshMode = refreshMode || 'onExit';
 
     await this.loadFileList();
+  },
+  shouldRefreshShelf() {
+    if (this.refreshMode === 'onEnter') {
+      return true;
+    } else if (this.refreshMode === 'onExit') {
+      if (globalThis.shouldRefreshShelf) {
+        globalThis.shouldRefreshShelf = false;
+        return true;
+      }
+      return false;
+    }
+    return false;
   },
   async loadFileList() {
     this.allBooks = await bookStorage.getBooks();
@@ -458,6 +495,7 @@ export default {
     if (this.displayMode === 'category' && this.selectedCategory) {
       globalThis.fromCategoryPage = true;
       globalThis.selectedCategory = this.selectedCategory;
+      globalThis.categoryPage = this.currentPage;
       globalThis.fromHomePage = false;
       globalThis.homePage = null;
     } else if (this.displayMode === 'all') {
