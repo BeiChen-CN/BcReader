@@ -539,50 +539,201 @@
 		prompt.showToast({ message: '已开启自动翻页' });
 	  }
 	},
-	lastPage() { this.$element("scrollId").scrollBy({ top: - (this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); },
-	nextPage() { this.$element("scrollId").scrollBy({ top: (this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); },
-	onTitleClick() {
-		this.titleClickCount++;
-		if (this.titleClickTimeout) clearTimeout(this.titleClickTimeout);
+	onTouchEnd(e) {
+		if (!this.isTouching) return;
+		this.isTouching = false;
+		
+		if (this.chapterSwitchStyle === 'boundary') {
+			if (this.overscrollDistance > this.chapterSwitchSensitivity) {
+				if (this.isAtChapterStart) {
+					this.goToPrevChapter();
+				} else if (this.isAtChapterEnd) {
+					this.goToNextChapter();
+				}
+			}
+			this.overscrollDistance = 0;
+			this.touchStartY = 0;
+		} else if (this.chapterSwitchStyle === 'swipe') {
+			if (this.touchStartX === 0) return;
+			const deltaX = this.touchEndX - this.touchStartX;
+			if (Math.abs(deltaX) > this.swipeSensitivity) {
+				if (deltaX > 0) {
+					this.goToPrevChapter();
+				} else {
+					this.goToNextChapter();
+				}
+			}
+			this.touchStartX = 0;
+			this.touchEndX = 0;
+		}
+	},
+	goToPrevChapter() {
+        if (this.wait) return;
+        this.wait = true;
 
-		if (this.titleClickCount === 2) {
-			if (this.shortcutDoubleClickBookmark) {
-				this.addBookmark();
+        const prevChapterIndex = this.currentChapterIndexInAll - 1;
+        if (prevChapterIndex < 0) {
+            prompt.showToast({ message: '已是第一章' });
+            this.wait = false;
+            return;
+        }
+        global.runGC();
+        
+        this.isAtChapterEnd = false;
+        this.currentFileOffset = 0;
+        this.savedScrollOffset = 0;
+        this.scrollTopValue = 0;
+        this.currentScrollTop = 0;
+
+        this.loadChapter(prevChapterIndex, () => {
+            if (this.readMode === 'nostalgic') {
+                this.loadNostalgicChapter(-1);
+            } else {
+                this.page1 = { text: "加载中...", offset: 0, length: 0 };
+                this.page2 = null;
+                this.loadEndAndScroll();
+                this.isAtChapterStart = false;
+                this.isNearTopForHd = false;
+            }
+            this.chapterProgress = 100;
+            this.saveData(true);
+        });
+    },
+    loadEndAndScroll() {
+        this.wait = true;
+        var that = this;
+        
+        const readSize = this.txtSizePage * 3;
+        const readOffset = Math.max(0, this.allSize - readSize);
+        this.currentFileOffset = readOffset;
+
+        this.readFileText(readOffset, (str, bytesRead) => {
+            if (that.page1) that.page1.text = null;
+            if (that.page2) that.page2.text = null;
+            that.page2 = null;
+            
+            that.page1 = { text: str, offset: readOffset, length: bytesRead };
+            that.isAtChapterStart = (readOffset === 0);
+            
+            const actualEndOffset = readOffset + bytesRead;
+            if (actualEndOffset >= that.allSize) {
+                that.isAtChapterEnd = true;
+                that.scrollToBottom();
+            } else {
+                that.loadUntilEnd(() => {
+                    that.isAtChapterEnd = true;
+                    that.scrollToBottom();
+                });
+            }
+        });
+    },
+    loadUntilEnd(callback) {
+        var that = this;
+        let lastSeg = that.page2 || that.page1;
+        let newOffset = lastSeg.offset + lastSeg.length;
+        
+        if (newOffset >= that.allSize) {
+            if (callback) callback();
+            return;
+        }
+        
+        that.readFileText(newOffset, function(str, bytesRead) {
+            if (str) {
+                if (!that.page2) {
+                    that.page2 = { text: str, offset: newOffset, length: bytesRead };
+                } else {
+                    that.page2.text = str;
+                    that.page2.offset = newOffset;
+                    that.page2.length = bytesRead;
+                }
+                that.updateContentHeight();
+                
+                const actualEndOffset = newOffset + bytesRead;
+                if (actualEndOffset >= that.allSize) {
+                    if (callback) callback();
+                } else {
+                    that.loadUntilEnd(callback);
+                }
+            } else {
+                if (callback) callback();
+            }
+        });
+    },
+    scrollToBottom() {
+        var that = this;
+        that.updateContentHeight();
+        
+        setTimeout(() => {
+            that.$element("contentContainer").getBoundingClientRect({
+                success: (rect) => {
+                    that.contentHeight = rect.height;
+                    const maxScrollPos = Math.max(0, that.contentHeight - that.scrollHeight);
+                    that.scrollTopValue = maxScrollPos;
+                    that.currentScrollTop = maxScrollPos;
+                    that.savedScrollOffset = maxScrollPos;
+                    that.wait = false;
+                    that.updateChapterProgress();
+                    that.saveData(true);
+                },
+                fail: () => { 
+                    that.wait = false; 
+                }
+            });
+        }, 300);
+    },
+	goToNextChapter() {
+		if (this.wait) return;
+		this.wait = true;
+	
+		const nextChapterIndex = this.currentChapterIndexInAll + 1;
+		if (nextChapterIndex >= this.totalChapters) {
+			prompt.showToast({ message: '已是最后一章' });
+			if (this.autoInterval) {
+				clearInterval(this.autoInterval);
+				this.autoInterval = null;
+				prompt.showToast({ message: '已关闭自动翻页' });
+				if (!this.isKeepScreenOn) {
+					brightness.setKeepScreenOn({ keepScreenOn: false });
+				}
 			}
-		} else if (this.titleClickCount === 3) {
-			if (this.shortcutTripleClickBookmarkManager) {
-				router.push({uri: '/pages/bookmarks', params: {name: this.name}});
-			}
-			this.titleClickCount = 0;
+			this.wait = false;
 			return;
 		}
-
-		this.titleClickTimeout = setTimeout(() => {
-			this.titleClickCount = 0;
-		}, 400);
+		global.runGC();
+		
+		this.isAtChapterEnd = false;
+		this.currentFileOffset = 0;
+		this.savedScrollOffset = 0;
+		this.scrollTopValue = 0;
+		this.currentScrollTop = 0;
+		
+		this.loadChapter(nextChapterIndex, () => {
+			if (this.readMode === 'nostalgic') {
+				this.loadNostalgicChapter(0);
+			} else {
+				this.page1 = { text: "加载中...", offset: 0, length: 0 };
+				this.page2 = null;
+				this.loadInitialSegments();
+				this.isAtChapterStart = false;
+				this.isNearTopForHd = true;
+			}
+			this.chapterProgress = 0;
+			this.saveData(true);
+		});
 	},
-	onTitleLongPress() {
-		if (this.shortcutLongPressScreenOn) {
-			this.toggleKeepScreenOn();
-		}
+	saveData(forceImmediate = false){
+		if (this.saveMode === 'periodic' && !forceImmediate) {
+            return;
+        }
+        this._performSave();
 	},
-	toggleKeepScreenOn() {
-		this.isKeepScreenOn = !this.isKeepScreenOn;
-		globalThis.isKeepScreenOn = this.isKeepScreenOn;
-		brightness.setKeepScreenOn({ keepScreenOn: this.isKeepScreenOn });
-		prompt.showToast({ message: this.isKeepScreenOn ? '屏幕常亮已开启' : '屏幕常亮已关闭' });
-	},
-	async addBookmark() {
+	async _performSave() {
+		if (!this.name || this.totalChapters === 0) return;
 		try {
-			let bookmarks = await bookStorage.getBookmarks(this.name) || [];
-			const newBookmark = {
-				chapterIndex: this.currentChapterIndexInAll,
-				chapterName: this.currentChapterName,
-				offsetInChapter: Math.max(0, Math.floor(this.currentFileOffset || 0)),
-				scrollOffset: Math.max(0, Math.floor(this.currentScrollTop || 0)),
-				time: Date.now(),
-				name: `书签${bookmarks.length + 1}`
-			};
+			let progress = await bookStorage.get(this.name);
+			
+			progress.chapterIndex = this.currentChapterIndexInAll;
+			
 			if (this.readMode === 'nostalgic') {
 				if (this.nostalgicPageIndex >= 0 && this.nostalgicTotalPages > 0) {
 					const charOffset = this.nostalgicPageIndex * this.nostalgicCharsPerPage;
