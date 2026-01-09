@@ -22,6 +22,13 @@
                 </div>
                 <img src="{{showName ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
             </list-item>
+            <list-item class="item" @click="toggleWordCount" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>显示章节字数</text>
+                    <text class="itemtext2" static>每章开头显示字数</text>
+                </div>
+                <img src="{{showWordCount ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+            </list-item>
         </list>
 
         <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
@@ -45,7 +52,8 @@
             timeFormat: '24h',
             emptyLines: false,
             showNumber: false,
-            showName: false
+            showName: false,
+            showWordCount: false
         },
         updateTime() {
             const date = new Date();
@@ -99,6 +107,12 @@
                     this.showName = data === 'true';
                 }
             });
+            storage.get({
+                key: 'EBOOK_CHAPTER_START_WORD_COUNT',
+                success: (data) => {
+                    this.showWordCount = data === 'true';
+                }
+            });
         },
         onDestroy() {
             if (this.timer) {
@@ -125,6 +139,13 @@
             storage.set({
                 key: 'EBOOK_CHAPTER_START_NAME',
                 value: this.showName.toString()
+            });
+        },
+        toggleWordCount() {
+            this.showWordCount = !this.showWordCount;
+            storage.set({
+                key: 'EBOOK_CHAPTER_START_WORD_COUNT',
+                value: this.showWordCount.toString()
             });
         },
         back() {

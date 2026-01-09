@@ -2,15 +2,16 @@
 	<div class="page">
 	  <scroll id="scrollId" if="{{readMode !== 'nostalgic'}}" style="position: absolute; width: 192px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;" scroll-y="{{true}}" scroll-top="{{scrollTopValue}}" @scroll="onScroll" @scrolltop="onScrollTop" @scrollbottom="onScrollBottom" @click="onTxtClick" onlongpress="onTxtLongPress" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd" bounces="{{(isAtChapterStart || isAtChapterEnd) && (chapterSwitchStyle == 'boundary')}}">
 		<div id="contentContainer" style="position: absolute; width:192px; flex-direction: column;">
-		  <div if="{{chapterSwitchStyle == 'button' && isAtChapterStart && !showSetting && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="goToPrevChapter">
+		  <div if="{{chapterSwitchStyle == 'button' && isAtChapterStart && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="goToPrevChapter">
 			<text static style="color: #aaa; font-size: 16px; font-weight: bold;">上一章</text>
 				<text if="{{chapterSwitchShowInfo && prevChapterName}}" style="color: #666; font-size: 14px; lines: 1; text-overflow: ellipsis; max-width: 80%;">{{prevChapterName}}</text>
 		  </div>
 			
 			<div if="{{page1 && page1.offset === 0}}" style="flex-direction: column; width: 100%; padding-bottom: 20px;">
 				<div if="{{chapterStartEmptyLines}}" style="height: 100px; width: 100%;"></div>
-				<text if="{{chapterStartNumber}}" style="width: 192px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 0.8}}px; font-weight: bold; margin-bottom: 10px;">第 {{currentChapterIndexInAll + 1}} 章</text>
+				<text if="{{chapterStartNumber}}" style="width: 192px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 0.8}}px; font-weight: bold; margin-bottom: 10px;">第 {{currentChapterIndexInAll + 1}} / {{totalChapters}} 章</text>
 				<text if="{{chapterStartName}}" style="width: 192px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 1.2}}px; font-weight: bold; margin-bottom: 20px;">{{currentChapterName}}</text>
+                <text if="{{chapterStartWordCount}}" style="width: 432px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize * 0.8}}px; font-weight: bold; margin-bottom: 20px;">{{currentChapterWordCount}} 字</text>
 			</div>
 
 		  <div id="page1" style="flex-direction: column; width: 100%; flex-shrink: 0;">
@@ -19,7 +20,7 @@
 		  <div id="page2" if="{{page2}}" style="flex-direction: column; width: 100%; flex-shrink: 0;">
 			<text style="width: 192px; text-align: left; color: rgba(255,255,255,{{opacity/100}}); font-size: {{fontSize}}px; font-weight: {{boldEnabled ? 'bold' : 'normal'}}; line-height: {{lineHeight}}px; ">{{ page2.text }}</text>
 		  </div>
-		  <div if="{{chapterSwitchStyle == 'button' && isAtChapterEnd && !showSetting && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="goToNextChapter">
+		  <div if="{{chapterSwitchStyle == 'button' && isAtChapterEnd && currentChapterIndexInAll < totalChapters - 1}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="goToNextChapter">
 			<text static style="color: #aaa; font-size: 16px; font-weight: bold;">下一章</text>
 				<text if="{{chapterSwitchShowInfo && nextChapterName}}" style="color: #666; font-size: 14px; lines: 1; text-overflow: ellipsis; max-width: 80%;">{{nextChapterName}}</text>
 		  </div>
@@ -154,6 +155,8 @@
 		chapterStartEmptyLines: false,
 		chapterStartNumber: false,
 		chapterStartName: false,
+		chapterStartWordCount: false,
+		currentChapterWordCount: 0,
 		chapterSwitchShowInfo: false,
 		prevChapterName: '',
 		nextChapterName: '',
@@ -258,6 +261,7 @@
 			{ key: 'EBOOK_CHAPTER_START_EMPTY_LINES', prop: 'chapterStartEmptyLines', type: 'bool', default: false },
 			{ key: 'EBOOK_CHAPTER_START_NUMBER', prop: 'chapterStartNumber', type: 'bool', default: false },
 			{ key: 'EBOOK_CHAPTER_START_NAME', prop: 'chapterStartName', type: 'bool', default: false },
+			{ key: 'EBOOK_CHAPTER_START_WORD_COUNT', prop: 'chapterStartWordCount', type: 'bool', default: false },
 			{ key: 'EBOOK_CHAPTER_SWITCH_SHOW_INFO', prop: 'chapterSwitchShowInfo', type: 'bool', default: false },
 			{ key: 'EBOOK_SHORTCUT_LONG_PRESS_SCREEN_ON', prop: 'shortcutLongPressScreenOn', type: 'bool', default: false },
 			{ key: 'EBOOK_SHORTCUT_DOUBLE_CLICK_BOOKMARK', prop: 'shortcutDoubleClickBookmark', type: 'bool', default: false },
@@ -367,6 +371,7 @@
 	  this.page1 = { text: "", offset: 0, length: 0 }; this.page2 = null;
 	  this.isAtChapterStart = false; this.isAtChapterEnd = false;
 	  this.currentChapterIndexInAll = chapterIdxInAll; this.currentChapterName = chapter.name;
+		this.currentChapterWordCount = chapter.wordCount || 0;
 	  this.updatePageNumber()
 	  this.cPath = `internal://files/books/${this.name}/content/${chapter.index}.txt`;
 	  this.chapterContentCache = null;
@@ -407,8 +412,10 @@
                                     if (this.readMode === 'nostalgic') {
                                         let prefix = "";
                                         if (this.chapterStartEmptyLines) prefix += "\n\n\n";
-                                        if (this.chapterStartNumber) prefix += `第 ${this.currentChapterIndexInAll + 1} 章\n`;
-                                        if (this.chapterStartName) prefix += `${this.currentChapterName}\n\n`;
+                                        if (this.chapterStartNumber) prefix += `第 ${this.currentChapterIndexInAll + 1} / ${this.totalChapters} 章\n`;
+                                        if (this.chapterStartName) prefix += `${this.currentChapterName}\n`;
+										if (this.chapterStartWordCount) prefix += `本章 ${this.currentChapterWordCount} 字\n`;
+                                        if (this.chapterStartName || this.chapterStartWordCount || this.chapterStartNumber) prefix += "\n";
                                         this.nostalgicFullContent = prefix + this.chapterContentCache;
                                     }
                                 }
