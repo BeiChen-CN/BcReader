@@ -61,14 +61,11 @@
 			</list-item>
 		</list>
 		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 212px;height: 82px;" />
-		<text style="position: absolute;left: 40px;top: 16px;width: 132px;line-height: 24px;font-weight:bold;font-size:16px;color:rgba(255,255,255,0.6);text-align:center;">
-			{{nowTime}}
-		</text>
-		<text static style="position: absolute;left: 40px;top: 36px;width: 132px;line-height: 42px;font-weight:bold;font-size:24px;color:white;text-align:center;">
-			书籍详情
-		</text>
+		<text style="position: absolute;left: 40px;top: 16px;width: 132px;line-height: 24px;font-weight:bold;font-size:16px;color:rgba(255,255,255,0.6);text-align:center;">{{nowTime}}</text>
+		<text static style="position: absolute;left: 40px;top: 36px;width: 132px;line-height: 42px;font-weight:bold;font-size:24px;color:white;text-align:center;">书籍详情</text>
 	</div>
 </template>
+
 <script>
 import router from '@system.router'
 import file from '@system.file'
@@ -76,6 +73,7 @@ import runAsyncFunc from '../../utils/runAsyncFunc.js'
 import storage from '../../utils/storage.js'
 import chapterManager from '../../utils/chapterManager.js'
 import bookStorage from '../../utils/bookStorage.js'
+
 export default {
 	private: {
 		fileName: '加载中...',
@@ -121,7 +119,7 @@ export default {
 		storage.get({
 			key: 'EBOOK_TIME_FORMAT',
 			success: (data) => {
-				if(data) this.timeFormat = data;
+				if (data) this.timeFormat = data;
 				this.updateTime();
 			},
 			fail: () => { this.updateTime(); }
@@ -134,8 +132,7 @@ export default {
 		storage.get({
 			key: 'EBOOK_BOOKINFO_MARQUEE_ENABLED',
 			success: (data) => { this.bookinfoMarqueeEnabled = data === 'true'; },
-			fail: () => { this.bookinfoMarqueeEnabled = true; },
-			default: 'true'
+			fail: () => { this.bookinfoMarqueeEnabled = true; }
 		});
 	},
 	onDestroy() {
@@ -158,7 +155,7 @@ export default {
 		let coverUri = '';
 		file.readText({
 			uri: bookInfoUri,
-			success: async function(data) {
+			success: async function (data) {
 				try {
 					const info = JSON.parse(data.text);
 					that.fileName = info.name || that.name;
@@ -182,7 +179,7 @@ export default {
 					that.totalStorage = '计算失败';
 				}
 			},
-			fail: function(data, code) {
+			fail: function () {
 				that.fileName = that.name;
 				that.wordCount = '加载失败';
 				that.syncProgress = '未知';
@@ -195,60 +192,57 @@ export default {
 		this.chapterStorage = '计算中...';
 		this.coverStorage = '计算中...';
 		this.indexStorage = '计算中...';
+		this.bookmarkIndexStorage = '计算中...';
+		
 		try {
-			let totalSize = 0; let chapterSize = 0; let coverSize = 0; let indexSize = 0;
-			try {
-				let listResult = await runAsyncFunc(file.list, { uri: bookContentDirUri });
-				if (listResult.fileList) {
-					for (const f of listResult.fileList) { if (f.type === 'file') chapterSize += f.length; }
+			let totalSize = 0; let chapterSize = 0; let coverSize = 0; let indexSize = 0; let bookmarkSize = 0;
+
+			const promises = [];
+
+			promises.push(runAsyncFunc(file.list, { uri: bookContentDirUri }).then(res => {
+				if (res && res.fileList) {
+					res.fileList.forEach(f => { if (f.type === 'file') chapterSize += f.length; });
 				}
-				listResult = null;
-			} catch(e) { }
-			this.chapterStorage = this.formatFileSize(chapterSize);
-			totalSize += chapterSize;
-			try {
-				if (coverUri) {
-					let coverInfo = await runAsyncFunc(file.get, { uri: coverUri });
-					coverSize = coverInfo.length;
-					coverInfo = null;
+			}).catch(() => {}));
+
+			if (coverUri) {
+				promises.push(runAsyncFunc(file.get, { uri: coverUri }).then(res => { coverSize = res.length; }).catch(() => {}));
+			}
+
+			promises.push(runAsyncFunc(file.get, { uri: bookInfoUri }).then(res => { indexSize += res.length; }).catch(() => {}));
+			promises.push(runAsyncFunc(file.get, { uri: lindexUri }).then(res => { indexSize += res.length; }).catch(() => {}));
+			promises.push(runAsyncFunc(file.list, { uri: indexesUri }).then(res => {
+				if (res && res.fileList) {
+					res.fileList.forEach(f => { if (f.type === 'file') indexSize += f.length; });
 				}
-			} catch (e) { coverSize = 0; }
-			this.coverStorage = this.formatFileSize(coverSize);
-			totalSize += coverSize;
-			try {
-				let bookInfo = await runAsyncFunc(file.get, { uri: bookInfoUri });
-				indexSize += bookInfo.length;
-				bookInfo = null;
-			} catch (e) { }
-			try {
-				let lindexInfo = await runAsyncFunc(file.get, { uri: lindexUri });
-				indexSize += lindexInfo.length;
-				lindexInfo = null;
-			} catch (e) { }
-			try {
-				const indexDirResult = await runAsyncFunc(file.list, { uri: indexesUri });
-				for(const f of indexDirResult.fileList) { if (f.type === 'file') indexSize += f.length; }
-			} catch(e) {}
-			this.indexStorage = this.formatFileSize(indexSize);
-			totalSize += indexSize;
-			try {
-				const bookshelf = await bookStorage.load();
-				let bookmarkSize = 0;
+			}).catch(() => {}));
+
+			promises.push(bookStorage.load().then(bookshelf => {
 				if (bookshelf && bookshelf.books) {
-					const book = (bookshelf.books || []).find(b => b.dirName === this.name);
+					const book = bookshelf.books.find(b => b.dirName === this.name);
 					if (book && book.progress && book.progress.bookmarks) {
-						try { bookmarkSize = JSON.stringify(book.progress.bookmarks).length; } catch (e) {}
+						try { bookmarkSize = JSON.stringify(book.progress.bookmarks).length; } catch (e) { }
 					}
 				}
-				this.bookmarkIndexStorage = this.formatFileSize(bookmarkSize);
-				totalSize += bookmarkSize;
-			} catch (e) { this.bookmarkIndexStorage = '计算失败'; }
+			}).catch(() => {}));
+
+			await Promise.all(promises);
+
+			totalSize = chapterSize + coverSize + indexSize + bookmarkSize;
+
+			this.chapterStorage = this.formatFileSize(chapterSize);
+			this.coverStorage = this.formatFileSize(coverSize);
+			this.indexStorage = this.formatFileSize(indexSize);
+			this.bookmarkIndexStorage = this.formatFileSize(bookmarkSize);
 			this.totalStorage = this.formatFileSize(totalSize);
+
 		} catch (e) {
-			this.totalStorage = '计算失败';
-			this.chapterStorage = '计算失败';
-			this.coverStorage = '计算失败';
-			this.indexStorage = '计算失败';
+			const errorMsg = '计算失败';
+			this.totalStorage = errorMsg;
+			this.chapterStorage = errorMsg;
+			this.coverStorage = errorMsg;
+			this.indexStorage = errorMsg;
+			this.bookmarkIndexStorage = errorMsg;
 		}
 	},
 	async calculateSyncProgress() {
@@ -263,7 +257,7 @@ export default {
 		} catch (e) { this.syncProgress = '计算失败'; }
 	},
 	formatFileSize(bytes) {
-		if (bytes === 0) return '0 Bytes';
+		if (typeof bytes !== 'number' || bytes <= 0) return '0 Bytes';
 		const k = 1024;
 		const sizes = ['Bytes', 'KB', 'MB', 'GB'];
 		const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -272,6 +266,7 @@ export default {
 	back() { router.back(); }
 }
 </script>
+
 <style>
 .page {
 	width: 212px;
@@ -300,7 +295,7 @@ export default {
 	font-size: 19px;
 	line-height: 24px;
 	font-weight: bold;
-	color: rgba(255,255,255,0.6);
+	color: rgba(255, 255, 255, 0.6);
 }
 .item-value {
 	font-size: 22px;
