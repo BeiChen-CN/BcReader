@@ -1,4 +1,4 @@
-import file from '@system.file' 
+import file from '@system.file';
 
 const fileSavedPath = 'internal://files/books/storage-api/savedFile';
 
@@ -10,40 +10,6 @@ if (typeof global.__storage_loading__ === 'undefined') {
 }
 if (typeof global.__storage_callbacks__ === 'undefined') {
     global.__storage_callbacks__ = [];
-}
-
-function loadIfNeeded(callback) {
-    if (global.__storage_cache__ !== null) {
-        callback(global.__storage_cache__);
-        return;
-    }
-
-    if (global.__storage_loading__) {
-        global.__storage_callbacks__.push(callback);
-        return;
-    }
-
-    global.__storage_loading__ = true;
-    global.__storage_callbacks__.push(callback);
-
-    file.readText({
-        uri: fileSavedPath,
-        success: function(data) {
-            try {
-                global.__storage_cache__ = JSON.parse(data.text);
-                if (global.__storage_cache__ === null || typeof global.__storage_cache__ !== 'object') {
-                    global.__storage_cache__ = {};
-                }
-            } catch (e) {
-                global.__storage_cache__ = {};
-            }
-            processCallbacks();
-        },
-        fail: function() {
-            global.__storage_cache__ = {};
-            processCallbacks();
-        }
-    });
 }
 
 function processCallbacks() {
@@ -59,92 +25,95 @@ function processCallbacks() {
     });
 }
 
+function loadIfNeeded(callback) {
+    if (global.__storage_cache__ !== null) {
+        callback(global.__storage_cache__);
+        return;
+    }
+
+    global.__storage_callbacks__.push(callback);
+    if (global.__storage_loading__) return;
+
+    global.__storage_loading__ = true;
+
+    file.readText({
+        uri: fileSavedPath,
+        success: function(data) {
+            try {
+                global.__storage_cache__ = JSON.parse(data.text) || {};
+                if (typeof global.__storage_cache__ !== 'object') {
+                    global.__storage_cache__ = {};
+                }
+            } catch (e) {
+                global.__storage_cache__ = {};
+            }
+            processCallbacks();
+        },
+        fail: function() {
+            global.__storage_cache__ = {};
+            processCallbacks();
+        }
+    });
+}
+
 function saveToFile() {
     const toWrite = (global.__storage_cache__ && typeof global.__storage_cache__ === 'object') ? global.__storage_cache__ : {};
-    try {
-        file.writeText({
-            uri: fileSavedPath,
-            text: JSON.stringify(toWrite)
-        });
-    } catch (e) {
-        console.error("Storage save error:", e);
-    }
-}
-
-function get(param){
-    loadIfNeeded(data => {
-        const safeData = (data && typeof data === 'object') ? data : {};
-        const key = param && param.key;
-        let str = (key !== undefined) ? safeData[key] : undefined;
-        if (str === undefined && param && param.default !== undefined) {
-            str = param.default;
-        }
-        if (str === undefined) {
-            str = '';
-        }
-        if (param && param.success) {
-            param.success(str);
-        }
-        if (param && param.complete) {
-            param.complete();
-        }
+    file.writeText({
+        uri: fileSavedPath,
+        text: JSON.stringify(toWrite)
     });
 }
 
-function save(data, param){
-    loadIfNeeded(() => {
-        const newData = (data && typeof data === 'object') ? data : {};
-        global.__storage_cache__ = newData;
-        saveToFile();
-        
-        if (param && param.success) {
-            param.success();
+function get(param = {}) {
+    loadIfNeeded(data => {
+        const key = param.key;
+        let val = (data && key !== undefined) ? data[key] : undefined;
+        if (val === undefined) {
+            val = param.default !== undefined ? param.default : '';
         }
-        if (param && param.complete) {
-            param.complete();
-        }
+        if (param.success) param.success(val);
+        if (param.complete) param.complete();
     });
 }
 
-function set(param){
+function set(param = {}) {
     loadIfNeeded(data => {
-        const safeData = (data && typeof data === 'object') ? data : {};
-        const oldValue = safeData[param.key];
-        if (oldValue !== param.value) {
+        const safeData = data || {};
+        if (safeData[param.key] !== param.value) {
             safeData[param.key] = param.value;
             global.__storage_cache__ = safeData;
             saveToFile();
         }
-        if (param && param.success) {
-            param.success();
-        }
-        if (param && param.complete) {
-            param.complete();
-        }
+        if (param.success) param.success();
+        if (param.complete) param.complete();
     });
 }
 
-function clear(param){
-    global.__storage_cache__ = {};
-    saveToFile();
-    
-    if (param && param.success) param.success();
-    if (param && param.complete) param.complete();
+function save(data, param = {}) {
+    loadIfNeeded(() => {
+        global.__storage_cache__ = (data && typeof data === 'object') ? data : {};
+        saveToFile();
+        if (param.success) param.success();
+        if (param.complete) param.complete();
+    });
 }
 
-function del(param){
+function clear(param = {}) {
+    global.__storage_cache__ = {};
+    saveToFile();
+    if (param.success) param.success();
+    if (param.complete) param.complete();
+}
+
+function del(param = {}) {
     loadIfNeeded(data => {
-        if (param.key in data) {
+        if (data && param.key in data) {
             delete data[param.key];
             global.__storage_cache__ = data;
             saveToFile();
         }
-        if(param.success) {
-            param.success();
-        }
-        if(param.complete) {
-            param.complete();
-        }
+        if (param.success) param.success();
+        if (param.complete) param.complete();
     });
 }
 

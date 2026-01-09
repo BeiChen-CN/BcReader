@@ -4,16 +4,21 @@ import router from '@system.router';
 
 const BOOKSHELF_URI = 'internal://files/books/bookshelf.json';
 const BOOKSHELF_VERSION = 3;
+const DEFAULT_DATA = { version: BOOKSHELF_VERSION, books: [] };
 
 if (typeof global.__bookshelf_cache__ === 'undefined') {
     global.__bookshelf_cache__ = null;
 }
 
+function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
 async function loadBookshelf() {
     if (global.__bookshelf_cache__) {
-        return JSON.parse(JSON.stringify(global.__bookshelf_cache__));
+        return clone(global.__bookshelf_cache__);
     }
-    
+
     try {
         const data = await runAsyncFunc(file.readText, { uri: BOOKSHELF_URI });
         const parsedData = JSON.parse(data.text);
@@ -26,95 +31,80 @@ async function loadBookshelf() {
                     content: '书架存储格式已更新且旧数据不再兼容。为防止卡死，请卸载后重装小程序再重新同步书籍。'
                 }
             });
-            return { version: BOOKSHELF_VERSION, books: [] };
+            return clone(DEFAULT_DATA);
         }
         global.__bookshelf_cache__ = parsedData;
-        return JSON.parse(JSON.stringify(parsedData));
+        return clone(parsedData);
     } catch (e) {
-        const defaultData = { version: BOOKSHELF_VERSION, books: [] };
-        global.__bookshelf_cache__ = defaultData;
-        return JSON.parse(JSON.stringify(defaultData));
+        global.__bookshelf_cache__ = clone(DEFAULT_DATA);
+        return clone(DEFAULT_DATA);
     }
 }
 
 async function saveBookshelf(bookshelfData) {
-    try {
-        global.__bookshelf_cache__ = JSON.parse(JSON.stringify(bookshelfData));
-        await runAsyncFunc(file.writeText, {
-            uri: BOOKSHELF_URI,
-            text: JSON.stringify(bookshelfData),
-        });
-    } catch (e) {
-        throw e; 
-    }
+    global.__bookshelf_cache__ = clone(bookshelfData);
+    await runAsyncFunc(file.writeText, {
+        uri: BOOKSHELF_URI,
+        text: JSON.stringify(bookshelfData),
+    });
 }
 
 async function get(bookDirName) {
     const bookshelf = await loadBookshelf();
     const book = bookshelf.books.find(b => b.dirName === bookDirName);
-    const progress = book?.progress || { chapterIndex: null, offsetInChapter: 0, scrollOffset: 0 };
     
-    const result = JSON.parse(JSON.stringify(progress));
-    if (result.chapterIndex === undefined || result.chapterIndex === null) {
-        result.chapterIndex = null;
-    }
-    if (typeof result.offsetInChapter !== 'number' || isNaN(result.offsetInChapter)) {
-        result.offsetInChapter = 0;
-    }
-    if (typeof result.scrollOffset !== 'number' || isNaN(result.scrollOffset)) {
-        result.scrollOffset = 0;
-    }
-    
-    delete result.bookmarks;
+    const progress = book?.progress || {};
+    const result = {
+        chapterIndex: progress.chapterIndex ?? null,
+        offsetInChapter: (typeof progress.offsetInChapter === 'number' && !isNaN(progress.offsetInChapter)) ? progress.offsetInChapter : 0,
+        scrollOffset: (typeof progress.scrollOffset === 'number' && !isNaN(progress.scrollOffset)) ? progress.scrollOffset : 0
+    };
+
     return result;
 }
 
 async function set(bookDirName, progressData) {
     const bookshelf = await loadBookshelf();
     const bookIndex = bookshelf.books.findIndex(b => b.dirName === bookDirName);
-    
+
     if (bookIndex !== -1) {
-        if (!bookshelf.books[bookIndex].progress) {
-            bookshelf.books[bookIndex].progress = {};
+        const book = bookshelf.books[bookIndex];
+        if (!book.progress) {
+            book.progress = {};
         }
-        
-        const { bookmarks, ...progressWithoutBookmarks } = progressData;
+
+        const { bookmarks, ...newProgress } = progressData;
         const cleanProgress = {};
-        if (progressWithoutBookmarks.chapterIndex !== undefined && progressWithoutBookmarks.chapterIndex !== null) {
-            cleanProgress.chapterIndex = parseInt(progressWithoutBookmarks.chapterIndex);
-            if (isNaN(cleanProgress.chapterIndex)) {
-                cleanProgress.chapterIndex = null;
-            }
+
+        if (newProgress.chapterIndex != null) {
+            const cIdx = parseInt(newProgress.chapterIndex);
+            cleanProgress.chapterIndex = isNaN(cIdx) ? null : cIdx;
         } else {
             cleanProgress.chapterIndex = null;
         }
-        
-        (function() {
-            const rawOffset = progressWithoutBookmarks.offsetInChapter;
-            let offset = 0;
-            if (typeof rawOffset === 'number') {
-                offset = Math.max(0, Math.floor(rawOffset));
-            } else if (typeof rawOffset === 'string') {
-                const parsed = parseInt(rawOffset, 10);
-                offset = isNaN(parsed) ? 0 : Math.max(0, parsed);
-            } else {
-                offset = 0;
-            }
-            if (offset % 2 === 1) offset = Math.max(0, offset - 1);
-            cleanProgress.offsetInChapter = offset;
-        })();
-        
-        cleanProgress.scrollOffset = typeof progressWithoutBookmarks.scrollOffset === 'number' 
-            ? Math.max(0, Math.floor(progressWithoutBookmarks.scrollOffset)) 
+
+        let offset = 0;
+        const rawOffset = newProgress.offsetInChapter;
+        if (typeof rawOffset === 'number') {
+            offset = Math.max(0, Math.floor(rawOffset));
+        } else if (typeof rawOffset === 'string') {
+            const parsed = parseInt(rawOffset, 10);
+            offset = isNaN(parsed) ? 0 : Math.max(0, parsed);
+        }
+        if (offset % 2 === 1) offset = Math.max(0, offset - 1);
+        cleanProgress.offsetInChapter = offset;
+
+        cleanProgress.scrollOffset = typeof newProgress.scrollOffset === 'number'
+            ? Math.max(0, Math.floor(newProgress.scrollOffset))
             : 0;
-        Object.keys(progressWithoutBookmarks).forEach(key => {
+
+        Object.keys(newProgress).forEach(key => {
             if (!['chapterIndex', 'offsetInChapter', 'scrollOffset'].includes(key)) {
-                cleanProgress[key] = progressWithoutBookmarks[key];
+                cleanProgress[key] = newProgress[key];
             }
         });
-        
-        Object.assign(bookshelf.books[bookIndex].progress, cleanProgress);
-        
+
+        Object.assign(book.progress, cleanProgress);
         await saveBookshelf(bookshelf);
     }
 }
@@ -122,22 +112,20 @@ async function set(bookDirName, progressData) {
 async function getBookmarks(bookDirName) {
     const bookshelf = await loadBookshelf();
     const book = bookshelf.books?.find(b => b.dirName === bookDirName);
-    const bookmarks = book?.progress?.bookmarks || [];
-    
-    return JSON.parse(JSON.stringify(bookmarks));
+    return clone(book?.progress?.bookmarks || []);
 }
 
 async function setBookmarks(bookDirName, bookmarks) {
     const bookshelf = await loadBookshelf();
-    
     const bookIndex = bookshelf.books?.findIndex(b => b.dirName === bookDirName);
+
     if (bookIndex !== -1) {
-        if (!bookshelf.books[bookIndex].progress) {
-            bookshelf.books[bookIndex].progress = {};
+        const book = bookshelf.books[bookIndex];
+        if (!book.progress) {
+            book.progress = {};
         }
-        
-        bookshelf.books[bookIndex].progress.bookmarks = JSON.parse(JSON.stringify(bookmarks));
-        bookshelf.books[bookIndex].progress.lastReadTimestamp = Date.now();
+        book.progress.bookmarks = clone(bookmarks);
+        book.progress.lastReadTimestamp = Date.now();
         
         await saveBookshelf(bookshelf);
     }
@@ -145,7 +133,7 @@ async function setBookmarks(bookDirName, bookmarks) {
 
 async function getBooks() {
     const bookshelf = await loadBookshelf();
-    return JSON.parse(JSON.stringify(bookshelf.books || []));
+    return clone(bookshelf.books || []);
 }
 
 async function updateBooks(newBooks) {
