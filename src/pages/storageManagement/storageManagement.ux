@@ -90,28 +90,37 @@ export default {
 		actualAvailableStorage: '加载中...',
 		actualAvailableColor: 'white',
 		storagePercent: 0,
-		totalStorageBytes: 0,
-		actualAvailableBytes: 0,
 		usableStorage: '计算中...',
 		totalExclBooks: '加载中...',
 		bookIndexStorage: '加载中...',
 		readProgressStorage: '加载中...',
 		readingTimeStorage: '加载中...',
 		settingsStorage: '加载中...',
-		timeFormat: '24h',
 		deviceProduct: null
 	},
 	onInit() {
 		this.updateTime();
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
+		this.timer = setInterval(() => { this.updateTime(); }, 1000);
 		this.loadDeviceInfo();
 		this.calculateStorageOverview();
 	},
 	onShow() {
 		this.loadDeviceInfo();
 		this.calculateStorageOverview();
+	},
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+	},
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		hours = hours < 10 ? '0' + hours : hours;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		this.nowTime = `${hours}:${minutes}`;
 	},
 	loadDeviceInfo() {
 		device.getInfo({
@@ -129,7 +138,6 @@ export default {
 		device.getTotalStorage({
 			success: (data) => {
 				const totalStorage = data.totalStorage || 0;
-				this.totalStorageBytes = totalStorage;
 				this.totalStorage = this.formatFileSize(totalStorage);
 				device.getAvailableStorage({
 					success: (availData) => {
@@ -138,15 +146,10 @@ export default {
 						this.usedStorage = this.formatFileSize(storageInfo.usedStorage);
 						this.reservedStorage = this.formatFileSize(storageInfo.reservedStorage);
 						this.actualAvailableStorage = this.formatFileSize(storageInfo.actualAvailable);
-						this.actualAvailableBytes = storageInfo.actualAvailable;
 						this.actualAvailableColor = isStorageLow(storageInfo.actualAvailable) ? '#f14444' : 'white';
 						const usableSpace = totalStorage - storageInfo.reservedStorage;
 						this.usableStorage = this.formatFileSize(usableSpace);
-						if (usableSpace > 0) {
-							this.storagePercent = Math.round((storageInfo.usedStorage / usableSpace) * 100);
-						} else {
-							this.storagePercent = 0;
-						}
+						this.storagePercent = usableSpace > 0 ? Math.round((storageInfo.usedStorage / usableSpace) * 100) : 0;
 					},
 					fail: () => {
 						this.usedStorage = '获取失败';
@@ -162,70 +165,58 @@ export default {
 			}
 		});
 	},
-	onDestroy() {
-		if (this.timer) {
-			clearInterval(this.timer);
-			this.timer = null;
+	async getFileSize(uri) {
+		try {
+			const r = await runAsyncFunc(file.get, { uri });
+			return r.length || 0;
+		} catch (e) {
+			return 0;
 		}
-	},
-	updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		hours = hours < 10 ? '0' + hours : hours;
-		minutes = minutes < 10 ? '0' + minutes : minutes;
-		this.nowTime = `${hours}:${minutes}`;
 	},
 	async calculateStorageOverview() {
 		this.totalExclBooks = '计算中...';
 		this.bookIndexStorage = '计算中...';
 		this.readProgressStorage = '计算中...';
 		this.readingTimeStorage = '计算中...';
+		this.settingsStorage = '计算中...';
+
 		try {
-			let progressBytes = 0;
-			try {
-				const bookshelf = await bookStorage.load();
-				(bookshelf.books || []).forEach(b => {
-					if (b.progress) {
-						const copy = Object.assign({}, b.progress);
-						delete copy.bookmarks;
-						try {
-							progressBytes += JSON.stringify(copy).length;
-						} catch (e) {}
-					}
-				});
-			} catch (e) {}
+			const getProgressSize = async () => {
+				try {
+					const bookshelf = await bookStorage.load();
+					let size = 0;
+					(bookshelf.books || []).forEach(b => {
+						if (b.progress) {
+							const copy = Object.assign({}, b.progress);
+							delete copy.bookmarks;
+							try { size += JSON.stringify(copy).length; } catch (e) {}
+						}
+					});
+					return size;
+				} catch (e) { return 0; }
+			};
+
+			const getReadingTimeSize = async () => {
+				try {
+					const times = await readingTimeStorage.getAllBooksReadingTime();
+					return JSON.stringify(times).length;
+				} catch (e) { return 0; }
+			};
+
+			const [progressBytes, readingTimeBytes, bookIndexBytes, settingsBytes] = await Promise.all([
+				getProgressSize(),
+				getReadingTimeSize(),
+				this.getFileSize('internal://files/books/bookshelf.json'),
+				this.getFileSize('internal://files/books/storage-api/savedFile')
+			]);
+
 			this.readProgressStorage = this.formatFileSize(progressBytes);
-
-			let readingTimeBytes = 0;
-			try {
-				const times = await readingTimeStorage.getAllBooksReadingTime();
-				readingTimeBytes = JSON.stringify(times).length;
-			} catch (e) {}
 			this.readingTimeStorage = this.formatFileSize(readingTimeBytes);
-
-			let bookIndexBytes = 0;
-			let settingsBytes = 0;
-			try {
-				const tryGet = async (uri) => {
-					try {
-						const r = await runAsyncFunc(file.get, { uri });
-						return r.length || 0;
-					} catch (e) {
-						return 0;
-					}
-				};
-				
-				bookIndexBytes = await tryGet('internal://files/books/bookshelf.json');
-				this.bookIndexStorage = this.formatFileSize(bookIndexBytes);
-				
-				settingsBytes = await tryGet('internal://files/books/storage-api/savedFile');
-				this.settingsStorage = this.formatFileSize(settingsBytes);
-			} catch (e) {}
-
-			const totalExcl = bookIndexBytes + progressBytes + readingTimeBytes + settingsBytes;
-			this.totalExclBooks = this.formatFileSize(totalExcl);
+			this.bookIndexStorage = this.formatFileSize(bookIndexBytes);
+			this.settingsStorage = this.formatFileSize(settingsBytes);
+			this.totalExclBooks = this.formatFileSize(bookIndexBytes + progressBytes + readingTimeBytes + settingsBytes);
 		} catch (e) {
+			this.totalExclBooks = '计算失败';
 		}
 	},
 	formatFileSize(bytes) {
@@ -264,45 +255,40 @@ export default {
 <style>
 .page {
 	width: 336px;
-        height: 480px;
+	height: 480px;
 	background-color: #000000;
 }
 .list {
 	width: 336px;
-    height: 480px;
-	position: absolute;
-	top: 0px;
-	left: 0px;
+	height: 480px;
 }
-
-  .item {
-	  width: 100%;
-	  height: 112px;
-	  padding: 14px 20px;
-	  margin-bottom: 8px;
-	  background-color: #262626;
-	  border-radius: 36px;
-	  align-items: center;
+.item {
+	width: 100%;
+	height: 112px;
+	padding: 14px 20px;
+	margin-bottom: 8px;
+	background-color: #262626;
+	border-radius: 36px;
+	align-items: center;
 	justify-content: space-between;
-  }
-  .itemtext {
-	  font-size: 32px;
-	  line-height:40px;
-	  width: 100%;
-	  font-weight: bold;
-	  color: white;
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
-  
-  .itemtext2 {
-	  font-size: 28px;
-	  line-height: 37px;
-	  font-weight: bold;
-	  color: rgba(255,255,255,0.6);
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
+}
+.itemtext {
+	font-size: 32px;
+	line-height: 40px;
+	width: 100%;
+	font-weight: bold;
+	color: white;
+	text-overflow: ellipsis;
+	lines: 1;
+}
+.itemtext2 {
+	font-size: 28px;
+	line-height: 37px;
+	font-weight: bold;
+	color: rgba(255,255,255,0.6);
+	text-overflow: ellipsis;
+	lines: 1;
+}
 .item-value {
 	font-size: 32px;
 	line-height: 40px;
@@ -311,47 +297,30 @@ export default {
 	color: white;
 	lines: 1;
 }
-.itemtext {
-	font-size: 32px;
-	line-height:40px;
-	width: 100%;
-	font-weight: bold;
-	color: white;
-	text-overflow: ellipsis;
-	lines: 1;
-}
-
-  
 .item-content {
-	  height: 100%;
-	  flex:1;
-	  flex-direction: column;
-	  justify-content: space-between;
-  }
-  
+	height: 100%;
+	flex: 1;
+	flex-direction: column;
+	justify-content: space-between;
+}
 .item-title {
 	font-size: 28px;
 	line-height: 37px;
 	font-weight: bold;
 	color: rgba(255,255,255,0.6);
 }
-
 .storage-item {
 	background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
 	border: 1px solid rgba(255,255,255,0.1);
 }
-
 .storage-progress {
 	width: 100%;
 	height: 8px;
 	margin-top: 8px;
 }
-
 .progress-text {
 	font-size: 22px;
 	line-height: 30px;
 	color: rgba(255,255,255,0.5);
 }
 </style>
-
-
