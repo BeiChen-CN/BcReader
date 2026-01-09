@@ -87,6 +87,24 @@
                 </div>
                 <img if="{{progressMode === 'book'}}" src="/common/images/check.png" style="width:24px;height: 24px;" static />
             </list-item>
+            
+            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
+                <text class="section-title" static>刷新设置</text>
+            </list-item>
+            <list-item class="item {{refreshMode === 'onEnter' ? 'item2' : ''}}" @click="selectRefreshMode('onEnter')" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>重进刷新</text>
+                    <text class="itemtext2" static>进软件时刷新</text>
+                </div>
+                <img if="{{refreshMode === 'onEnter'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+            </list-item>
+            <list-item class="item {{refreshMode === 'onExit' ? 'item2' : ''}}" @click="selectRefreshMode('onExit')" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>退出刷新</text>
+                    <text class="itemtext2" static>回书架时刷新</text>
+                </div>
+                <img if="{{refreshMode === 'onExit'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+            </list-item>
         </list>
 
         <img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 338px;width: 192px;height: 182px;" />
@@ -117,7 +135,8 @@
             displayMode: 'all',
             progressMode: 'book',
             showStorageWarning: true,
-            categoryPagination: false
+            categoryPagination: false,
+            refreshMode: 'onExit'
         },
         updateTime() {
             const date = new Date();
@@ -190,6 +209,11 @@
                 key: 'EBOOK_CATEGORY_PAGINATION',
                 success: (data) => { this.categoryPagination = data === 'true'; },
                 fail: () => { this.categoryPagination = false; }
+            });
+            storage.get({
+                key: 'EBOOK_SHELF_REFRESH_MODE',
+                success: (data) => { if (data) this.refreshMode = data; },
+                fail: () => { this.refreshMode = 'onExit'; }
             });
         },
         onDestroy() {
@@ -265,6 +289,16 @@
                 value: mode
             });
         },
+        selectRefreshMode(mode) {
+            if (this.refreshMode === mode) {
+                return;
+            }
+            this.refreshMode = mode;
+            storage.set({
+                key: 'EBOOK_SHELF_REFRESH_MODE',
+                value: mode
+            });
+        },
         reset() {
             this.shelfStyle = 'list';
             this.shelfPageSize = 5;
@@ -273,6 +307,7 @@
             this.progressMode = 'book';
             this.showStorageWarning = true;
             this.categoryPagination = false;
+            this.refreshMode = 'onEnter';
             storage.set({ key: "EBOOK_SHELF_STYLE", value: 'list' });
             storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '5' });
             storage.set({ key: "EBOOK_TOP_LAST_READ", value: 'true' });
@@ -280,6 +315,7 @@
             storage.set({ key: "EBOOK_HOME_PROGRESS_MODE", value: 'book' });
             storage.set({ key: "EBOOK_SHOW_STORAGE_WARNING", value: 'true' });
             storage.set({ key: "EBOOK_CATEGORY_PAGINATION", value: 'false' });
+            storage.set({ key: "EBOOK_SHELF_REFRESH_MODE", value: 'onExit' });
         },
         back() {
             router.back();
