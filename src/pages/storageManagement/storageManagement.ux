@@ -62,12 +62,8 @@
 		</list>
 
 		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 82px;" />
-		<text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
-			{{nowTime}}
-		</text>
-		<text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
-			存储管理
-		</text>
+		<text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">{{nowTime}}</text>
+		<text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">存储管理</text>
 	</div>
 </template>
 
@@ -189,9 +185,7 @@ export default {
 					if (b.progress) {
 						const copy = Object.assign({}, b.progress);
 						delete copy.bookmarks;
-						try {
-							progressBytes += JSON.stringify(copy).length;
-						} catch (e) {}
+						progressBytes += JSON.stringify(copy).length;
 					}
 				});
 			} catch (e) {}
@@ -278,32 +272,32 @@ export default {
 }
 
 .item {
-	  width: 100%;
-	  height: 85px;
-	  padding: 12px 18px;
-	  margin-bottom: 8px;
-	  background-color: #262626;
-	  border-radius: 26px;
-	  align-items: center;
+	width: 100%;
+	height: 85px;
+	padding: 12px 18px;
+	margin-bottom: 8px;
+	background-color: #262626;
+	border-radius: 26px;
+	align-items: center;
 	justify-content: space-between;
-  }
+}
   
-  .itemtext {
-	  font-size: 23px;
-	  width: 100%;
-	  font-weight: bold;
-	  color: white;
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
+.itemtext {
+	font-size: 23px;
+	width: 100%;
+	font-weight: bold;
+	color: white;
+	text-overflow: ellipsis;
+	lines: 1;
+}
   
-  .itemtext2 {
-	  font-size: 16px;
-	  font-weight: bold;
-	  color: rgba(255,255,255,0.6);
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
+.itemtext2 {
+	font-size: 16px;
+	font-weight: bold;
+	color: rgba(255,255,255,0.6);
+	text-overflow: ellipsis;
+	lines: 1;
+}
 
 .item-value {
 	font-size: 17px;
@@ -314,11 +308,11 @@ export default {
 }
   
 .item-content {
-	  height: 100%;
-	  flex:1;
-	  flex-direction: column;
-	  justify-content: space-between;
-  }
+	height: 100%;
+	flex:1;
+	flex-direction: column;
+	justify-content: space-between;
+}
   
 .item-title {
 	font-size: 23px;
@@ -343,5 +337,3 @@ export default {
 	color: rgba(255,255,255,0.5);
 }
 </style>
-
-

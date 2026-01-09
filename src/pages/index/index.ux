@@ -1,64 +1,34 @@
 <template>
   <div class="page" style="flex-direction: column;">
-    <img if="{{allBooks.length == 0}}" static src="/common/images/empty.png" style="position: absolute;left: 50px;top: 186px;width: 92px;height: 92px;" />
-    <text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 289px;width: 192px;line-height: 42px;font-weight:bold;font-size:22px;color:white;text-align:center;">书架空空</text>
-    <list class="list" if="{{shelfStyle === 'list' && displayMode === 'all'}}">
-      <list-item type="tip" if="{{showStorageWarning && isStorageLow}}" class="item" style="background-color: #ad0000;">
+    <block if="{{allBooks.length == 0}}">
+      <img static src="/common/images/empty.png" style="position: absolute;left: 50px;top: 186px;width: 92px;height: 92px;" />
+      <text static style="position: absolute;left: 0px;top: 289px;width: 192px;line-height: 42px;font-weight:bold;font-size:22px;color:white;text-align:center;">书架空空</text>
+    </block>
+
+    <list class="list" if="{{allBooks.length > 0}}">
+      <list-item type="tip" if="{{showStorageWarning && isStorageLow && (!selectedCategory || displayMode !== 'category')}}" class="item" style="background-color: #ad0000;">
         <text style="color: white;font-size: 21px;">实际可用存储空间不足，将无法正常使用。</text>
       </list-item>
-      <list-item for="{{visibleBooks}}" class="item" @click="selectFile($item)" type="nook">
-        <marquee if="{{shelfMarqueeEnabled}}" scrollamount="22" class="itemtext" text-offset="25">{{$item.name}}</marquee>
-        <text else class="itemtext">{{$item.name}}</text>
-        <marquee if="{{shelfMarqueeEnabled}}" scrollamount="40" text-offset="25" class="itemtext2">{{getProgressSubtitle($item)}}</marquee>
-        <text else class="itemtext2">{{getProgressSubtitle($item)}}</text>
-      </list-item>
-      <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
-        <div class="pagination-controls">
-          <img src="/common/images/pre.png" if="{{currentPage > 0}}" @click="prevPage" class="pagination-button" />
-          <text class="pagination-text">{{currentPage + 1}} / {{totalPages}}</text>
-          <img src="/common/images/next.png" if="{{currentPage < totalPages - 1}}" @click="nextPage" class="pagination-button" />
-        </div>
-      </list-item>
-    </list>
-    <list class="list" if="{{shelfStyle === 'cover' && displayMode === 'all'}}">
-      <list-item type="tip" if="{{showStorageWarning && isStorageLow}}" class="item" style="background-color: #ad0000;">
-        <text style="color: white;font-size: 21px;">实际可用存储空间不足，将无法正常使用。</text>
-      </list-item>
-      <list-item for="{{visibleBooks}}" class="item cover-item" @click="selectFile($item)" type="nook">
-        <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
-        <div class="cover-image-placeholder" else></div>
-        <div class="cover-content">
-          <marquee if="{{shelfMarqueeEnabled}}" scrollamount="30" class="itemtext" text-offset="25">{{$item.name}}</marquee>
-          <text else class="itemtext">{{$item.name}}</text>
-          <marquee if="{{shelfMarqueeEnabled}}" scrollamount="40" class="itemtext2" text-offset="25">{{getProgressSubtitle($item)}}</marquee>
-          <text else class="itemtext2">{{getProgressSubtitle($item)}}</text>
-        </div>
-      </list-item>
-      <list-item type="pagination" class="pagination-container" if="{{totalPages > 1 && displayMode === 'all'}}">
-        <div class="pagination-controls">
-          <img src="/common/images/pre.png" if="{{currentPage > 0}}" @click="prevPage" class="pagination-button" />
-          <text class="pagination-text">{{currentPage + 1}} / {{totalPages}}</text>
-          <img src="/common/images/next.png" if="{{currentPage < totalPages - 1}}" @click="nextPage" class="pagination-button" />
-        </div>
-      </list-item>
-    </list>
-    <list class="list" if="{{displayMode === 'category'}}">
-      <list-item type="tip" if="{{showStorageWarning && isStorageLow && !selectedCategory}}" class="item" style="background-color: #ad0000;">
-        <text style="color: white;font-size: 21px;">实际可用存储空间不足，将无法正常使用。</text>
-      </list-item>
-      <list-item if="{{selectedCategory}}" class="item" @click="backToCategoryList" type="nook" style="height: 72px;">
+
+      <list-item type="back" if="{{displayMode === 'category' && selectedCategory}}" class="item" @click="backToCategoryList" style="height: 72px;">
         <text class="itemtext">← 返回分类</text>
       </list-item>
-      <list-item for="{{visibleBooks}}" class="item {{shelfStyle === 'cover' ? 'cover-item' : ''}}" @click="handleCategoryItemClick($item)" type="nook">
-        <img if="{{shelfStyle === 'cover' && $item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
-        <div if="{{shelfStyle === 'cover' && !$item.hasRealCover && !$item.isCategory}}" class="cover-image-placeholder"></div>
-        <div class="{{shelfStyle === 'cover' ? 'cover-content' : 'category-item-content'}}">
-          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" text-offset="25" class="itemtext">{{$item.name}}</marquee>
+
+      <list-item for="{{visibleBooks}}" type="nook" class="item {{shelfStyle === 'cover' ? 'cover-item' : ''}}" @click="handleItemClick($item)">
+        <block if="{{shelfStyle === 'cover'}}">
+          <img if="{{$item.hasRealCover}}" class="cover-image" src="{{$item.coverUri}}" />
+          <div else class="cover-image-placeholder"></div>
+        </block>
+
+        <div class="{{getContentClass($item)}}">
+          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" class="itemtext" text-offset="25">{{$item.name}}</marquee>
           <text else class="itemtext">{{$item.name}}</text>
-          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="40" text-offset="25" class="itemtext2">{{getProgressSubtitle($item)}}</marquee>
-          <text else class="itemtext2">{{getProgressSubtitle($item)}}</text>
+          
+          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="40" text-offset="25" class="itemtext2">{{$item.subtitle}}</marquee>
+          <text else class="itemtext2">{{$item.subtitle}}</text>
         </div>
       </list-item>
+
       <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
         <div class="pagination-controls">
           <img src="/common/images/pre.png" if="{{currentPage > 0}}" @click="prevPage" class="pagination-button" />
@@ -67,16 +37,14 @@
         </div>
       </list-item>
     </list>
+
     <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 192px;height: 102px;" />
     <img static src="/common/images/more.png" @click="routerTo('more')" style="position: absolute;left: 59px;top: 418px;width: 72px;height: 72px;" />
-    <text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">
-      {{nowTime}}
-    </text>
-    <text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">
-      电子书
-    </text>
+    <text style="position: absolute;top: 16px;width: 192px;line-height: 32px;font-weight:bold;font-size:18px;color:rgba(255,255,255,0.6);text-align:center;">{{nowTime}}</text>
+    <text static style="position: absolute;top: 36px;width: 192px;line-height: 42px;font-weight:bold;font-size:26px;color:white;text-align:center;">电子书</text>
   </div>
 </template>
+
 <script>
 import router from '@system.router';
 import bookStorage from '../../utils/bookStorage.js'
@@ -84,6 +52,7 @@ import storage from '../../utils/storage.js';
 import chapterManager from '../../utils/chapterManager.js';
 import device from '@system.device';
 import { calculateStorageInfo, isStorageLow } from '../../utils/storageUtils.js';
+
 export default {
   private: {
     nowTime: "00:00",
@@ -109,9 +78,6 @@ export default {
     currentModeList: [],
     refreshMode: 'onExit'
   },
-  exit(){
-	  app.terminate();
-  },
   updateTime() {
     const date = new Date();
     let hours = date.getHours();
@@ -122,9 +88,7 @@ export default {
   },
   onInit() {
     this.updateTime();
-    this.timer = setInterval(() => {
-      this.updateTime();
-    }, 1000);
+    this.timer = setInterval(() => { this.updateTime(); }, 1000);
     bookStorage.load();
   },
   onDestroy() {
@@ -139,10 +103,12 @@ export default {
   onShow() {
     this.isNavigating = false;
     const shouldRestoreCategory = globalThis.fromCategoryPage && globalThis.selectedCategory;
-    const categoryToRestore = shouldRestoreCategory ? globalThis.selectedCategory : null;
-    const categoryPageToRestore = shouldRestoreCategory && typeof globalThis.categoryPage === 'number' ? globalThis.categoryPage : null;
     const shouldRestoreHomePage = globalThis.fromHomePage && typeof globalThis.homePage === 'number';
-    const homePageToRestore = shouldRestoreHomePage ? globalThis.homePage : null;
+    
+    const categoryToRestore = globalThis.selectedCategory;
+    const categoryPageToRestore = globalThis.categoryPage;
+    const homePageToRestore = globalThis.homePage;
+    
     if (shouldRestoreCategory) {
       globalThis.fromCategoryPage = false;
       globalThis.selectedCategory = null;
@@ -152,37 +118,30 @@ export default {
       globalThis.fromHomePage = false;
       globalThis.homePage = null;
     }
+    
     if (!shouldRestoreHomePage && !shouldRestoreCategory) {
       this.currentPage = 0;
     }
+
     this.loadSettingsAndFiles().then(() => {
       const shouldRefresh = this.shouldRefreshShelf();
-      if (shouldRefresh) {
-        this.loadFileList().then(() => {
-          if (shouldRestoreCategory && categoryToRestore) {
-            this.displayMode = 'category';
-            this.selectedCategory = categoryToRestore;
-            if (categoryPageToRestore !== null) {
-              this.currentPage = categoryPageToRestore;
-            }
-            this.updateCategoryView();
-          } else if (shouldRestoreHomePage && homePageToRestore !== null && this.displayMode === 'all') {
-            this.loadPage(homePageToRestore);
-          }
-          this.loadDeviceInfo();
-        });
-      } else {
+      
+      const proceedToRender = () => {
         if (shouldRestoreCategory && categoryToRestore) {
           this.displayMode = 'category';
           this.selectedCategory = categoryToRestore;
-          if (categoryPageToRestore !== null) {
-            this.currentPage = categoryPageToRestore;
-          }
+          if (typeof categoryPageToRestore === 'number') this.currentPage = categoryPageToRestore;
           this.updateCategoryView();
         } else if (shouldRestoreHomePage && homePageToRestore !== null && this.displayMode === 'all') {
           this.loadPage(homePageToRestore);
         }
         this.loadDeviceInfo();
+      };
+
+      if (shouldRefresh) {
+        this.loadFileList().then(proceedToRender);
+      } else {
+        proceedToRender();
       }
     });
   },
@@ -190,47 +149,40 @@ export default {
     return new Promise((resolve) => {
       storage.get({
         key: key,
-        success: (data) => {
-          resolve(data || defaultValue);
-        },
-        fail: () => {
-          resolve(defaultValue);
-        }
+        success: (data) => resolve(data || defaultValue),
+        fail: () => resolve(defaultValue)
       });
     });
   },
   async loadSettingsAndFiles() {
-    const [pageSize, shelfStyle, lastReadOnTop, shelfMarqueeEnabled, displayMode, homeProgressMode, showStorageWarning, categoryPagination, refreshMode] = await Promise.all([
-      this.getStorage('EBOOK_SHELF_PAGE_SIZE', '5'),
-      this.getStorage('EBOOK_SHELF_STYLE', 'list'),
-      this.getStorage('EBOOK_TOP_LAST_READ', 'true'),
-      this.getStorage('EBOOK_SHELF_MARQUEE_ENABLED', 'false'),
-      this.getStorage('EBOOK_HOME_DISPLAY_MODE', 'all'),
-      this.getStorage('EBOOK_HOME_PROGRESS_MODE', 'book'),
-      this.getStorage('EBOOK_SHOW_STORAGE_WARNING', 'true'),
-      this.getStorage('EBOOK_CATEGORY_PAGINATION', 'false'),
-      this.getStorage('EBOOK_SHELF_REFRESH_MODE', 'onExit')
-    ]);
-    this.pageSize = parseInt(pageSize);
-    this.shelfStyle = shelfStyle;
-    this.lastReadOnTop = lastReadOnTop === 'true';
-    this.shelfMarqueeEnabled = shelfMarqueeEnabled === 'true';
-    this.displayMode = displayMode || 'all';
-    this.homeProgressMode = homeProgressMode || 'book';
-    this.showStorageWarning = showStorageWarning === 'true';
-    this.categoryPagination = categoryPagination === 'true';
-    this.refreshMode = refreshMode || 'onExit';
+    const keys = [
+      'EBOOK_SHELF_PAGE_SIZE', 'EBOOK_SHELF_STYLE', 'EBOOK_TOP_LAST_READ', 
+      'EBOOK_SHELF_MARQUEE_ENABLED', 'EBOOK_HOME_DISPLAY_MODE', 'EBOOK_HOME_PROGRESS_MODE', 
+      'EBOOK_SHOW_STORAGE_WARNING', 'EBOOK_CATEGORY_PAGINATION', 'EBOOK_SHELF_REFRESH_MODE'
+    ];
+    const defaults = ['5', 'list', 'true', 'false', 'all', 'book', 'true', 'false', 'onExit'];
+    
+    const results = await Promise.all(keys.map((k, i) => this.getStorage(k, defaults[i])));
+    
+    this.pageSize = parseInt(results[0]);
+    this.shelfStyle = results[1];
+    this.lastReadOnTop = results[2] === 'true';
+    this.shelfMarqueeEnabled = results[3] === 'true';
+    this.displayMode = results[4];
+    this.homeProgressMode = results[5];
+    this.showStorageWarning = results[6] === 'true';
+    this.categoryPagination = results[7] === 'true';
+    this.refreshMode = results[8];
+    
     await this.loadFileList();
   },
   shouldRefreshShelf() {
-    if (this.refreshMode === 'onEnter') {
-      return true;
-    } else if (this.refreshMode === 'onExit') {
+    if (this.refreshMode === 'onEnter') return true;
+    if (this.refreshMode === 'onExit') {
       if (globalThis.shouldRefreshShelf) {
         globalThis.shouldRefreshShelf = false;
         return true;
       }
-      return false;
     }
     return false;
   },
@@ -248,30 +200,23 @@ export default {
     global.runGC();
   },
   async syncChapterCounts() {
-    if (!Array.isArray(this.allBooks) || this.allBooks.length === 0) {
-      return;
-    }
+    if (!Array.isArray(this.allBooks) || this.allBooks.length === 0) return;
     let hasUpdates = false;
     const tasks = this.allBooks.map(async (book) => {
-      if (!book || !book.dirName) {
-        return;
-      }
+      if (!book || !book.dirName) return;
       const storedCount = parseInt(book.chapterCount, 10) || 0;
-      
       if (storedCount <= 0) {
         try {
-            const actualCount = await chapterManager.getTotalChapters(book.dirName);
-            if (actualCount > 0 && actualCount !== storedCount) {
+          const actualCount = await chapterManager.getTotalChapters(book.dirName);
+          if (actualCount > 0 && actualCount !== storedCount) {
             book.chapterCount = actualCount;
             hasUpdates = true;
-            }
+          }
         } catch (e) { }
       }
     });
     await Promise.all(tasks);
-    if (hasUpdates) {
-      await bookStorage.updateBooks(this.allBooks);
-    }
+    if (hasUpdates) await bookStorage.updateBooks(this.allBooks);
   },
   processBooks() {
     this.lastReadBook = null;
@@ -300,158 +245,110 @@ export default {
     const categorySet = new Set();
     let hasUncategorized = false;
     this.allBooks.forEach(book => {
-      if (book.localCategory) {
-        categorySet.add(book.localCategory);
-      } else {
-        hasUncategorized = true;
-      }
+      if (book.localCategory) categorySet.add(book.localCategory);
+      else hasUncategorized = true;
     });
     this.categories = Array.from(categorySet).sort();
-    if (hasUncategorized) {
-      this.categories.push('未分类');
-    }
+    if (hasUncategorized) this.categories.push('未分类');
   },
   updateCategoryView() {
     if (this.selectedCategory) {
-      if (this.selectedCategory === '未分类') {
-        this.categoryBooks = this.allBooks.filter(book => !book.localCategory);
-      } else {
-        this.categoryBooks = this.allBooks.filter(book => book.localCategory === this.selectedCategory);
-      }
+      this.categoryBooks = this.selectedCategory === '未分类' 
+        ? this.allBooks.filter(book => !book.localCategory)
+        : this.allBooks.filter(book => book.localCategory === this.selectedCategory);
       this.currentModeList = this.categoryBooks;
     } else {
       const categoryItems = this.categories.map(cat => ({
         isCategory: true,
         categoryName: cat,
         name: cat,
-        bookCount: cat === '未分类'
-          ? this.allBooks.filter(b => !b.localCategory).length
-          : this.allBooks.filter(b => b.localCategory === cat).length
+        bookCount: cat === '未分类' ? this.allBooks.filter(b => !b.localCategory).length : this.allBooks.filter(b => b.localCategory === cat).length
       }));
-      if (this.lastReadBook) {
-        this.currentModeList = [this.lastReadBook, ...categoryItems];
-      } else {
-        this.currentModeList = categoryItems;
-      }
+      this.currentModeList = this.lastReadBook ? [this.lastReadBook, ...categoryItems] : categoryItems;
     }
 
     if (this.categoryPagination) {
-        this.loadPage(this.currentPage);
+      this.loadPage(this.currentPage);
     } else {
-        this.visibleBooks = this.currentModeList;
-        this.totalPages = 1;
-        this.currentPage = 0;
+      this.loadPage(0, this.currentModeList.length);
     }
   },
-  selectCategory(categoryName) {
-    if (typeof categoryName === 'object' && categoryName.categoryName) {
-      categoryName = categoryName.categoryName;
+  handleItemClick(item) {
+    if (item.isCategory) {
+      this.selectedCategory = item.categoryName;
+      this.currentPage = 0;
+      this.updateCategoryView();
+    } else {
+      this.selectFile(item);
     }
-    this.selectedCategory = categoryName;
-    this.currentPage = 0;
-    this.updateCategoryView();
   },
   backToCategoryList() {
     this.selectedCategory = null;
     this.currentPage = 0;
     this.updateCategoryView();
   },
-  handleCategoryItemClick(item) {
-    if (item.isCategory) {
-      this.selectCategory(item.categoryName);
-    } else {
-      this.selectFile(item);
-    }
-  },
-  roundToDecimal(num, decimalPlaces) {
-    const parsed = parseFloat(num);
-    if (isNaN(parsed)) {
-      return (0).toFixed(decimalPlaces);
-    }
-    return parsed.toFixed(decimalPlaces);
-  },
-  getChapterProgressPercent(book) {
-    if (!book || !book.progress) {
-      return 0;
-    }
-    let percent = book.progress.chapterProgressPercent;
-    if (typeof percent === 'string') {
-      percent = parseFloat(percent);
-    }
-    if (typeof percent !== 'number' || isNaN(percent)) {
-      percent = 0;
-    }
-    return Math.min(100, Math.max(0, percent));
-  },
-  getBookProgressPercent(book) {
-    if (!book || !book.progress) {
-      return 0;
-    }
-    const totalChapters = parseInt(book.chapterCount, 10) || 0;
-    if (totalChapters <= 0) {
-      return 0;
-    }
-    const chapterIndex = typeof book.progress.chapterIndex === 'number' && book.progress.chapterIndex >= 0
-      ? book.progress.chapterIndex
-      : 0;
-    const chapterFraction = this.getChapterProgressPercent(book) / 100;
-    const progressValue = ((chapterIndex + chapterFraction) / totalChapters) * 100;
-    return Math.min(100, Math.max(0, progressValue));
-  },
   getProgressSubtitle(book) {
-    if (!book) {
-      return '暂无进度';
-    }
-    if (book.isCategory) {
-      return `共 ${book.bookCount || 0} 本`;
-    }
+    if (!book) return '暂无进度';
+    if (book.isCategory) return `共 ${book.bookCount || 0} 本`;
+    
     const prefix = book.isLastRead ? '上次阅读 · ' : '';
     const progress = book.progress || {};
     if (progress.chapterIndex === null || progress.chapterIndex === undefined || progress.chapterIndex < 0) {
       return `${prefix}尚未开始`;
     }
+
+    const round = (num) => {
+        const p = parseFloat(num);
+        return isNaN(p) ? '0.00' : p.toFixed(2);
+    };
+
     if (this.homeProgressMode === 'chapter') {
-      const chapterPercent = this.roundToDecimal(this.getChapterProgressPercent(book), 2) || 0;
+      const chapterPercent = round(progress.chapterProgressPercent || 0);
       return `${prefix}${chapterPercent}% · 本章进度`;
     }
-    const bookPercent = this.roundToDecimal(this.getBookProgressPercent(book), 2) || 0;
+
     const totalChapters = parseInt(book.chapterCount, 10) || 0;
-    if (totalChapters <= 0) {
-      return `${prefix}${bookPercent}% · 章节信息缺失`;
-    }
+    if (totalChapters <= 0) return `${prefix}0.00% · 章节信息缺失`;
+
+    const chapterIndex = (typeof progress.chapterIndex === 'number' && progress.chapterIndex >= 0) ? progress.chapterIndex : 0;
+    const chapterFraction = (Math.max(0, parseFloat(progress.chapterProgressPercent) || 0)) / 100;
+    const progressValue = ((chapterIndex + chapterFraction) / totalChapters) * 100;
+    const bookPercent = round(Math.min(100, Math.max(0, progressValue)));
+    
     const currentChapter = Math.min(totalChapters, (progress.chapterIndex || 0) + 1);
     return `${prefix}${bookPercent}% · 看到 ${currentChapter} / ${totalChapters} 章`;
   },
-  loadPage(page) {
+  loadPage(page, customPageSize) {
     const list = this.currentModeList || this.allBooks;
-    this.totalPages = Math.ceil(list.length / this.pageSize) || 1;
+    const size = customPageSize || this.pageSize;
+    this.totalPages = Math.ceil(list.length / size) || 1;
     let safePage = Math.max(0, Math.min(page, this.totalPages - 1));
+    
     if (this.totalPages > 0) {
-      const start = safePage * this.pageSize;
-      const end = start + this.pageSize;
-      this.visibleBooks = list.slice(start, end);
+      const start = safePage * size;
+      const end = start + size;
+      const sliced = list.slice(start, end);
+      this.visibleBooks = sliced.map(item => {
+          const viewItem = Object.assign({}, item); 
+          viewItem.subtitle = this.getProgressSubtitle(item);
+          if (viewItem.hasRealCover) {
+              viewItem.coverUri = `internal://files/books/${item.dirName}/${item.coverFileName}`;
+          }
+          return viewItem;
+      });
       this.currentPage = safePage;
     } else {
       this.visibleBooks = [];
       this.currentPage = 0;
     }
   },
-  prevPage() {
-    if (this.currentPage > 0) {
-      this.loadPage(this.currentPage - 1);
-    }
-  },
-  nextPage() {
-    if (this.currentPage < this.totalPages - 1) {
-      this.loadPage(this.currentPage + 1);
-    }
-  },
-  async selectFile(item) {
-    if (this.isNavigating || item.isCategory) {
-      return;
-    }
+  prevPage() { if (this.currentPage > 0) this.loadPage(this.currentPage - 1); },
+  nextPage() { if (this.currentPage < this.totalPages - 1) this.loadPage(this.currentPage + 1); },
+  selectFile(item) {
+    if (this.isNavigating || item.isCategory) return;
     this.isNavigating = true;
     globalThis.enteringDetailView = true;
+    
     if (this.displayMode === 'category' && this.selectedCategory) {
       globalThis.fromCategoryPage = true;
       globalThis.selectedCategory = this.selectedCategory;
@@ -469,23 +366,12 @@ export default {
       globalThis.fromHomePage = false;
       globalThis.homePage = null;
     }
-    router.push({
-      uri: '/pages/detail',
-      params: {
-        name: item.dirName
-      }
-    });
+    
+    router.push({ uri: '/pages/detail', params: { name: item.dirName } });
   },
-  routerTo(page) {
-    router.push({
-      uri: `/pages/${page}`
-    });
-  },
+  routerTo(page) { router.push({ uri: `/pages/${page}` }); },
   loadDeviceInfo() {
-    if (!this.showStorageWarning) {
-        this.isStorageLow = false;
-        return;
-    }
+    if (!this.showStorageWarning) { this.isStorageLow = false; return; }
     device.getInfo({
       success: (ret) => {
         device.getTotalStorage({
@@ -493,8 +379,7 @@ export default {
             const totalStorage = data.totalStorage || 0;
             device.getAvailableStorage({
               success: (availData) => {
-                const availableStorage = availData.availableStorage || 0;
-                const storageInfo = calculateStorageInfo(totalStorage, availableStorage, ret.product);
+                const storageInfo = calculateStorageInfo(totalStorage, availData.availableStorage || 0, ret.product);
                 this.isStorageLow = isStorageLow(storageInfo.actualAvailable);
               }
             });
@@ -502,9 +387,15 @@ export default {
         });
       }
     });
+  },
+  getContentClass(item) {
+      if (this.shelfStyle === 'cover') return 'cover-content';
+      if (this.displayMode === 'category' && !this.selectedCategory && item.isCategory) return 'category-item-content';
+      return 'category-item-content';
   }
 };
 </script>
+
 <style>
 .page {
   width: 192px;
@@ -560,6 +451,7 @@ export default {
   flex-shrink: 0;
 }
 
+/* Used for Cover Style */
 .cover-content {
   flex-direction: column;
   justify-content: center;
@@ -569,6 +461,7 @@ export default {
   overflow: hidden;
 }
 
+/* Used for List Style (also default for original code's item structure) */
 .category-item-content {
   flex-direction: column;
   justify-content: space-around;
