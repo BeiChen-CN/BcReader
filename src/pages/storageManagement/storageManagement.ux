@@ -189,7 +189,6 @@ export default {
 	async calculateAppDataUsage() {
 		this.totalExclBooks = '计算中...';
 		try {
-			// Calculate Progress Storage
 			let progressBytes = 0;
 			try {
 				const bookshelf = await bookStorage.load();
@@ -205,7 +204,6 @@ export default {
 			} catch (e) { }
 			this.readProgressStorage = this.formatFileSize(progressBytes);
 
-			// Calculate Reading Time Storage
 			let readingTimeBytes = 0;
 			try {
 				const times = await readingTimeStorage.getAllBooksReadingTime();
@@ -213,7 +211,6 @@ export default {
 			} catch (e) { }
 			this.readingTimeStorage = this.formatFileSize(readingTimeBytes);
 
-			// Calculate File Sizes
 			let bookIndexBytes = 0;
 			let settingsBytes = 0;
 
