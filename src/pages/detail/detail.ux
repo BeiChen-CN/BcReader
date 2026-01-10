@@ -492,6 +492,7 @@ export default {
 			this.page1 = { text: str, offset: this.currentFileOffset, length: bytesRead };
 			this.loadNextSegmentNoScroll();
 			this.updateContentHeight();
+			this.updateChapterProgress();
 		});
 	},
 	loadNextSegmentNoScroll() {
@@ -506,6 +507,7 @@ export default {
 			this.page2 = str ? { text: str, offset: newOffset, length: bytesRead } : null;
 			this.restoreScrollPosition();
 			this.updateContentHeight();
+			this.updateChapterProgress();
 		});
 	},
 	restoreScrollPosition() {
@@ -554,6 +556,7 @@ export default {
 				this._fromPercent = false;
 				this._percentOffsetInChapter = null;
 				this.saveData(true);
+				this.updateChapterProgress();
 			},
 			fail: () => {
 				this.wait = false;
@@ -625,6 +628,7 @@ export default {
 				if ((lastSeg.offset + lastSeg.length) >= this.allSize) this.isAtChapterEnd = true;
 			}
 		}
+		this.updateChapterProgress();
 	},
 	onScrollTop() {
 		if (this.wait || this.currentFileOffset <= 0 || this.loadingPrev) return;
@@ -644,12 +648,16 @@ export default {
 			this.loadingNext = false;
 			this.isAtChapterEnd = true;
 			this.wait = false;
+			this.updateChapterProgress();
 			return;
 		}
 		this.readFileText(newOffset, (str, bytesRead) => {
 			this.loadingNext = false;
 			if (str) this.shiftPagesForward({ text: str, offset: newOffset, length: bytesRead });
-			else this.wait = false;
+			else {
+				this.wait = false;
+				this.updateChapterProgress();
+			}
 		});
 	},
 	shiftPagesForward(nextPageData) {
@@ -665,6 +673,7 @@ export default {
 				this.saveData(true);
 				this.wait = false;
 				this.updateContentHeight();
+				this.updateChapterProgress();
 			},
 			fail: () => { this.wait = false; }
 		});
@@ -692,6 +701,7 @@ export default {
 						this.saveData(true);
 						this.wait = false;
 						this.updateContentHeight();
+						this.updateChapterProgress();
 					},
 					fail: () => { this.wait = false; }
 				});
@@ -827,6 +837,7 @@ export default {
 					this.savedScrollOffset = maxScrollPos;
 					this.wait = false;
 					this.saveData(true);
+					this.updateChapterProgress();
 				},
 				fail: () => { this.wait = false; }
 			});
@@ -1084,11 +1095,10 @@ export default {
 			if (this.gestureClickCount === 2) {
 				this.gestureClickCount = 0;
 				this.showSetting = !this.showSetting;
+				return;
 			} else {
 				this.gestureClickTimeout = setTimeout(() => {
 					this.gestureClickCount = 0;
-					if (!this.showSetting) actionCallback(event);
-					else this.showSetting = false;
 				}, 300);
 			}
 		} else {
