@@ -12,13 +12,6 @@
                 </div>
                 <img if="{{shelfStyle === 'list'}}" src="/common/images/check.png" style="width:24px;height: 24px;" static />
             </list-item>
-            <list-item class="item {{shelfStyle === 'cover' ? 'item2' : ''}}" @click="selectShelfStyle('cover')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>封面样式</text>
-                    <text class="itemtext2" static>展示书籍封面</text>
-                </div>
-                <img if="{{shelfStyle === 'cover'}}" src="/common/images/check.png" style="width:24px;height: 24px;" static />
-            </list-item>
 
             <list-item class="item" @click="toggleLastRead" type="item">
                 <div class="item-content">
@@ -175,11 +168,7 @@
             this.loadSettings();
         },
         loadSettings() {
-            storage.get({
-                key: 'EBOOK_SHELF_STYLE',
-                success: (data) => { if (data) this.shelfStyle = data; },
-                fail: () => { this.shelfStyle = 'list'; }
-            });
+            this.shelfStyle = 'list';
             storage.get({
                 key: 'EBOOK_SHELF_PAGE_SIZE',
                 success: (data) => { if (data) this.shelfPageSize = parseInt(data); },
@@ -227,19 +216,6 @@
                 return;
             }
             this.shelfStyle = style;
-            storage.set({
-                key: 'EBOOK_SHELF_STYLE',
-                value: style
-            });
-            if (style === 'cover') {
-                router.push({
-                    uri: '/pages/help',
-                    params: {
-                        title: '性能提示',
-                        content: '由于性能问题，开启封面显示后，停留在书架页面会严重降低书架传输速度。'
-                    }
-                });
-            }
         },
         changePageSize(e) {
             this.shelfPageSize = e.detail.value;
@@ -308,7 +284,6 @@
             this.showStorageWarning = true;
             this.categoryPagination = false;
             this.refreshMode = 'onEnter';
-            storage.set({ key: "EBOOK_SHELF_STYLE", value: 'list' });
             storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '5' });
             storage.set({ key: "EBOOK_TOP_LAST_READ", value: 'true' });
             storage.set({ key: "EBOOK_HOME_DISPLAY_MODE", value: 'all' });

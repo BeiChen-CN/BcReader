@@ -14,12 +14,7 @@
         <text class="itemtext">← 返回分类</text>
       </list-item>
 
-      <list-item for="{{visibleBooks}}" type="nook" class="item {{shelfStyle === 'cover' ? 'cover-item' : ''}}" @click="handleItemClick($item)">
-        <block if="{{shelfStyle === 'cover'}}">
-          <img if="{{$item.hasRealCover}}" class="cover-image" src="{{$item.coverUri}}" />
-          <div else class="cover-image-placeholder"></div>
-        </block>
-
+      <list-item for="{{visibleBooks}}" type="nook" class="item" @click="handleItemClick($item)">
         <div class="{{getContentClass($item)}}">
           <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" class="itemtext" text-offset="25">{{$item.name}}</marquee>
           <text else class="itemtext">{{$item.name}}</text>
@@ -156,23 +151,23 @@ export default {
   },
   async loadSettingsAndFiles() {
     const keys = [
-      'EBOOK_SHELF_PAGE_SIZE', 'EBOOK_SHELF_STYLE', 'EBOOK_TOP_LAST_READ', 
+      'EBOOK_SHELF_PAGE_SIZE', 'EBOOK_TOP_LAST_READ', 
       'EBOOK_SHELF_MARQUEE_ENABLED', 'EBOOK_HOME_DISPLAY_MODE', 'EBOOK_HOME_PROGRESS_MODE', 
       'EBOOK_SHOW_STORAGE_WARNING', 'EBOOK_CATEGORY_PAGINATION', 'EBOOK_SHELF_REFRESH_MODE'
     ];
-    const defaults = ['5', 'list', 'true', 'false', 'all', 'book', 'true', 'false', 'onExit'];
+    const defaults = ['5', 'true', 'false', 'all', 'book', 'true', 'false', 'onExit'];
     
     const results = await Promise.all(keys.map((k, i) => this.getStorage(k, defaults[i])));
     
     this.pageSize = parseInt(results[0]);
-    this.shelfStyle = results[1];
-    this.lastReadOnTop = results[2] === 'true';
-    this.shelfMarqueeEnabled = results[3] === 'true';
-    this.displayMode = results[4];
-    this.homeProgressMode = results[5];
-    this.showStorageWarning = results[6] === 'true';
-    this.categoryPagination = results[7] === 'true';
-    this.refreshMode = results[8];
+    this.shelfStyle = 'list';
+    this.lastReadOnTop = results[1] === 'true';
+    this.shelfMarqueeEnabled = results[2] === 'true';
+    this.displayMode = results[3];
+    this.homeProgressMode = results[4];
+    this.showStorageWarning = results[5] === 'true';
+    this.categoryPagination = results[6] === 'true';
+    this.refreshMode = results[7];
     
     await this.loadFileList();
   },
@@ -237,9 +232,6 @@ export default {
         this.lastReadBook = lastReadBook;
       }
     }
-    this.allBooks.forEach(book => {
-      book.hasRealCover = !!(book.hasCover && book.coverFileName);
-    });
   },
   updateCategories() {
     const categorySet = new Set();
@@ -331,9 +323,6 @@ export default {
       this.visibleBooks = sliced.map(item => {
           const viewItem = Object.assign({}, item); 
           viewItem.subtitle = this.getProgressSubtitle(item);
-          if (viewItem.hasRealCover) {
-              viewItem.coverUri = `internal://files/books/${item.dirName}/${item.coverFileName}`;
-          }
           return viewItem;
       });
       this.currentPage = safePage;
@@ -389,7 +378,6 @@ export default {
     });
   },
   getContentClass(item) {
-      if (this.shelfStyle === 'cover') return 'cover-content';
       if (this.displayMode === 'category' && !this.selectedCategory && item.isCategory) return 'category-item-content';
       return 'category-item-content';
   }
@@ -422,43 +410,6 @@ export default {
   flex-direction: column;
   justify-content: space-around;
   align-items: flex-start;
-}
-
-.cover-item {
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 8px 12px;
-  height: 105px;
-}
-
-.cover-image {
-  width: 52px;
-  height: 70px;
-  background-color: #333;
-  margin-right: 12px;
-  border-radius: 8px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.cover-image-placeholder {
-  width: 52px;
-  height: 70px;
-  background-color: #1a1a1a;
-  margin-right: 12px;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-/* Used for Cover Style */
-.cover-content {
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  flex: 1;
-  height: 100%;
-  overflow: hidden;
 }
 
 /* Used for List Style (also default for original code's item structure) */
