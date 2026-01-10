@@ -85,6 +85,12 @@ export default class interconnfile {
                 case "set_settings":
                     await this.setSettings(payload);
                     break;
+                case "get_bookmarks":
+                    await this.getBookmarks(payload);
+                    break;
+                case "set_bookmarks":
+                    await this.setBookmarks(payload);
+                    break;
             }
         };
         addListener(onmessage);
@@ -909,6 +915,46 @@ export default class interconnfile {
             this.send({ type: "success", message: "设置已更新", count: 0 });
         } catch (error) {
             this.send({ type: "error", message: `更新设置失败: ${error.message}`, count: 0 });
+        }
+    }
+
+    async getBookmarks({ filename }) {
+        try {
+            const sanitizedDirName = this.generateDirName(filename);
+            const bookmarks = await bookStorage.getBookmarks(sanitizedDirName);
+            
+            const bookmarkData = bookmarks.map(bm => ({
+                name: bm.name || '',
+                chapterIndex: bm.chapterIndex !== undefined ? bm.chapterIndex : 0,
+                chapterName: bm.chapterName || '',
+                offsetInChapter: bm.offsetInChapter !== undefined ? bm.offsetInChapter : 0,
+                scrollOffset: bm.scrollOffset !== undefined ? bm.scrollOffset : 0,
+                time: bm.time || Date.now()
+            }));
+            
+            this.send({ type: "bookmarks_data", bookmarks: bookmarkData });
+        } catch (error) {
+            this.send({ type: "bookmarks_data", bookmarks: [] });
+        }
+    }
+
+    async setBookmarks({ filename, bookmarks }) {
+        try {
+            const sanitizedDirName = this.generateDirName(filename);
+            
+            const bookmarkList = bookmarks.map(bm => ({
+                name: bm.name || '',
+                chapterIndex: bm.chapterIndex !== undefined ? bm.chapterIndex : 0,
+                chapterName: bm.chapterName || '',
+                offsetInChapter: bm.offsetInChapter !== undefined ? bm.offsetInChapter : 0,
+                scrollOffset: bm.scrollOffset !== undefined ? bm.scrollOffset : 0,
+                time: bm.time || Date.now()
+            }));
+            
+            await bookStorage.setBookmarks(sanitizedDirName, bookmarkList);
+            this.send({ type: "bookmarks_saved" });
+        } catch (error) {
+            this.send({ type: "error", message: `同步书签失败: ${error.message}`, count: 0 });
         }
     }
 
