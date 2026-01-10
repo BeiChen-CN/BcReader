@@ -1065,8 +1065,6 @@ export default {
 			} else {
 				this.gestureClickTimeout = setTimeout(() => {
 					this.gestureClickCount = 0;
-					if (!this.showSetting) actionCallback(event);
-					else this.showSetting = false;
 				}, 300);
 			}
 		} else {
