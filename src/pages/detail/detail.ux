@@ -1223,8 +1223,6 @@ export default {
 				this.gestureClickTimeout = setTimeout(() => {
 					this.gestureClickCount = 0;
 					this.gestureClickTimeout = null;
-					if (!this.showSetting) actionCallback(event);
-					else this.showSetting = false;
 				}, 300);
 			}
 		} else {
