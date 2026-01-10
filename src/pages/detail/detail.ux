@@ -892,6 +892,31 @@ export default {
 			else if (this.currentChapterIndexInAll > 0) this.changeChapter(-1);
 			return true;
 		}
+		if (this.chapterSwitchStyle === 'swipe' && this.isTouching && this.currentChapterIndexInAll > 0) {
+			if (this.wait) return true;
+			this.wait = true;
+			const nextIndex = this.currentChapterIndexInAll - 1;
+			global.runGC();
+			this.isAtChapterEnd = false;
+			this.currentFileOffset = 0;
+			this.savedScrollOffset = 0;
+			this.scrollTopValue = 0;
+			this.currentScrollTop = 0;
+			this.loadChapter(nextIndex, () => {
+				if (this.readMode === 'nostalgic') {
+					this.loadNostalgicChapter(0);
+				} else {
+					this.page1 = { text: "加载中...", offset: 0, length: 0 };
+					this.page2 = null;
+					this.loadInitialSegments();
+					this.isAtChapterStart = false;
+					this.isNearTopForHd = true;
+				}
+				this.chapterProgress = 0;
+				this.saveData(true);
+			});
+			return true;
+		}
 	},
 	async back() {
 		if (this.periodicSaveTimer) clearInterval(this.periodicSaveTimer);
