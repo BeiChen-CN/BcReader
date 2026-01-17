@@ -161,7 +161,7 @@ export default {
         this.loadDeviceInfo();
       };
 
-      if (shouldRefresh) {
+	  if (shouldRefresh || this.allBooks.length === 0) {
         this.loadFileList().then(postLoad);
       } else {
         postLoad();
@@ -202,8 +202,6 @@ export default {
     this.showStorageWarning = results[6] === 'true';
     this.categoryPagination = results[7] === 'true';
     this.refreshMode = results[8];
-
-    await this.loadFileList();
   },
   shouldRefreshShelf() {
     if (this.refreshMode === 'onEnter') return true;
