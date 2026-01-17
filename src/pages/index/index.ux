@@ -133,7 +133,7 @@ export default {
         this.loadDeviceInfo();
       };
 
-      if (shouldRefresh) {
+      if (shouldRefresh || this.allBooks.length === 0) {
         this.loadFileList().then(proceedToRender);
       } else {
         proceedToRender();
@@ -169,7 +169,6 @@ export default {
     this.categoryPagination = results[6] === 'true';
     this.refreshMode = results[7];
     
-    await this.loadFileList();
   },
   shouldRefreshShelf() {
     if (this.refreshMode === 'onEnter') return true;
