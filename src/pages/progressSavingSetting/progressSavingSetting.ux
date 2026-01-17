@@ -46,18 +46,36 @@ export default {
         saveMode: DEFAULT_MODE,
         saveInterval: DEFAULT_INTERVAL,
 		nowTime: "00:00",
-		timer: null
+		timer: null,
+		timeFormat: '24h'
 	  },
 	  updateTime() {
 		  const date = new Date();
 		  let hours = date.getHours();
 		  let minutes = date.getMinutes();
-		  hours = hours < 10 ? '0' + hours : hours;
-		  minutes = minutes < 10 ? '0' + minutes : minutes;
-		  this.nowTime = `${hours}:${minutes}`;
+		  if (this.timeFormat === '12h') {
+			  let ampm = hours >= 12 ? '下午' : '上午';
+			  hours = hours % 12;
+			  hours = hours ? hours : 12;
+			  minutes = minutes < 10 ? '0' + minutes : minutes;
+			  this.nowTime = `${ampm} ${hours}:${minutes}`;
+		  } else {
+			  hours = hours < 10 ? '0' + hours : hours;
+			  minutes = minutes < 10 ? '0' + minutes : minutes;
+			  this.nowTime = `${hours}:${minutes}`;
+		  }
 	  },
 	  onInit() {
-		  this.updateTime();
+		  storage.get({
+			  key: 'EBOOK_TIME_FORMAT',
+			  success: (data) => {
+				  if(data) this.timeFormat = data;
+				  this.updateTime();
+			  },
+			  fail: () => {
+				  this.updateTime();
+			  }
+		  });
 		  this.timer = setInterval(() => {
 			  this.updateTime();
 		  }, 1000);
