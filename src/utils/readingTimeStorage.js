@@ -2,6 +2,10 @@ import storage from '../utils/storage.js';
 
 const READING_TIME_KEY = 'EBOOK_READING_TIME_DATA';
 
+const sessionStartTimes = {};
+let readingTimeCache = null;
+let recordingEnabledCache = null;
+
 function storagePromise(method, params = {}) {
     return new Promise((resolve) => {
         storage[method]({
@@ -13,26 +17,38 @@ function storagePromise(method, params = {}) {
 }
 
 async function isReadingTimeRecordingEnabled() {
+    if (recordingEnabledCache !== null) {
+        return recordingEnabledCache;
+    }
     const result = await storagePromise('get', { key: 'EBOOK_READING_TIME_RECORDING' });
     if (result.status === 'success' && result.data !== undefined && result.data !== '') {
-        return result.data === 'true';
+        recordingEnabledCache = result.data === 'true';
+    } else {
+        recordingEnabledCache = true;
     }
-    return true;
+    return recordingEnabledCache;
 }
 
 async function getAllReadingTime() {
+    if (readingTimeCache !== null) {
+        return readingTimeCache;
+    }
     const result = await storagePromise('get', { key: READING_TIME_KEY });
     if (result.status === 'success' && result.data) {
         try {
-            return JSON.parse(result.data);
+            readingTimeCache = JSON.parse(result.data);
+            return readingTimeCache;
         } catch (e) {
-            return {};
+            readingTimeCache = {};
+            return readingTimeCache;
         }
     }
-    return {};
+    readingTimeCache = {};
+    return readingTimeCache;
 }
 
 async function saveReadingTime(readingTimeData) {
+    readingTimeCache = readingTimeData;
     return new Promise((resolve, reject) => {
         storage.set({
             key: READING_TIME_KEY,
@@ -46,39 +62,36 @@ async function saveReadingTime(readingTimeData) {
 async function recordReadingStart(bookName) {
     if (!bookName) return;
     if (!(await isReadingTimeRecordingEnabled())) return;
-
-    try {
-        const readingTimeData = await getAllReadingTime();
-        if (!readingTimeData[bookName]) {
-            readingTimeData[bookName] = {
-                totalSeconds: 0,
-                sessions: [],
-                lastReadDate: null,
-                firstReadDate: null
-            };
-        }
-        readingTimeData[bookName].currentSessionStart = Date.now();
-        await saveReadingTime(readingTimeData);
-    } catch (e) {}
+    sessionStartTimes[bookName] = Date.now();
 }
 
 async function recordReadingEnd(bookName) {
     if (!bookName) return;
     if (!(await isReadingTimeRecordingEnabled())) return;
 
+    const startTime = sessionStartTimes[bookName];
+    if (!startTime) return;
+
+    delete sessionStartTimes[bookName];
+
     try {
         const readingTimeData = await getAllReadingTime();
-        const bookData = readingTimeData[bookName];
+        let bookData = readingTimeData[bookName];
 
-        if (!bookData || !bookData.currentSessionStart) return;
+        if (!bookData) {
+            bookData = {
+                totalSeconds: 0,
+                sessions: [],
+                lastReadDate: null,
+                firstReadDate: null
+            };
+            readingTimeData[bookName] = bookData;
+        }
 
-        const startTime = bookData.currentSessionStart;
         const endTime = Date.now();
         const duration = Math.floor((endTime - startTime) / 1000);
 
-        if (duration < 10) {
-            delete bookData.currentSessionStart;
-        } else {
+        if (duration >= 10) {
             bookData.totalSeconds = (bookData.totalSeconds || 0) + duration;
             const session = {
                 startTime: startTime,
@@ -92,9 +105,8 @@ async function recordReadingEnd(bookName) {
             bookData.lastReadDate = session.date;
             if (!bookData.firstReadDate) bookData.firstReadDate = session.date;
             
-            delete bookData.currentSessionStart;
+            await saveReadingTime(readingTimeData);
         }
-        await saveReadingTime(readingTimeData);
     } catch (e) {}
 }
 
@@ -222,6 +234,8 @@ function calculateBookStats(bookData) {
 }
 
 async function clearAllReadingTime() {
+    readingTimeCache = {};
+    Object.keys(sessionStartTimes).forEach(key => delete sessionStartTimes[key]);
     return new Promise((resolve, reject) => {
         storage.set({
             key: READING_TIME_KEY,
