@@ -2,7 +2,7 @@
 	<div class="page">
 		<scroll id="scrollId" if="{{readMode !== 'nostalgic'}}" style="position: absolute; width: 192px; height: {{scrollHeight}}px; top: {{verticalMargin}}px;" scroll-y="{{true}}" scroll-top="{{scrollTopValue}}" @scroll="onScroll" @scrolltop="onScrollTop" @scrollbottom="onScrollBottom" @click="onTxtClick" onlongpress="onTxtLongPress" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd" bounces="{{(isAtChapterStart || isAtChapterEnd) && (chapterSwitchStyle == 'boundary')}}">
 			<div id="contentContainer" style="position: absolute; width:192px; flex-direction: column;">
-				<div if="{{chapterSwitchStyle == 'button' && isAtChapterStart && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="onPrevChapterClick">
+				<div if="{{chapterSwitchStyle == 'button' && currentChapterIndexInAll > 0}}" style="width: 100%; height: {{chapterSwitchHeight}}px; justify-content: center; align-items: center; flex-direction: column;" @click="onPrevChapterClick">
 					<text static style="color: #aaa; font-size: 16px; font-weight: bold;">上一章</text>
 					<text if="{{chapterSwitchShowInfo && prevChapterName}}" style="color: #666; font-size: 14px; lines: 1; text-overflow: ellipsis; max-width: 80%;">{{prevChapterName}}</text>
 				</div>
