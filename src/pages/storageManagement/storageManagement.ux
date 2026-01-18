@@ -1,3 +1,4 @@
+<import name="list" src="../list/list"></import>
 <template>
 	<div class="page">
 		<list class="list" style="padding: 86px 6px 6px 6px;">
