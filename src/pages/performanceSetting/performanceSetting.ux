@@ -8,13 +8,6 @@
                 </div>
                 <img src="/common/images/enter.png" style="width:32px;height: 32px;" static/>
             </list-item>
-            <list-item class="item" @click="togglePreloadChapter" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>预载章节</text>
-                    <text class="itemtext2" static>预载完整章节</text>
-                </div>
-                <img src="{{preloadChapter ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
-            </list-item>
             <list-item class="item" @click="togglePreventParagraphSplitting" type="item">
                 <div class="item-content">
                     <text class="itemtext" static>段落防分割</text>
@@ -68,7 +61,6 @@
             nowTime: "00:00",
             timer: null,
             timeFormat: '24h',
-            preloadChapter: false,
             preventParagraphSplitting: false,
             readingTimeRecording: true
         },
@@ -106,18 +98,6 @@
                 this.updateTime();
             }, 1000);
             
-            
-            storage.get({
-                key: 'EBOOK_PRELOAD_CHAPTER',
-                success: (data) => {
-                    this.preloadChapter = data === 'true';
-                },
-                fail: () => {
-                    this.preloadChapter = false;
-                }
-            });
-            
-            
             storage.get({
                 key: 'EBOOK_PREVENT_PARAGRAPH_SPLITTING',
                 success: (data) => {
@@ -154,13 +134,6 @@
             router.push({
                 uri: '/pages/' + url
             })
-        },
-        togglePreloadChapter() {
-            this.preloadChapter = !this.preloadChapter;
-            storage.set({
-                key: 'EBOOK_PRELOAD_CHAPTER',
-                value: this.preloadChapter.toString()
-            });
         },
         togglePreventParagraphSplitting() {
             this.preventParagraphSplitting = !this.preventParagraphSplitting;
