@@ -1,4 +1,3 @@
-<import name="list" src="../list/list"></import>
 <template>
 	<div class="page">
 		<list class="list">
