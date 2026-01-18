@@ -541,8 +541,12 @@ export default {
 		}, 100);
 	},
 	finalizeScrollRestore() {
+		const timeoutId = setTimeout(() => {
+			this.wait = false;
+		}, 500);
 		this.$element("contentContainer").getBoundingClientRect({
 			success: (rect) => {
+				clearTimeout(timeoutId);
 				this.contentHeight = rect.height;
 				this.wait = false;
 				this._shouldScrollToTop = false;
@@ -553,6 +557,7 @@ export default {
 				this.saveData(true);
 			},
 			fail: () => {
+				clearTimeout(timeoutId);
 				this.wait = false;
 				this._shouldScrollToTop = false;
 				this._fromBookmark = false;
@@ -1055,8 +1060,11 @@ export default {
 		}
 	},
 	onNostalgicClick(event) {
-		if (this.wait) return;
 		this.handleGeneralClick(event, (evt) => {
+			if (this.wait) {
+				this.showSetting = !this.showSetting;
+				return;
+			}
 			if (this.nostalgicPageTurnMode === 'swipe') {
 				this.showSetting = !this.showSetting;
 			} else {
@@ -1072,8 +1080,11 @@ export default {
 	nostalgicNextPage() { this.turnNostalgicPage(1); },
 	nostalgicPrevPage() { this.turnNostalgicPage(-1); },
 	onTxtClick(event) {
-		if (this.wait) return;
 		this.handleGeneralClick(event, (evt) => {
+			if (this.wait) {
+				this.showSetting = !this.showSetting;
+				return;
+			}
 			if (this.swipe === 'column') {
 				this.showSetting = !this.showSetting;
 			} else {
