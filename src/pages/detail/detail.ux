@@ -232,6 +232,14 @@ export default {
 		if (isChapterJump) this.showSetting = false;
 		if (this.name) try { await readingTimeStorage.recordReadingStart(this.name); } catch (e) { }
 		this.setupAutoSave();
+		if (this.auto && !this.autoInterval) {
+			this.autoInterval = setInterval(() => {
+				if (this.wait) return;
+				if (this.readMode === 'nostalgic') this.turnNostalgicPage(1);
+				else if (this.isAtChapterEnd) this.changeChapter(1);
+				else this.nextPage();
+			}, this.auto * 1000);
+		}
 	},
 	async loadSettings() {
 		const keys = [
