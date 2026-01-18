@@ -165,7 +165,8 @@ export default {
 		_fromBookmark: false,
 		_bookmarkOffsetInChapter: null,
 		_fromPercent: false,
-		_percentOffsetInChapter: null
+		_percentOffsetInChapter: null,
+		isChangingChapter: false
 	},
 	protected: {
 		name: '',
@@ -555,12 +556,14 @@ export default {
 	finalizeScrollRestore() {
 		const timeoutId = setTimeout(() => {
 			this.wait = false;
+			this.isChangingChapter = false;
 		}, 500);
 		this.$element("contentContainer").getBoundingClientRect({
 			success: (rect) => {
 				clearTimeout(timeoutId);
 				this.contentHeight = rect.height;
 				this.wait = false;
+				this.isChangingChapter = false;
 				this._shouldScrollToTop = false;
 				this._fromBookmark = false;
 				this._bookmarkOffsetInChapter = null;
@@ -572,6 +575,7 @@ export default {
 			fail: () => {
 				clearTimeout(timeoutId);
 				this.wait = false;
+				this.isChangingChapter = false;
 				this._shouldScrollToTop = false;
 				this._fromBookmark = false;
 				this._bookmarkOffsetInChapter = null;
@@ -760,17 +764,20 @@ export default {
 	changeChapter(offset) {
 		if (this.wait) return;
 		this.wait = true;
+		this.isChangingChapter = true;
 		const nextIndex = this.currentChapterIndexInAll + offset;
 
 		if (nextIndex < 0) {
 			prompt.showToast({ message: '已是第一章' });
 			this.wait = false;
+			this.isChangingChapter = false;
 			return;
 		}
 		if (nextIndex >= this.totalChapters) {
 			prompt.showToast({ message: '已是最后一章' });
 			if (this.autoInterval) { clearInterval(this.autoInterval); this.autoInterval = null; }
 			this.wait = false;
+			this.isChangingChapter = false;
 			return;
 		}
 		global.runGC();
@@ -783,6 +790,7 @@ export default {
 		this.loadChapter(nextIndex, () => {
 			if (this.readMode === 'nostalgic') {
 				this.loadNostalgicChapter(offset > 0 ? 0 : -1);
+				this.isChangingChapter = false;
 			} else {
 				this.page1 = { text: "加载中...", offset: 0, length: 0 };
 				this.page2 = null;
@@ -848,10 +856,14 @@ export default {
 					this.currentScrollTop = maxScrollPos;
 					this.savedScrollOffset = maxScrollPos;
 					this.wait = false;
+					this.isChangingChapter = false;
 					this.saveData(true);
 					this.updateChapterProgress();
 				},
-				fail: () => { this.wait = false; }
+				fail: () => { 
+					this.wait = false;
+					this.isChangingChapter = false;
+				}
 			});
 		}, 300);
 	},
@@ -907,6 +919,7 @@ export default {
 		if (this.chapterSwitchStyle === 'swipe' && this.isTouching && this.currentChapterIndexInAll > 0) {
 			if (this.wait) return true;
 			this.wait = true;
+			this.isChangingChapter = true;
 			const nextIndex = this.currentChapterIndexInAll - 1;
 			global.runGC();
 			this.isAtChapterEnd = false;
@@ -957,6 +970,7 @@ export default {
 			this.nostalgicPageIndex = 0;
 			this.nostalgicTotalPages = 0;
 			this.wait = false;
+			this.isChangingChapter = false;
 			return;
 		}
 		this.calculateNostalgicCharsPerPage();
@@ -975,6 +989,7 @@ export default {
 		this.isAtChapterEnd = this.nostalgicPageIndex >= this.nostalgicTotalPages - 1;
 		this.isNearTopForHd = this.nostalgicPageIndex === 0;
 		this.wait = false;
+		this.isChangingChapter = false;
 	},
 	getNostalgicPageText(pageIndex) {
 		if (!this.nostalgicFullContent || this.nostalgicCharsPerPage <= 0 || pageIndex < 0 || pageIndex >= this.nostalgicTotalPages) return "";
@@ -1104,6 +1119,9 @@ export default {
 	},
 	onNostalgicClick(event) {
 		this.handleGeneralClick(event, (evt) => {
+			if (this.isChangingChapter) {
+				return;
+			}
 			if (this.wait) {
 				this.showSetting = !this.showSetting;
 				return;
@@ -1124,6 +1142,9 @@ export default {
 	nostalgicPrevPage() { this.turnNostalgicPage(-1); },
 	onTxtClick(event) {
 		this.handleGeneralClick(event, (evt) => {
+			if (this.isChangingChapter) {
+				return;
+			}
 			if (this.wait) {
 				this.showSetting = !this.showSetting;
 				return;
