@@ -384,10 +384,12 @@ export default {
 			let currentLine = 0;
 			let currentLineChars = 0;
 			let pageStart = pos;
+			let lastNewlinePos = -1;
 
 			while (pos < contentLength && currentLine < linesPerPage) {
 				const char = this.nostalgicFullContent[pos];
 				if (char === '\n') {
+					lastNewlinePos = pos;
 					currentLine++;
 					currentLineChars = 0;
 				} else {
@@ -400,9 +402,8 @@ export default {
 				pos++;
 			}
 
-			if (this.preventParagraphSplitting && pos < contentLength) {
-				const lastNewline = this.nostalgicFullContent.lastIndexOf('\n', pos);
-				if (lastNewline > pageStart) pos = lastNewline + 1;
+			if (this.preventParagraphSplitting && pos < contentLength && lastNewlinePos > pageStart) {
+				pos = lastNewlinePos + 1;
 			}
 			if (pos <= pageStart) pos = Math.min(pageStart + this.nostalgicCharsPerPage, contentLength);
 
@@ -663,7 +664,8 @@ export default {
 
 		let length = this.txtSizePage * 2;
 		if (readOffset < 0) { length += readOffset; readOffset = 0; }
-		if ((readOffset + length) >= this.allSize) length = this.allSize - readOffset;
+		const maxLength = this.allSize - readOffset;
+		if (length > maxLength) length = maxLength;
 
 		const self = this;
 		function attemptRead(len, attemptsLeft) {
@@ -673,17 +675,27 @@ export default {
 					if (!data.buffer || data.buffer.byteLength === 0) { cb('', 0); return; }
 					try {
 						const buffer = new Uint8Array(data.buffer);
-						let str = "";
-						for (let i = 0; i < buffer.length; i += 2) str += String.fromCharCode(buffer[i + 1] * 256 + buffer[i]);
-						let bytesRead = len;
-						if (self.preventParagraphSplitting && (readOffset + len) < self.allSize) {
-							const lastNewline = str.lastIndexOf('\n');
-							if (lastNewline > -1) {
-								str = str.substring(0, lastNewline + 1);
-								bytesRead = str.length * 2;
+						let bytesToUse = buffer.length;
+						
+						if (self.preventParagraphSplitting && (readOffset + buffer.length) < self.allSize) {
+							let lastNewlinePos = -1;
+							for (let i = buffer.length - 2; i >= 0; i -= 2) {
+								const charCode = buffer[i + 1] * 256 + buffer[i];
+								if (charCode === 10) {
+									lastNewlinePos = i;
+									break;
+								}
+							}
+							if (lastNewlinePos >= 0) {
+								bytesToUse = lastNewlinePos + 2;
 							}
 						}
-						cb(str, bytesRead);
+						
+						let str = "";
+						for (let i = 0; i < bytesToUse; i += 2) {
+							str += String.fromCharCode(buffer[i + 1] * 256 + buffer[i]);
+						}
+						cb(str, bytesToUse);
 					} catch (e) { cb('', 0); }
 				},
 				fail: (d, code) => {
@@ -1080,9 +1092,11 @@ export default {
 			let pageStart = pos;
 			let currentLine = 0;
 			let currentLineChars = 0;
+			let lastNewlinePos = -1;
 			while (pos < contentLength && currentLine < linesPerPage) {
 				const char = this.nostalgicFullContent[pos];
 				if (char === '\n') {
+					lastNewlinePos = pos;
 					currentLine++;
 					currentLineChars = 0;
 				} else {
@@ -1094,9 +1108,8 @@ export default {
 				}
 				pos++;
 			}
-			if (this.preventParagraphSplitting && pos < contentLength) {
-				const lastNewline = this.nostalgicFullContent.lastIndexOf('\n', pos);
-				if (lastNewline > pageStart) pos = lastNewline + 1;
+			if (this.preventParagraphSplitting && pos < contentLength && lastNewlinePos > pageStart) {
+				pos = lastNewlinePos + 1;
 			}
 			if (pos <= pageStart) pos = Math.min(pageStart + this.nostalgicCharsPerPage, contentLength);
 			currentPage++;
@@ -1106,9 +1119,11 @@ export default {
 		let currentLine = 0;
 		let currentLineChars = 0;
 		let pageEnd = pos;
+		let lastNewlinePos = -1;
 		while (pageEnd < contentLength && currentLine < linesPerPage) {
 			const char = this.nostalgicFullContent[pageEnd];
 			if (char === '\n') {
+				lastNewlinePos = pageEnd;
 				currentLine++;
 				currentLineChars = 0;
 			} else {
@@ -1120,9 +1135,8 @@ export default {
 			}
 			pageEnd++;
 		}
-		if (this.preventParagraphSplitting && pageEnd < contentLength) {
-			const lastNewline = this.nostalgicFullContent.lastIndexOf('\n', pageEnd);
-			if (lastNewline > pageStart) pageEnd = lastNewline + 1;
+		if (this.preventParagraphSplitting && pageEnd < contentLength && lastNewlinePos > pageStart) {
+			pageEnd = lastNewlinePos + 1;
 		}
 		if (pageEnd <= pageStart) pageEnd = Math.min(pageStart + this.nostalgicCharsPerPage, contentLength);
 
