@@ -4,34 +4,23 @@
     <text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 289px;width: 212px;line-height: 42px;font-weight:bold;font-size:22px;color:white;text-align:center;">书架空空</text>
     
     <list class="list" if="{{allBooks.length > 0}}">
-      <list-item type="tip" if="{{showStorageWarning && isStorageLow && !selectedCategory}}" class="item" style="background-color: #ad0000;">
-        <text style="color: white;font-size: 21px;">实际可用存储空间不足，将无法正常使用。</text>
+      <list-item type="tip" if="{{showStorageWarning && isStorageLow && (!selectedCategory || displayMode !== 'category')}}" class="item" style="background-color: #ad0000;">
+        <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
       </list-item>
 
       <list-item type="back" if="{{displayMode === 'category' && selectedCategory}}" class="item" @click="backToCategoryList" style="height: 72px;">
         <text class="itemtext">← 返回分类</text>
       </list-item>
 
-      <list-item for="{{visibleBooks}}" class="item {{shelfStyle === 'cover' ? 'cover-item' : ''}}" @click="handleItemClick($item)" type="{{shelfStyle === 'cover' ? 'cover' : 'list'}}">
-        <div if="{{shelfStyle === 'cover'}}" style="flex-direction: row; align-items: center; width: 100%; height: 100%;">
-          <img if="{{$item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
-          <div if="{{!$item.hasRealCover && !$item.isCategory}}" class="cover-image-placeholder"></div>
-          <div if="{{$item.isCategory}}" class="cover-image-placeholder" style="justify-content: center; align-items: center; background-color: #333;">
-             <text style="color: #666; font-size: 20px; font-weight: bold;">Folder</text>
-          </div>
-          <div class="cover-content">
-            <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="30" class="itemtext" text-offset="25">{{$item.name}}</marquee>
-            <text else class="itemtext">{{$item.name}}</text>
-            <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="40" class="itemtext2" text-offset="25">{{getProgressSubtitle($item)}}</marquee>
-            <text else class="itemtext2">{{getProgressSubtitle($item)}}</text>
-          </div>
-        </div>
-
-        <div if="{{shelfStyle === 'list'}}" style="flex-direction: column; width: 100%; height: 100%; justify-content: space-around;">
-            <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" class="itemtext" text-offset="25">{{$item.name}}</marquee>
-            <text else class="itemtext">{{$item.name}}</text>
-            <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="40" text-offset="25" class="itemtext2">{{getProgressSubtitle($item)}}</marquee>
-            <text else class="itemtext2">{{getProgressSubtitle($item)}}</text>
+      <list-item type="book" for="{{visibleBooks}}" class="item {{ (shelfStyle === 'cover' && $item.hasRealCover) ? 'cover-item' : '' }}" @click="handleItemClick($item)">
+        <img if="{{shelfStyle === 'cover' && $item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
+        
+        <div class="{{ (shelfStyle === 'cover' && $item.hasRealCover) ? 'cover-content' : 'item-content' }}">
+          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" class="itemtext" text-offset="25">{{$item.name}}</marquee>
+          <text else class="itemtext">{{$item.name}}</text>
+          
+          <marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="40" text-offset="25" class="itemtext2">{{getProgressSubtitle($item)}}</marquee>
+          <text else class="itemtext2">{{getProgressSubtitle($item)}}</text>
         </div>
       </list-item>
 
@@ -432,12 +421,19 @@ export default {
   justify-content: space-around;
   align-items: flex-start;
 }
+.item-content {
+  width: 100%;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: flex-start;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
 .cover-item {
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  padding: 8px 12px;
-  height: 105px;
 }
 .cover-image {
   width: 52px;
@@ -445,20 +441,11 @@ export default {
   background-color: #333;
   margin-right: 12px;
   border-radius: 8px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-.cover-image-placeholder {
-  width: 52px;
-  height: 70px;
-  background-color: #1a1a1a;
-  margin-right: 12px;
-  border-radius: 8px;
   flex-shrink: 0;
 }
 .cover-content {
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-around;
   align-items: flex-start;
   flex: 1;
   height: 100%;
