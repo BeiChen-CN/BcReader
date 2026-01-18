@@ -64,7 +64,6 @@ import chapterManager from '../../utils/chapterManager.js'
 import brightness from '@system.brightness'
 import app from '@system.app'
 import readingTimeStorage from '../../utils/readingTimeStorage.js'
-import battery from '@system.battery'
 
 export default {
 	allSize: 0,
@@ -87,9 +86,7 @@ export default {
 		swipe: 'column',
 		auto: false,
 		nowTime: "00:00",
-		batteryLevel: "",
 		timer: null,
-		timeCounter: 0,
 		savedScrollOffset: 0,
 		currentScrollTop: 0,
 		totalPages: 0,
@@ -187,17 +184,6 @@ export default {
 			hours = hours < 10 ? '0' + hours : hours;
 			minutes = minutes < 10 ? '0' + minutes : minutes;
 			this.nowTime = `${hours}:${minutes}`;
-		}
-
-		this.timeCounter++;
-		if (this.timeCounter >= 60 || this.batteryLevel === "") {
-			this.timeCounter = 0;
-			battery.getStatus({
-				success: (data) => {
-					let level = Math.round(data.level * 100);
-					this.batteryLevel = data.charging ? `充电中 ${level}%` : `电量 ${level}%`;
-				}
-			});
 		}
 	},
 	updatePageNumber() {
