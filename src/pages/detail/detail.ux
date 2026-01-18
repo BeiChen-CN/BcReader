@@ -211,6 +211,10 @@ export default {
 		global.runGC();
 	},
 	async onShow() {
+		if (!this.timer) {
+			this.updateStatus();
+			this.timer = setInterval(() => { this.updateStatus(); }, 1000);
+		}
 		await this.loadSettings();
 		const settingsChanged = this.isInitialized && (this.lastTxtSizePage !== this.txtSizePage || this.lastFontSize !== this.fontSize);
 		if (typeof globalThis.isKeepScreenOn !== 'undefined' && this.isKeepScreenOn !== globalThis.isKeepScreenOn) {
