@@ -76,6 +76,9 @@ export default class interconnfile {
                 case "delete_chapters":
                     await this.deleteChapters(payload);
                     break;
+                case "delete_book":
+                    await this.deleteBook(payload);
+                    break;
                 case "get_storage_info":
                     await this.getStorageInfo();
                     break;
@@ -837,6 +840,30 @@ export default class interconnfile {
             message: errorCount === 0 ? `成功删除 ${successCount} 个章节` : `删除完成：成功 ${successCount}，失败 ${errorCount}`, 
             count: successCount 
         });
+    }
+
+    async deleteBook({ filename }) {
+        if (!filename || !filename.trim()) {
+            this.send({ type: "error", message: "无效的文件名", count: 0 });
+            return;
+        }
+
+        try {
+            const dirName = this.generateDirName(filename);
+            const bookDirUri = `${this.baseUri}${dirName}`;
+
+            try {
+                await runAsyncFunc(file.rmdir, { uri: bookDirUri, recursive: true });
+            } catch (e) {}
+
+            try {
+                await bookStorage.removeBook(dirName);
+            } catch (e) {}
+
+            this.send({ type: "success", message: "删除成功", count: 0 });
+        } catch (error) {
+            this.send({ type: "error", message: `删除失败: ${error.message}`, count: 0 });
+        }
     }
 
     async getStorageInfo() {
