@@ -14,6 +14,12 @@
       <list-item type="tip" if="{{showStorageWarning && isStorageLow && !selectedCategory}}" class="item warning-item">
         <text class="itemtext" style="lines: 2;font-size: 24px;line-height:32px;">实际可用存储空间不足，电子书将无法正常使用。</text>
       </list-item>
+      
+			<list-item type="search" class="item search-item" @click="openSearch" if="{{showSearchBar}}">
+				<div class="search-content">
+					<text class="search-placeholder">搜索书籍...</text>
+				</div>
+			</list-item>
 
       <!-- 返回上一级分类 (仅在分类详情页显示) -->
       <list-item type="back" if="{{displayMode === 'category' && selectedCategory}}" class="item back-item" @click="backToCategoryList">
@@ -96,7 +102,8 @@ export default {
     isStorageLow: false,
     categoryPagination: false,
     currentModeList: [],
-    refreshMode: 'onExit'
+    refreshMode: 'onExit',
+		showSearchBar: true
   },
   exit() {
     app.terminate();
@@ -207,7 +214,8 @@ export default {
       { k: 'EBOOK_HOME_PROGRESS_MODE', d: 'book', t: 'str' },
       { k: 'EBOOK_SHOW_STORAGE_WARNING', d: 'true', t: 'bool' },
       { k: 'EBOOK_CATEGORY_PAGINATION', d: 'false', t: 'bool' },
-      { k: 'EBOOK_SHELF_REFRESH_MODE', d: 'onExit', t: 'str' }
+      { k: 'EBOOK_SHELF_REFRESH_MODE', d: 'onExit', t: 'str' },
+			{ k: 'EBOOK_HOME_SEARCH_ENABLED', d: 'true', t: 'bool' }
     ];
 
     const promises = keys.map(i => this.getStorage(i.k, i.d));
@@ -222,6 +230,7 @@ export default {
     this.showStorageWarning = results[6] === 'true';
     this.categoryPagination = results[7] === 'true';
     this.refreshMode = results[8];
+		this.showSearchBar = results[9] === 'true';
   },
   shouldRefreshShelf() {
     if (this.refreshMode === 'onEnter') return true;
@@ -399,6 +408,9 @@ export default {
 
     router.push({ uri: '/pages/detail', params: { name: item.dirName } });
   },
+	openSearch() {
+		router.push({ uri: '/pages/search' });
+	},
   routerTo(page) {
     router.push({ uri: `/pages/${page}` });
   },
@@ -451,6 +463,24 @@ export default {
   flex-direction: column;
   justify-content: space-around;
   align-items: flex-start;
+}
+.search-item {
+	height: 72px;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	background-color: #1f1f1f;
+}
+.search-content {
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	width: 100%;
+}
+.search-placeholder {
+	font-size: 26px;
+	line-height: 36px;
+	color: rgba(255, 255, 255, 0.6);
 }
 
 /* 封面模式下的列表项布局变更为水平 */
