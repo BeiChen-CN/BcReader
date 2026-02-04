@@ -297,6 +297,101 @@ export default {
 		if (linesPerPage <= 0 || charsPerLine <= 0) { this.nostalgicCharsPerPage = 100; return; }
 		this.nostalgicCharsPerPage = Math.min(10000, linesPerPage * charsPerLine);
 	},
+	getNostalgicPageStart(pageIndex) {
+		if (!this.nostalgicFullContent || this.nostalgicCharsPerPage <= 0 || pageIndex < 0) return 0;
+
+		const linesPerPage = Math.floor(this.scrollHeight / this.lineHeight);
+		const charsPerLine = Math.floor(336 / this.fontSize);
+		if (linesPerPage <= 0 || charsPerLine <= 0) return 0;
+
+		const contentLength = this.nostalgicFullContent.length;
+		let pos = 0;
+		let currentPage = 0;
+
+		if (pageIndex > 0) {
+			const startFromBeginning = pageIndex < 50;
+			if (!startFromBeginning) {
+				pos = Math.max(0, Math.min(pageIndex * this.nostalgicCharsPerPage, contentLength) - this.nostalgicCharsPerPage * 2);
+				currentPage = Math.floor(pos / this.nostalgicCharsPerPage);
+			}
+		}
+
+		while (pos < contentLength && currentPage < pageIndex) {
+			let pageStart = pos;
+			let currentLine = 0;
+			let currentLineChars = 0;
+			let lastNewlinePos = -1;
+			while (pos < contentLength && currentLine < linesPerPage) {
+				const char = this.nostalgicFullContent[pos];
+				if (char === '\n') {
+					lastNewlinePos = pos;
+					currentLine++;
+					currentLineChars = 0;
+				} else {
+					currentLineChars++;
+					if (currentLineChars >= charsPerLine) {
+						currentLine++;
+						currentLineChars = 0;
+					}
+				}
+				pos++;
+			}
+			if (this.preventParagraphSplitting && pos < contentLength && lastNewlinePos > pageStart) {
+				pos = lastNewlinePos + 1;
+			}
+			if (pos <= pageStart) pos = Math.min(pageStart + this.nostalgicCharsPerPage, contentLength);
+			currentPage++;
+		}
+
+		return Math.max(0, Math.min(pos, this.nostalgicFullContent.length));
+	},
+	calculateNostalgicTotalPages() {
+		if (!this.nostalgicFullContent || this.nostalgicCharsPerPage <= 0) { this.nostalgicTotalPages = 0; return; }
+		const linesPerPage = Math.floor(this.scrollHeight / this.lineHeight);
+		const charsPerLine = Math.floor(336 / this.fontSize);
+		if (linesPerPage <= 0 || charsPerLine <= 0) return 0;
+
+		const contentLength = this.nostalgicFullContent.length;
+		let pos = 0;
+		let currentPage = 0;
+
+		if (pageIndex > 0) {
+			const startFromBeginning = pageIndex < 50;
+			if (!startFromBeginning) {
+				pos = Math.max(0, Math.min(pageIndex * this.nostalgicCharsPerPage, contentLength) - this.nostalgicCharsPerPage * 2);
+				currentPage = Math.floor(pos / this.nostalgicCharsPerPage);
+			}
+		}
+
+		while (pos < contentLength && currentPage < pageIndex) {
+			let pageStart = pos;
+			let currentLine = 0;
+			let currentLineChars = 0;
+			let lastNewlinePos = -1;
+			while (pos < contentLength && currentLine < linesPerPage) {
+				const char = this.nostalgicFullContent[pos];
+				if (char === '\n') {
+					lastNewlinePos = pos;
+					currentLine++;
+					currentLineChars = 0;
+				} else {
+					currentLineChars++;
+					if (currentLineChars >= charsPerLine) {
+						currentLine++;
+						currentLineChars = 0;
+					}
+				}
+				pos++;
+			}
+			if (this.preventParagraphSplitting && pos < contentLength && lastNewlinePos > pageStart) {
+				pos = lastNewlinePos + 1;
+			}
+			if (pos <= pageStart) pos = Math.min(pageStart + this.nostalgicCharsPerPage, contentLength);
+			currentPage++;
+		}
+
+		return Math.max(0, Math.min(pos, this.nostalgicFullContent.length));
+	},
 	calculateNostalgicTotalPages() {
 		if (!this.nostalgicFullContent || this.nostalgicCharsPerPage <= 0) { this.nostalgicTotalPages = 0; return; }
 		const linesPerPage = Math.floor(this.scrollHeight / this.lineHeight);
@@ -847,7 +942,10 @@ export default {
 			let progress = await bookStorage.get(this.name);
 			progress.chapterIndex = this.currentChapterIndexInAll;
 			if (this.readMode === 'nostalgic') {
-				const charOffset = (this.nostalgicPageIndex >= 0 && this.nostalgicTotalPages > 0) ? this.nostalgicPageIndex * this.nostalgicCharsPerPage : 0;
+				let charOffset = 0;
+				if (this.nostalgicPageIndex >= 0 && this.nostalgicTotalPages > 0 && this.nostalgicFullContent && this.nostalgicCharsPerPage > 0) {
+					charOffset = this.getNostalgicPageStart(this.nostalgicPageIndex);
+				}
 				progress.offsetInChapter = Math.max(0, charOffset * 2);
 				progress.scrollOffset = 0;
 			} else {
@@ -966,49 +1064,14 @@ export default {
 		if (linesPerPage <= 0 || charsPerLine <= 0) return this.nostalgicFullContent;
 
 		const contentLength = this.nostalgicFullContent.length;
-		let pos = 0;
-		let currentPage = 0;
+		const pageStart = this.getNostalgicPageStart(pageIndex);
+		if (pageStart >= contentLength) return "";
 
-		if (pageIndex > 0) {
-			const startFromBeginning = pageIndex < 50;
-			if (!startFromBeginning) {
-				pos = Math.max(0, Math.min(pageIndex * this.nostalgicCharsPerPage, contentLength) - this.nostalgicCharsPerPage * 2);
-				currentPage = Math.floor(pos / this.nostalgicCharsPerPage);
-			}
-		}
-
-		while (pos < contentLength && currentPage < pageIndex) {
-			let pageStart = pos;
-			let currentLine = 0;
-			let currentLineChars = 0;
-			let lastNewlinePos = -1;
-			while (pos < contentLength && currentLine < linesPerPage) {
-				const char = this.nostalgicFullContent[pos];
-				if (char === '\n') {
-					lastNewlinePos = pos;
-					currentLine++;
-					currentLineChars = 0;
-				} else {
-					currentLineChars++;
-					if (currentLineChars >= charsPerLine) {
-						currentLine++;
-						currentLineChars = 0;
-					}
-				}
-				pos++;
-			}
-			if (this.preventParagraphSplitting && pos < contentLength && lastNewlinePos > pageStart) {
-				pos = lastNewlinePos + 1;
-			}
-			if (pos <= pageStart) pos = Math.min(pageStart + this.nostalgicCharsPerPage, contentLength);
-			currentPage++;
-		}
-
-		const pageStart = pos;
 		let currentLine = 0;
 		let currentLineChars = 0;
-		let pageEnd = pos;
+		let pageEnd = pageStart;
 		let lastNewlinePos = -1;
+
 		while (pageEnd < contentLength && currentLine < linesPerPage) {
 			const char = this.nostalgicFullContent[pageEnd];
 			if (char === '\n') {
