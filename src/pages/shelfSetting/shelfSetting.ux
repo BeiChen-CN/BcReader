@@ -41,7 +41,7 @@
                     <text class="itemtext" static>搜索栏</text>
                     <text class="itemtext2" static>顶部搜索入口</text>
                 </div>
-                <img src="{{showSearchBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+                <img src="{{showSearchBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
             </list-item>
 
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
@@ -67,7 +67,7 @@
                     <text class="itemtext" static>分类分页</text>
                     <text class="itemtext2" static>分类列表开启分页</text>
                 </div>
-                <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+                <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
             </list-item>
             
             <list-item class="item" @click="toggleCategoryPagination" type="item" if="{{displayMode === 'category'}}">
@@ -75,7 +75,7 @@
                     <text class="itemtext" static>分类分页</text>
                     <text class="itemtext2" static>分类列表开启分页</text>
                 </div>
-                <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+                <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
             </list-item>
             
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
