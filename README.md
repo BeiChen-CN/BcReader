@@ -51,7 +51,7 @@ https://iot.mi.com/vela/quickapp/zh/guide/
 > # 本项目由米坛社区开源项目支持计划提供支持
 > &nbsp;
 > ### 米坛社区发布贴
-> ![](https://github.com/youshen2/com.bandbbs.ebook/raw/main/badge.png?raw=true)
+> ![](https://github.com/youshen2/com.bandbbs.ebook/blob/n67/badge.png?raw=true)
 > &nbsp;
 > [小米手环9](https://www.bandbbs.cn/resources/5045/)
 > [小米手环10](https://www.bandbbs.cn/resources/4604/)
