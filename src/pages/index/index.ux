@@ -7,6 +7,12 @@
       <list-item type="tip" if="{{showStorageWarning && isStorageLow && (!selectedCategory || displayMode !== 'category')}}" class="item" style="background-color: #ad0000;">
         <text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
       </list-item>
+      
+			<list-item type="search" class="item search-item" @click="openSearch" if="{{showSearchBar}}">
+				<div class="search-content">
+					<text class="search-placeholder">搜索...</text>
+				</div>
+			</list-item>
 
       <list-item type="back" if="{{displayMode === 'category' && selectedCategory}}" class="item" @click="backToCategoryList" style="height: 72px;">
         <text class="itemtext">← 返回分类</text>
@@ -72,7 +78,8 @@ export default {
     isStorageLow: false,
     categoryPagination: false,
     currentModeList: [],
-    refreshMode: 'onExit'
+    refreshMode: 'onExit',
+		showSearchBar: true
   },
   updateTime() {
     const date = new Date();
@@ -167,7 +174,8 @@ export default {
       this.getStorage('EBOOK_HOME_PROGRESS_MODE', 'book'),
       this.getStorage('EBOOK_SHOW_STORAGE_WARNING', 'true'),
       this.getStorage('EBOOK_CATEGORY_PAGINATION', 'false'),
-      this.getStorage('EBOOK_SHELF_REFRESH_MODE', 'onExit')
+      this.getStorage('EBOOK_SHELF_REFRESH_MODE', 'onExit'),
+			this.getStorage('EBOOK_HOME_SEARCH_ENABLED', 'true')
     ]);
     this.pageSize = parseInt(results[0]);
     this.shelfStyle = results[1];
@@ -178,6 +186,7 @@ export default {
     this.showStorageWarning = results[6] === 'true';
     this.categoryPagination = results[7] === 'true';
     this.refreshMode = results[8] || 'onExit';
+		this.showSearchBar = results[9] === 'true';
   },
   shouldRefreshShelf() {
     if (this.refreshMode === 'onEnter') return true;
@@ -371,6 +380,9 @@ export default {
     }
     router.push({ uri: '/pages/detail', params: { name: item.dirName } });
   },
+	openSearch() {
+		router.push({ uri: '/pages/search' });
+	},
   routerTo(page) {
     router.push({ uri: `/pages/${page}` });
   },
@@ -420,6 +432,24 @@ export default {
   flex-direction: column;
   justify-content: space-around;
   align-items: flex-start;
+}
+.search-item {
+	height: 72px;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	background-color: #1f1f1f;
+}
+.search-content {
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	width: 100%;
+}
+.search-placeholder {
+	font-size: 26px;
+	line-height: 36px;
+	color: rgba(255, 255, 255, 0.6);
 }
 .item-content {
   width: 100%;
