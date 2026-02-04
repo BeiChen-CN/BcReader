@@ -9,6 +9,12 @@
       <list-item type="tip" if="{{showStorageWarning && isStorageLow && (!selectedCategory || displayMode !== 'category')}}" class="item" style="background-color: #ad0000;">
         <text style="color: white;font-size: 21px;">实际可用存储空间不足，将无法正常使用。</text>
       </list-item>
+      
+			<list-item type="search" class="item search-item" @click="openSearch" if="{{showSearchBar}}">
+				<div class="search-content">
+					<text class="search-placeholder">搜索...</text>
+				</div>
+			</list-item>
 
       <list-item type="back" if="{{displayMode === 'category' && selectedCategory}}" class="item" @click="backToCategoryList" style="height: 72px;">
         <text class="itemtext">← 返回分类</text>
@@ -72,7 +78,8 @@ export default {
     isStorageLow: false,
     categoryPagination: false,
     currentModeList: [],
-    refreshMode: 'onExit'
+    refreshMode: 'onExit',
+		showSearchBar: true
   },
   updateTime() {
     const date = new Date();
@@ -171,9 +178,10 @@ export default {
     const keys = [
       'EBOOK_SHELF_PAGE_SIZE', 'EBOOK_TOP_LAST_READ', 
       'EBOOK_SHELF_MARQUEE_ENABLED', 'EBOOK_HOME_DISPLAY_MODE', 'EBOOK_HOME_PROGRESS_MODE', 
-      'EBOOK_SHOW_STORAGE_WARNING', 'EBOOK_CATEGORY_PAGINATION', 'EBOOK_SHELF_REFRESH_MODE'
+      'EBOOK_SHOW_STORAGE_WARNING', 'EBOOK_CATEGORY_PAGINATION', 'EBOOK_SHELF_REFRESH_MODE',
+      "EBOOK_HOME_SEARCH_ENABLED"
     ];
-    const defaults = ['5', 'true', 'false', 'all', 'book', 'true', 'false', 'onExit'];
+    const defaults = ['5', 'true', 'false', 'all', 'book', 'true', 'false', 'onExit', 'true'];
     
     const results = await Promise.all(keys.map((k, i) => this.getStorage(k, defaults[i])));
     
@@ -186,7 +194,7 @@ export default {
     this.showStorageWarning = results[5] === 'true';
     this.categoryPagination = results[6] === 'true';
     this.refreshMode = results[7];
-    
+		this.showSearchBar = results[8] === 'true';
   },
   shouldRefreshShelf() {
     if (this.refreshMode === 'onEnter') return true;
@@ -375,6 +383,9 @@ export default {
     
     router.push({ uri: '/pages/detail', params: { name: item.dirName } });
   },
+	openSearch() {
+		router.push({ uri: '/pages/search' });
+	},
   routerTo(page) { router.push({ uri: `/pages/${page}` }); },
   loadDeviceInfo() {
     if (!this.showStorageWarning) { this.isStorageLow = false; return; }
@@ -427,6 +438,24 @@ export default {
   flex-direction: column;
   justify-content: space-around;
   align-items: flex-start;
+}
+.search-item {
+	height: 72px;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	background-color: #1f1f1f;
+}
+.search-content {
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	width: 100%;
+}
+.search-placeholder {
+	font-size: 26px;
+	line-height: 36px;
+	color: rgba(255, 255, 255, 0.6);
 }
 
 /* Used for List Style (also default for original code's item structure) */

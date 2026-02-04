@@ -160,6 +160,9 @@
       "pages/extraContentSetting": {
         "component": "extraContentSetting"
       },
+      "pages/search": {
+        "component": "search"
+      },
       "pages/quickSettings": {
         "component": "quickSettings"
       }

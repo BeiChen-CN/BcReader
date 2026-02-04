@@ -29,6 +29,14 @@
                 <img src="{{showStorageWarning ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:32px;height: 24px;"/>
             </list-item>
 
+            <list-item class="item" @click="toggleSearchBar" type="item">
+                <div class="item-content">
+                    <text class="itemtext" static>搜索栏</text>
+                    <text class="itemtext2" static>顶部搜索入口</text>
+                </div>
+                <img src="{{showSearchBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+            </list-item>
+
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
                 <text class="section-title" static>首页展示方式</text>
             </list-item>
@@ -129,7 +137,8 @@
             progressMode: 'book',
             showStorageWarning: true,
             categoryPagination: false,
-            refreshMode: 'onExit'
+            refreshMode: 'onExit',
+            showSearchBar: true
         },
         updateTime() {
             const date = new Date();
@@ -204,6 +213,11 @@
                 success: (data) => { if (data) this.refreshMode = data; },
                 fail: () => { this.refreshMode = 'onExit'; }
             });
+            storage.get({
+                key: 'EBOOK_HOME_SEARCH_ENABLED',
+                success: (data) => { this.showSearchBar = data !== 'false'; },
+                fail: () => { this.showSearchBar = true; }
+            });
         },
         onDestroy() {
             if (this.timer) {
@@ -236,6 +250,13 @@
             storage.set({
                 key: 'EBOOK_SHOW_STORAGE_WARNING',
                 value: this.showStorageWarning.toString()
+            });
+        },
+        toggleSearchBar() {
+            this.showSearchBar = !this.showSearchBar;
+            storage.set({
+                key: 'EBOOK_HOME_SEARCH_ENABLED',
+                value: this.showSearchBar.toString()
             });
         },
         toggleCategoryPagination() {
@@ -284,6 +305,7 @@
             this.showStorageWarning = true;
             this.categoryPagination = false;
             this.refreshMode = 'onEnter';
+            this.showSearchBar = true;
             storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '5' });
             storage.set({ key: "EBOOK_TOP_LAST_READ", value: 'true' });
             storage.set({ key: "EBOOK_HOME_DISPLAY_MODE", value: 'all' });
@@ -291,6 +313,7 @@
             storage.set({ key: "EBOOK_SHOW_STORAGE_WARNING", value: 'true' });
             storage.set({ key: "EBOOK_CATEGORY_PAGINATION", value: 'false' });
             storage.set({ key: "EBOOK_SHELF_REFRESH_MODE", value: 'onExit' });
+            storage.set({ key: "EBOOK_HOME_SEARCH_ENABLED", value: 'true' });
         },
         back() {
             router.back();
