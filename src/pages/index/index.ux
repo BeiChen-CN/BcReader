@@ -4,34 +4,32 @@
 		<text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 319px;width: 432px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">书架空空</text>
 
 		<list class="list" if="{{allBooks.length > 0}}">
-			<!-- 存储空间警告 -->
+			<list-item type="search" class="item search-item" @click="openSearch" if="{{showSearchBar}}">
+				<div class="search-content">
+					<text class="search-placeholder">搜索书籍...</text>
+				</div>
+			</list-item>
+
 			<list-item type="tip" if="{{showStorageWarning && isStorageLow && (!selectedCategory || displayMode !== 'category')}}" class="item" style="background-color: #ad0000;">
 				<text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
 			</list-item>
 
-			<!-- 分类模式下的返回按钮 -->
 			<list-item type="back" if="{{displayMode === 'category' && selectedCategory}}" class="item" @click="backToCategoryList" style="height: 72px;">
 				<text class="itemtext">← 返回分类列表</text>
 			</list-item>
 
-			<!-- 书籍列表项 (合并了列表、封面、分类逻辑) -->
 			<list-item type="book" for="{{visibleBooks}}" class="item {{ (shelfStyle === 'cover' && $item.hasRealCover) ? 'cover-item' : '' }}" @click="handleItemClick($item)">
-				<!-- 封面图 (仅在封面模式且有封面时显示) -->
 				<img if="{{shelfStyle === 'cover' && $item.hasRealCover}}" class="cover-image" src="internal://files/books/{{$item.dirName}}/{{$item.coverFileName}}" />
 				
-				<!-- 内容区域 -->
 				<div class="{{ (shelfStyle === 'cover' && $item.hasRealCover) ? 'cover-content' : 'item-content' }}">
-					<!-- 标题 -->
 					<marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="22" class="itemtext" text-offset="25">{{$item.name}}</marquee>
 					<text else class="itemtext">{{$item.name}}</text>
 					
-					<!-- 副标题/进度 -->
 					<marquee if="{{shelfMarqueeEnabled && !$item.isCategory}}" scrollamount="40" text-offset="25" class="itemtext2">{{getProgressSubtitle($item)}}</marquee>
 					<text else class="itemtext2">{{getProgressSubtitle($item)}}</text>
 				</div>
 			</list-item>
 
-			<!-- 分页控件 -->
 			<list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
 				<div class="pagination-controls">
 					<img src="/common/images/pre.png" if="{{currentPage > 0}}" @click="prevPage" class="pagination-button" />
@@ -84,7 +82,8 @@ export default {
 		isStorageLow: false,
 		categoryPagination: false,
 		currentModeList: [],
-		refreshMode: 'onExit'
+		refreshMode: 'onExit',
+		showSearchBar: true
 	},
 	exit() {
 		app.terminate();
@@ -192,9 +191,10 @@ export default {
 		const keys = [
 			'EBOOK_SHELF_PAGE_SIZE', 'EBOOK_SHELF_STYLE', 'EBOOK_TOP_LAST_READ',
 			'EBOOK_SHELF_MARQUEE_ENABLED', 'EBOOK_HOME_DISPLAY_MODE', 'EBOOK_HOME_PROGRESS_MODE',
-			'EBOOK_SHOW_STORAGE_WARNING', 'EBOOK_CATEGORY_PAGINATION', 'EBOOK_SHELF_REFRESH_MODE'
+			'EBOOK_SHOW_STORAGE_WARNING', 'EBOOK_CATEGORY_PAGINATION', 'EBOOK_SHELF_REFRESH_MODE',
+			'EBOOK_HOME_SEARCH_ENABLED'
 		];
-		const defaults = ['12', 'list', 'true', 'false', 'all', 'book', 'true', 'false', 'onExit'];
+		const defaults = ['12', 'list', 'true', 'false', 'all', 'book', 'true', 'false', 'onExit', 'true'];
 		
 		const results = await Promise.all(keys.map((k, i) => this.getStorage(k, defaults[i])));
 		
@@ -207,6 +207,7 @@ export default {
 		this.showStorageWarning = results[6] === 'true';
 		this.categoryPagination = results[7] === 'true';
 		this.refreshMode = results[8] || 'onExit';
+		this.showSearchBar = results[9] === 'true';
 	},
 	shouldRefreshShelf() {
 		if (this.refreshMode === 'onEnter') return true;
@@ -413,6 +414,9 @@ export default {
 			params: { name: item.dirName }
 		});
 	},
+	openSearch() {
+		router.push({ uri: '/pages/search' });
+	},
 	routerTo(page) {
 		router.push({ uri: `/pages/${page}` });
 	},
@@ -463,6 +467,24 @@ export default {
 	flex-direction: column;
 	justify-content: space-around;
 	align-items: flex-start;
+}
+.search-item {
+	height: 72px;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	background-color: #1f1f1f;
+}
+.search-content {
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	width: 100%;
+}
+.search-placeholder {
+	font-size: 26px;
+	line-height: 36px;
+	color: rgba(255, 255, 255, 0.6);
 }
 .item-content {
 	width: 100%;

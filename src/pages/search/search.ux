@@ -1,0 +1,299 @@
+<import name="input-method" src="../../components/InputMethod/InputMethod.ux"></import>
+<template>
+	<div class="page">
+		<list class="list">
+			<list-item class="search-input-container" @click="toggleKeyboard" type="search">
+				<div class="search-input-field">
+					<text static class="search-input-label">关键字</text>
+					<div class="search-input-display">
+						<text class="search-input-text" if="{{query}}">{{query}}</text>
+						<text static class="search-input-placeholder" if="{{!query}}">请输入书名或分类</text>
+					</div>
+				</div>
+				<div class="search-input-counter">
+					<text class="search-counter-text">{{query.length}} / 20</text>
+				</div>
+			</list-item>
+
+			<list-item for="{{filteredBooks}}" if="{{query}}" class="item" @click="openBook($item)" type="book">
+				<div class="item-content">
+					<text class="itemtext">{{$item.name}}</text>
+					<text class="itemtext2">{{getProgressSubtitle($item)}}</text>
+				</div>
+			</list-item>
+			<list-item type="empty" if="{{query && allBooks.length > 0 && filteredBooks.length == 0}}" class="empty-item">
+				<text class="empty-text">未找到匹配的书籍</text>
+			</list-item>
+			<list-item type="empty" if="{{query && allBooks.length == 0}}" class="empty-item">
+				<text class="empty-text">暂无书籍</text>
+			</list-item>
+		</list>
+
+		<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
+		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;" />
+		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+			{{nowTime}}
+		</text>
+		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+			搜索书籍
+		</text>
+
+		<input-method
+			hide="{{hideKeyboard}}"
+			keyboardtype.static="QWERTY"
+			vibratemode.static="short"
+			screentype.static="rect"
+			@complete="onInput"
+			@delete="onDelete"
+			@visibilityChange="onVisibilityChange" />
+	</div>
+</template>
+
+<script>
+import router from '@system.router';
+import storage from '../../utils/storage.js';
+import bookStorage from '../../utils/bookStorage.js';
+
+export default {
+	private: {
+		nowTime: "00:00",
+		timer: null,
+		timeFormat: '24h',
+		query: "",
+		hideKeyboard: true,
+		allBooks: [],
+		filteredBooks: []
+	},
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		if (this.timeFormat === '12h') {
+			let ampm = hours >= 12 ? '下午' : '上午';
+			hours = hours % 12;
+			hours = hours ? hours : 12;
+			minutes = minutes < 10 ? '0' + minutes : minutes;
+			this.nowTime = `${ampm} ${hours}:${minutes}`;
+		} else {
+			hours = hours < 10 ? '0' + hours : hours;
+			minutes = minutes < 10 ? '0' + minutes : minutes;
+			this.nowTime = `${hours}:${minutes}`;
+		}
+	},
+	onInit() {
+		storage.get({
+			key: 'EBOOK_TIME_FORMAT',
+			success: (data) => {
+				if (data) this.timeFormat = data;
+				this.updateTime();
+			},
+			fail: () => {
+				this.updateTime();
+			}
+		});
+		this.timer = setInterval(() => { this.updateTime(); }, 1000);
+		this.loadBooks();
+	},
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+		this.allBooks = null;
+		this.filteredBooks = null;
+		if (typeof global !== 'undefined' && typeof global.runGC === 'function') {
+			global.runGC();
+		}
+	},
+	async loadBooks() {
+		this.allBooks = await bookStorage.getBooks();
+		this.updateFilteredBooks();
+	},
+	updateFilteredBooks() {
+		const q = (this.query || '').toLowerCase();
+		if (!q) {
+			this.filteredBooks = [];
+			return;
+		}
+		const matched = (this.allBooks || []).filter(book => {
+			const name = (book.name || '').toLowerCase();
+			const category = (book.localCategory || '').toLowerCase();
+			return name.indexOf(q) !== -1 || category.indexOf(q) !== -1;
+		});
+		this.filteredBooks = matched.slice(0, 5);
+	},
+	toggleKeyboard() {
+		this.hideKeyboard = !this.hideKeyboard;
+	},
+	onInput(evt) {
+		if (this.query.length < 20) {
+			this.query += evt.detail.content;
+			this.updateFilteredBooks();
+		}
+	},
+	onDelete() {
+		if (!this.query) return;
+		this.query = this.query.slice(0, -1);
+		this.updateFilteredBooks();
+	},
+	onVisibilityChange(evt) {
+		if (!evt.detail.visible) {
+			this.hideKeyboard = true;
+		}
+	},
+	roundToDecimal(num, decimalPlaces) {
+		const parsed = parseFloat(num);
+		return isNaN(parsed) ? (0).toFixed(decimalPlaces) : parsed.toFixed(decimalPlaces);
+	},
+	getChapterProgressPercent(book) {
+		if (!book || !book.progress) return 0;
+		const percent = parseFloat(book.progress.chapterProgressPercent);
+		return isNaN(percent) ? 0 : Math.min(100, Math.max(0, percent));
+	},
+	getBookProgressPercent(book) {
+		if (!book || !book.progress) return 0;
+		const totalChapters = parseInt(book.chapterCount, 10) || 0;
+		if (totalChapters <= 0) return 0;
+		const chapterIndex = Math.max(0, book.progress.chapterIndex || 0);
+		const chapterFraction = this.getChapterProgressPercent(book) / 100;
+		return Math.min(100, Math.max(0, ((chapterIndex + chapterFraction) / totalChapters) * 100));
+	},
+	getProgressSubtitle(book) {
+		if (!book) return '暂无进度';
+		const progress = book.progress || {};
+		if (progress.chapterIndex == null || progress.chapterIndex < 0) return '尚未开始';
+		const totalChapters = parseInt(book.chapterCount, 10) || 0;
+		const bookPercent = this.roundToDecimal(this.getBookProgressPercent(book), 2);
+		if (totalChapters <= 0) return `${bookPercent}% · 章节信息缺失`;
+		const currentChapter = Math.min(totalChapters, (progress.chapterIndex || 0) + 1);
+		return `${bookPercent}% · 看到 ${currentChapter} / ${totalChapters} 章`;
+	},
+	openBook(item) {
+		router.push({
+			uri: '/pages/detail',
+			params: { name: item.dirName }
+		});
+	},
+	back() {
+		router.back();
+	}
+};
+</script>
+
+<style>
+.page {
+	width: 432px;
+	height: 514px;
+	background-color: #000000;
+}
+.search-input-container {
+	position: absolute;
+	top: 116px;
+	left: 20px;
+	width: 392px;
+	height: 182px;
+	flex-direction: column;
+}
+.search-input-field {
+	width: 100%;
+	background-color: #262626;
+	border-radius: 36px;
+	padding: 10px 20px;
+	flex-direction: column;
+}
+.search-input-label {
+	font-size: 20px;
+	line-height: 28px;
+	color: rgba(255, 255, 255, 0.6);
+	margin-bottom: 6px;
+}
+.search-input-display {
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	width: 100%;
+}
+.search-input-text {
+	font-size: 28px;
+	line-height: 36px;
+	color: white;
+	text-overflow: ellipsis;
+	lines: 1;
+}
+.search-input-placeholder {
+	font-size: 28px;
+	line-height: 36px;
+	color: rgba(255, 255, 255, 0.4);
+}
+.search-input-counter {
+	margin-top: 6px;
+	flex-direction: row;
+	justify-content: flex-end;
+}
+.search-counter-text {
+	font-size: 20px;
+	line-height: 24px;
+	color: rgba(255, 255, 255, 0.4);
+}
+.list {
+	width: 432px;
+	height: 514px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	padding: 116px 12px;
+}
+.item {
+	width: 100%;
+	height: 112px;
+	padding: 14px 20px;
+	margin-bottom: 8px;
+	background-color: #262626;
+	border-radius: 36px;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: flex-start;
+}
+.item-content {
+	width: 100%;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: flex-start;
+	flex: 1;
+	height: 100%;
+	overflow: hidden;
+}
+.itemtext {
+	font-size: 32px;
+	line-height: 40px;
+	width: 100%;
+	font-weight: bold;
+	color: white;
+	text-overflow: ellipsis;
+	lines: 1;
+}
+.itemtext2 {
+	font-size: 24px;
+	line-height: 32px;
+	font-weight: bold;
+	color: rgba(255, 255, 255, 0.6);
+	text-overflow: ellipsis;
+	lines: 1;
+}
+.empty-item {
+	width: 100%;
+	height: 112px;
+	border-radius: 36px;
+	align-items: center;
+	justify-content: center;
+	background-color: transparent;
+}
+.empty-text {
+	font-size: 26px;
+	line-height: 32px;
+	color: rgba(255, 255, 255, 0.6);
+	text-align: center;
+	width: 100%;
+}
+</style>
+
