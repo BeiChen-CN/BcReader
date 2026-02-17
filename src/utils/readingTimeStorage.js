@@ -3,6 +3,7 @@ import storage from '../utils/storage.js';
 const READING_TIME_KEY = 'EBOOK_READING_TIME_DATA';
 
 const sessionStartTimes = {};
+const lastSavedTimes = {};
 let readingTimeCache = null;
 let recordingEnabledCache = null;
 
@@ -62,17 +63,24 @@ async function saveReadingTime(readingTimeData) {
 async function recordReadingStart(bookName) {
     if (!bookName) return;
     if (!(await isReadingTimeRecordingEnabled())) return;
-    sessionStartTimes[bookName] = Date.now();
+    if (sessionStartTimes[bookName] && lastSavedTimes[bookName]) return;
+    const now = Date.now();
+    sessionStartTimes[bookName] = now;
+    lastSavedTimes[bookName] = now;
 }
 
-async function recordReadingEnd(bookName) {
+async function saveCurrentSession(bookName) {
     if (!bookName) return;
     if (!(await isReadingTimeRecordingEnabled())) return;
 
     const startTime = sessionStartTimes[bookName];
-    if (!startTime) return;
+    const lastSavedTime = lastSavedTimes[bookName];
+    if (!startTime || !lastSavedTime) return;
 
-    delete sessionStartTimes[bookName];
+    const now = Date.now();
+    const duration = Math.floor((now - lastSavedTime) / 1000);
+
+    if (duration < 10) return;
 
     try {
         const readingTimeData = await getAllReadingTime();
@@ -88,25 +96,74 @@ async function recordReadingEnd(bookName) {
             readingTimeData[bookName] = bookData;
         }
 
-        const endTime = Date.now();
-        const duration = Math.floor((endTime - startTime) / 1000);
+        bookData.totalSeconds = (bookData.totalSeconds || 0) + duration;
+        const sessionDate = new Date(lastSavedTime).toISOString().split('T')[0];
+        const session = {
+            startTime: lastSavedTime,
+            endTime: now,
+            duration: duration,
+            date: sessionDate
+        };
 
-        if (duration >= 10) {
-            bookData.totalSeconds = (bookData.totalSeconds || 0) + duration;
-            const session = {
-                startTime: startTime,
-                endTime: endTime,
-                duration: duration,
-                date: new Date(startTime).toISOString().split('T')[0]
+        if (!bookData.sessions) bookData.sessions = [];
+        bookData.sessions.push(session);
+        bookData.lastReadDate = sessionDate;
+        if (!bookData.firstReadDate) bookData.firstReadDate = sessionDate;
+
+        lastSavedTimes[bookName] = now;
+        await saveReadingTime(readingTimeData);
+    } catch (e) {}
+}
+
+async function recordReadingEnd(bookName) {
+    if (!bookName) return;
+    if (!(await isReadingTimeRecordingEnabled())) return;
+
+    const startTime = sessionStartTimes[bookName];
+    const lastSavedTime = lastSavedTimes[bookName];
+    if (!startTime || !lastSavedTime) {
+        delete sessionStartTimes[bookName];
+        delete lastSavedTimes[bookName];
+        return;
+    }
+
+    const endTime = Date.now();
+    const remainingDuration = Math.floor((endTime - lastSavedTime) / 1000);
+
+    delete sessionStartTimes[bookName];
+    delete lastSavedTimes[bookName];
+
+    if (remainingDuration < 10) return;
+
+    try {
+        const readingTimeData = await getAllReadingTime();
+        let bookData = readingTimeData[bookName];
+
+        if (!bookData) {
+            bookData = {
+                totalSeconds: 0,
+                sessions: [],
+                lastReadDate: null,
+                firstReadDate: null
             };
-
-            if (!bookData.sessions) bookData.sessions = [];
-            bookData.sessions.push(session);
-            bookData.lastReadDate = session.date;
-            if (!bookData.firstReadDate) bookData.firstReadDate = session.date;
-            
-            await saveReadingTime(readingTimeData);
+            readingTimeData[bookName] = bookData;
         }
+
+        bookData.totalSeconds = (bookData.totalSeconds || 0) + remainingDuration;
+        const sessionDate = new Date(lastSavedTime).toISOString().split('T')[0];
+        const session = {
+            startTime: lastSavedTime,
+            endTime: endTime,
+            duration: remainingDuration,
+            date: sessionDate
+        };
+
+        if (!bookData.sessions) bookData.sessions = [];
+        bookData.sessions.push(session);
+        bookData.lastReadDate = sessionDate;
+        if (!bookData.firstReadDate) bookData.firstReadDate = sessionDate;
+
+        await saveReadingTime(readingTimeData);
     } catch (e) {}
 }
 
@@ -236,6 +293,7 @@ function calculateBookStats(bookData) {
 async function clearAllReadingTime() {
     readingTimeCache = {};
     Object.keys(sessionStartTimes).forEach(key => delete sessionStartTimes[key]);
+    Object.keys(lastSavedTimes).forEach(key => delete lastSavedTimes[key]);
     return new Promise((resolve, reject) => {
         storage.set({
             key: READING_TIME_KEY,
@@ -249,6 +307,7 @@ async function clearAllReadingTime() {
 export default {
     recordReadingStart,
     recordReadingEnd,
+    saveCurrentSession,
     getReadingTime,
     getAllBooksReadingTime: getAllReadingTime,
     saveReadingTime,
