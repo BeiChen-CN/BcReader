@@ -62,7 +62,17 @@ export default {
       state2: 'ing',
       nowTime: "00:00",
       timer: null,
+      connState: null,
       timeFormat: '24h'
+  },
+  updateConnState() {
+    if (this.state === "upload") return;
+    const connected = !!(globalThis.conn && globalThis.conn.connected);
+    if (connected) {
+      this.state = "ready";
+    } else {
+      this.state = "wait";
+    }
   },
   updateTime() {
     const date = new Date();
@@ -93,12 +103,12 @@ export default {
     });
     this.timer = setInterval(() => {
       this.updateTime();
+      this.updateConnState();
     }, 1000);
+    this.updateConnState();
     this.eventlistener=globalThis.conn.addEventListener((data)=>{
-      if(data=="connect"){
-        this.state = "ready"
-      }else{
-        this.state = "wait"
+      if (data !== "open") {
+        if (this.state !== "upload") this.state = "wait";
       }
     })
     globalThis.connfile.setCallback((data) => {
@@ -130,6 +140,7 @@ export default {
 		brightness.setKeepScreenOn({
 			keepScreenOn: true,
 		});
+		this.updateConnState();
 	},
 
 	onHide() {
