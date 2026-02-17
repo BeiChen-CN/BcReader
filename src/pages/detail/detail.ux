@@ -166,6 +166,7 @@ export default {
 		_bookmarkOffsetInChapter: null,
 		_fromPercent: false,
 		_percentOffsetInChapter: null,
+		_percentTargetPercent: null,
 		isChangingChapter: false
 	},
 	protected: {
@@ -488,9 +489,11 @@ export default {
 			chapterToLoadIndex = globalThis.justJumpedChapterIndex !== undefined ? globalThis.justJumpedChapterIndex : progress.chapterIndex;
 			offsetInChapter = globalThis.justJumpedOffsetInChapter || 0;
 			this._percentOffsetInChapter = offsetInChapter;
+			this._percentTargetPercent = globalThis.justJumpedTargetPercent;
 			globalThis.justJumpedFromPercent = false;
 			delete globalThis.justJumpedChapterIndex;
 			delete globalThis.justJumpedOffsetInChapter;
+			delete globalThis.justJumpedTargetPercent;
 		} else if (globalThis.justJumpedFromBookmark) {
 			chapterToLoadIndex = globalThis.justJumpedBookmarkChapterIndex !== undefined ? globalThis.justJumpedBookmarkChapterIndex : progress.chapterIndex;
 			offsetInChapter = progress.offsetInChapter || 0;
@@ -650,7 +653,40 @@ export default {
 						success: (page1Rect) => {
 							const p1Start = this.page1.offset;
 							const p1End = p1Start + this.page1.length;
-							if (targetOffset >= p1Start && targetOffset < p1End) {
+							
+							if (this._fromPercent && this._percentTargetPercent !== null && this._percentTargetPercent !== undefined && this.allSize > 0) {
+								const targetPercentOffset = Math.floor((this._percentTargetPercent / 100) * this.allSize);
+								if (targetPercentOffset >= p1Start && targetPercentOffset < p1End) {
+									const charsIn = (targetPercentOffset - p1Start) / 2;
+									const charsPerLine = Math.floor(432 / this.fontSize);
+									const lines = charsPerLine > 0 ? Math.ceil(charsIn / charsPerLine) : 0;
+									restore(lines * this.lineHeight);
+								} else if (targetPercentOffset < p1Start) {
+									restore(0);
+								} else {
+									const charsBefore = targetPercentOffset / 2;
+									const charsPerLine = Math.floor(432 / this.fontSize);
+									const lines = charsPerLine > 0 ? Math.ceil(charsBefore / charsPerLine) : 0;
+									const estimatedScroll = lines * this.lineHeight;
+									if (this.page2 && this.page2.offset <= targetPercentOffset) {
+										this.$element("page2").getBoundingClientRect({
+											success: (page2Rect) => {
+												const p2Start = this.page2.offset;
+												if (targetPercentOffset >= p2Start && targetPercentOffset < p2Start + this.page2.length) {
+													const charsIn = (targetPercentOffset - p2Start) / 2;
+													const linesInP2 = charsPerLine > 0 ? Math.ceil(charsIn / charsPerLine) : 0;
+													restore(page1Rect.height + linesInP2 * this.lineHeight);
+												} else {
+													restore(estimatedScroll);
+												}
+											},
+											fail: () => restore(estimatedScroll)
+										});
+									} else {
+										restore(estimatedScroll);
+									}
+								}
+							} else if (targetOffset >= p1Start && targetOffset < p1End) {
 								const charsIn = (targetOffset - p1Start) / 2;
 								const lines = Math.ceil(charsIn / Math.floor(212 / (this.fontSize * 0.6)));
 								restore((lines * this.lineHeight) + this.savedScrollOffset);
@@ -678,6 +714,7 @@ export default {
 				this._bookmarkOffsetInChapter = null;
 				this._fromPercent = false;
 				this._percentOffsetInChapter = null;
+				this._percentTargetPercent = null;
 				this.saveData(true);
 			},
 			fail: () => {
@@ -689,6 +726,7 @@ export default {
 				this._bookmarkOffsetInChapter = null;
 				this._fromPercent = false;
 				this._percentOffsetInChapter = null;
+				this._percentTargetPercent = null;
 			}
 		});
 	},
@@ -1063,6 +1101,10 @@ export default {
 		if (this.isProcessingClick) return;
 		this.isProcessingClick = true;
 		this.saveData(true);
+		globalThis.readerChapterAllSize = this.allSize;
+		globalThis.readerChapterIndex = this.currentChapterIndexInAll;
+		globalThis.readerChapterProgressPercent = this.chapterProgress;
+		globalThis.readerTxtSizePage = this.txtSizePage;
 		if (this.readingTimeSaveTimer) clearInterval(this.readingTimeSaveTimer);
 		this.readingTimeSaveTimer = null;
 		router.push({ uri: '/pages/detailsetting', params: { name: this.name } });
