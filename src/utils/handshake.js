@@ -14,11 +14,15 @@ export default class InterHandshake extends interconn {
     /** @type {(value: void | PromiseLike<void>) => void} */
     resolve = null;
     timeout = null;
+    handshaked = false;
     constructor() {
         super();
         this.conn.onmessage = ({ data }) => {
             clearTimeout(this.timeout);
-            this.timeout = setTimeout(() => this.promise = this.resolve = null, TIMEOUT);
+            this.timeout = setTimeout(() => {
+                this.promise = this.resolve = null;
+                this.handshaked = false;
+            }, TIMEOUT);
             const { tag, ...payload } = JSON.parse(data);
             this.callbacks[tag](payload);
         }
@@ -37,6 +41,7 @@ export default class InterHandshake extends interconn {
                 });
             }
             if (count > 0) {
+                this.handshaked = true;
                 if (this.promise) this.resolve(this.resolve = null)
                 else {
                     this.promise = Promise.resolve()
@@ -48,10 +53,12 @@ export default class InterHandshake extends interconn {
         this.addEventListener((e) => {
             if (e !== "open") {
                 this.resolve = null;
-                this.promise = Promise.reject(new Error("connection closed"));
+                this.promise = null;
+                this.handshaked = false;
                 clearTimeout(this.timeout);
                 return
             }
+            this.handshaked = false;
             this.promise = this._newPromise()
         })
     }
@@ -64,12 +71,13 @@ export default class InterHandshake extends interconn {
         this.callback= callback
     }
     callback = () => { }
-    get connected() { return this.promise !== null }
+    get connected() { return this.handshaked }
     _newPromise() {
         return new Promise(( resolve, reject ) => {
             const timeout = setTimeout(() => {
                 reject(new Error("timeout"));
                 this.promise = this.resolve = null;
+                this.handshaked = false;
             }, TIMEOUT)
             this.resolve = () => {
                 resolve()
