@@ -290,6 +290,47 @@ function calculateBookStats(bookData) {
     return stats;
 }
 
+function getLast7DaysDateStrings() {
+    const dates = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        dates.push(date.toISOString().split('T')[0]);
+    }
+    return dates;
+}
+
+function getLast7DaysReadingTime(sessions) {
+    const dates = getLast7DaysDateStrings();
+    const dailyData = {};
+    
+    dates.forEach(date => {
+        dailyData[date] = 0;
+    });
+    
+    if (sessions && sessions.length > 0) {
+        sessions.forEach(session => {
+            const date = session.date;
+            if (dailyData.hasOwnProperty(date)) {
+                dailyData[date] += (session.duration || 0);
+            }
+        });
+    }
+    
+    return dates.map(date => Math.floor(dailyData[date] / 60));
+}
+
+function getLast7DaysGlobalReadingTime(allBooksData) {
+    let allSessions = [];
+    Object.values(allBooksData).forEach(bookData => {
+        if (bookData.sessions && bookData.sessions.length > 0) {
+            allSessions = allSessions.concat(bookData.sessions);
+        }
+    });
+    return getLast7DaysReadingTime(allSessions);
+}
+
 async function clearAllReadingTime() {
     readingTimeCache = {};
     Object.keys(sessionStartTimes).forEach(key => delete sessionStartTimes[key]);
@@ -314,5 +355,7 @@ export default {
     formatDuration,
     calculateGlobalStats,
     calculateBookStats,
-    clearAllReadingTime
+    clearAllReadingTime,
+    getLast7DaysReadingTime,
+    getLast7DaysGlobalReadingTime
 };
