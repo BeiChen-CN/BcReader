@@ -40,6 +40,11 @@
 					<text class="item-value">{{maxDailyTimeFormatted}}</text>
 				</div>
 			</list-item>
+			
+			<list-item class="item item-chart" type="info">
+				<text class="chart-title" static>近一周阅读时长</text>
+				<chart class="chart" type="line" options="{{chartOptions}}" datasets="{{chartDatasets}}"></chart>
+			</list-item>
 		</list>
 
 		<list class="list" if="{{name}}">
@@ -112,7 +117,7 @@ import readingTimeStorage from '../../utils/readingTimeStorage.js'
 import storage from '../../utils/storage.js'
 
 export default {
-	private: {
+		private: {
 		totalReadingTime: 0,
 		totalReadingTimeFormatted: '加载中...',
 		totalReadingDays: 0,
@@ -132,7 +137,9 @@ export default {
 		nowTime: "00:00",
 		timer: null,
 		timeFormat: '24h',
-		pageTitle: '阅读时长'
+		pageTitle: '阅读时长',
+		chartOptions: {},
+		chartDatasets: []
 	},
 	protected: {
 		name: ''
@@ -168,6 +175,7 @@ export default {
 			this.updateTime();
 		}, 1000);
 		global.runGC();
+		this.updateChart([0, 0, 0, 0, 0, 0, 0]);
 		this.loadReadingTime();
 	},
 	onShow() {
@@ -214,6 +222,9 @@ export default {
 			this.firstReadDate = stats.firstReadDate;
 			this.lastReadDate = stats.lastReadDate;
 			this.sessionCount = stats.sessionCount;
+			
+			const weekData = readingTimeStorage.getLast7DaysReadingTime(readingTimeData.sessions || []);
+			this.updateChart(weekData);
 		} catch (e) {
 			this.resetBookData();
 		}
@@ -233,6 +244,7 @@ export default {
 		this.firstReadDate = '';
 		this.lastReadDate = '';
 		this.sessionCount = 0;
+		this.updateChart([0, 0, 0, 0, 0, 0, 0]);
 	},
 	async loadAllBooksReadingTime() {
 		try {
@@ -253,6 +265,9 @@ export default {
 			this.averageWeekTimeFormatted = readingTimeStorage.formatDuration(stats.averageWeekSeconds);
 			this.maxDailyTime = stats.maxDailySeconds;
 			this.maxDailyTimeFormatted = readingTimeStorage.formatDuration(stats.maxDailySeconds);
+			
+			const weekData = readingTimeStorage.getLast7DaysGlobalReadingTime(allBooksData);
+			this.updateChart(weekData);
 		} catch (e) {
 			this.resetGlobalData();
 		}
@@ -271,6 +286,40 @@ export default {
 		this.averageWeekTimeFormatted = '0分钟';
 		this.maxDailyTime = 0;
 		this.maxDailyTimeFormatted = '0分钟';
+		this.updateChart([0, 0, 0, 0, 0, 0, 0]);
+	},
+	updateChart(weekData) {
+		const maxValue = Math.max(...weekData);
+		const yMax = maxValue > 0 ? Math.ceil(maxValue * 1.2) : 10;
+		
+		this.chartOptions = {
+			xAxis: {
+				min: 0,
+				max: 6,
+				axisTick: 7,
+				display: true,
+				color: '#666666'
+			},
+			yAxis: {
+				min: 0,
+				max: yMax,
+				axisTick: 5,
+				display: true,
+				color: '#666666'
+			},
+			series: {
+				lineStyle: {
+					width: '2px'
+				}
+			}
+		};
+		
+		this.chartDatasets = [{
+			data: weekData,
+			strokeColor: '#4A90E2',
+			fillColor: '#4A90E2',
+			gradient: true
+		}];
 	},
 	back() {
 		router.back();
@@ -305,6 +354,21 @@ export default {
 }
 .item-single {
 	height: 112px;
+}
+.item-chart {
+	height: 300px;
+	padding: 20px;
+}
+.chart-title {
+	font-size: 28px;
+	line-height: 37px;
+	font-weight: bold;
+	color: rgba(255,255,255,0.6);
+	margin-bottom: 12px;
+}
+.chart {
+	width: 100%;
+	height: 240px;
 }
 .stat-item {
 	width: 100%;
