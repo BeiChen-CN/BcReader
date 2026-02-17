@@ -164,6 +164,7 @@ export default {
 		prevChapterName: '',
 		nextChapterName: '',
 		periodicSaveTimer: null,
+		readingTimeSaveTimer: null,
 		timeFormat: '24h',
 		_shouldScrollToTop: false,
 		_fromBookmark: false,
@@ -252,6 +253,15 @@ export default {
 
 		if (this.name) {
 			try { await readingTimeStorage.recordReadingStart(this.name); } catch (e) { }
+			if (this.readingTimeSaveTimer) {
+				clearInterval(this.readingTimeSaveTimer);
+				this.readingTimeSaveTimer = null;
+			}
+			this.readingTimeSaveTimer = setInterval(async () => {
+				if (this.name) {
+					try { await readingTimeStorage.saveCurrentSession(this.name); } catch (e) { }
+				}
+			}, 5 * 60 * 1000);
 		}
 		this.setupAutoSave();
 	},
@@ -1030,6 +1040,7 @@ export default {
 	},
 	async onHide() {
 		if (this.periodicSaveTimer) { clearInterval(this.periodicSaveTimer); this.periodicSaveTimer = null; }
+		if (this.readingTimeSaveTimer) { clearInterval(this.readingTimeSaveTimer); this.readingTimeSaveTimer = null; }
 		if (this.autoInterval) { clearInterval(this.autoInterval); this.autoInterval = null; }
 		await this._performSave();
 		if (this.name) try { await readingTimeStorage.recordReadingEnd(this.name); } catch (e) { }
@@ -1038,6 +1049,7 @@ export default {
 	},
 	async onDestroy() {
 		if (this.periodicSaveTimer) clearInterval(this.periodicSaveTimer);
+		if (this.readingTimeSaveTimer) clearInterval(this.readingTimeSaveTimer);
 		if (this.timer) clearInterval(this.timer);
 		if (this.autoInterval) clearInterval(this.autoInterval);
 		if (this.clickTimeout) clearTimeout(this.clickTimeout);
@@ -1048,7 +1060,7 @@ export default {
 		brightness.setKeepScreenOn({ keepScreenOn: false });
 		global.runGC();
 	},
-	onBackPress() {
+	async onBackPress() {
 		if (this.readMode === 'nostalgic' && this.nostalgicPageTurnMode === 'swipe' && this.nostalgicIsTouching) {
 			if (this.nostalgicPageIndex > 0) this.nostalgicPrevPage();
 			else if (this.currentChapterIndexInAll > 0) this.changeChapter(-1);
@@ -1080,9 +1092,16 @@ export default {
 			});
 			return true;
 		}
+		if (this.periodicSaveTimer) clearInterval(this.periodicSaveTimer);
+		if (this.readingTimeSaveTimer) clearInterval(this.readingTimeSaveTimer);
+		if (this.autoInterval) clearInterval(this.autoInterval);
+		await this._performSave();
+		if (this.name) try { await readingTimeStorage.recordReadingEnd(this.name); } catch (e) { }
+		return false;
 	},
 	async back() {
 		if (this.periodicSaveTimer) clearInterval(this.periodicSaveTimer);
+		if (this.readingTimeSaveTimer) clearInterval(this.readingTimeSaveTimer);
 		if (this.autoInterval) clearInterval(this.autoInterval);
 		await this._performSave();
 		if (this.name) try { await readingTimeStorage.recordReadingEnd(this.name); } catch (e) { }
@@ -1097,14 +1116,17 @@ export default {
 		this.isProcessingClick = true;
 		this.saveData(true);
 		globalThis.isKeepScreenOn = this.isKeepScreenOn;
-		if (this.name) try { await readingTimeStorage.recordReadingEnd(this.name); } catch (e) { }
+		if (this.readingTimeSaveTimer) clearInterval(this.readingTimeSaveTimer);
+		this.readingTimeSaveTimer = null;
 		router.push({ uri: '/pages/detailsetting', params: { name: this.name } });
 		setTimeout(() => { this.isProcessingClick = false; }, 500);
 	},
 	async exitAppForTeacherScreen() {
 		if (this.periodicSaveTimer) clearInterval(this.periodicSaveTimer);
+		if (this.readingTimeSaveTimer) clearInterval(this.readingTimeSaveTimer);
 		if (this.autoInterval) clearInterval(this.autoInterval);
 		await this._performSave();
+		if (this.name) try { await readingTimeStorage.recordReadingEnd(this.name); } catch (e) { }
 		app.terminate();
 	},
 	loadNostalgicChapter(offsetInChapter) {
