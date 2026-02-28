@@ -4,12 +4,6 @@
 		<text if="{{allBooks.length == 0}}" static style="position: absolute;left: 0px;top: 319px;width: 432px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">书架空空</text>
 
 		<list class="list" if="{{allBooks.length > 0}}">
-			<list-item type="search" class="item search-item" @click="openSearch" if="{{showSearchBar}}">
-				<div class="search-content">
-					<text class="search-placeholder">搜索书籍...</text>
-				</div>
-			</list-item>
-
 			<list-item type="tip" if="{{showStorageWarning && isStorageLow && (!selectedCategory || displayMode !== 'category')}}" class="item" style="background-color: #ad0000;">
 				<text class="itemtext" style="lines: 2;">实际可用存储空间不足，电子书将无法正常使用。</text>
 			</list-item>
@@ -46,6 +40,11 @@
 		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">电子书</text>
 
 		<img if="{{allBooks.length == 0}}" static src="/common/images/push.png" style="position: absolute;left: 308px;top: 420px;width: 82px;height: 82px;" @click="routerTo('push')" />
+		
+		<div if="{{showSearchBar}}" class="search-fab-container">
+			<img static src="/common/images/search_shadow.png" class="search-fab-shadow" />
+			<img static src="/common/images/search.png" class="search-fab" @click="openSearch" />
+		</div>
 	</div>
 </template>
 
@@ -468,23 +467,26 @@ export default {
 	justify-content: space-around;
 	align-items: flex-start;
 }
-.search-item {
-	height: 72px;
-	flex-direction: row;
-	align-items: center;
-	justify-content: flex-start;
-	background-color: #1f1f1f;
+.search-fab-container {
+	position: absolute;
+	right: 24px;
+	bottom: 24px;
+	width: 82px;
+	height: 82px;
 }
-.search-content {
-	flex-direction: row;
-	align-items: center;
-	justify-content: flex-start;
-	width: 100%;
+.search-fab-shadow {
+	position: absolute;
+	width: 82px;
+	height: 82px;
+	top: 4px;
+	left: 0px;
 }
-.search-placeholder {
-	font-size: 26px;
-	line-height: 36px;
-	color: rgba(255, 255, 255, 0.6);
+.search-fab {
+	position: absolute;
+	width: 82px;
+	height: 82px;
+	top: 0px;
+	left: 0px;
 }
 .item-content {
 	width: 100%;
