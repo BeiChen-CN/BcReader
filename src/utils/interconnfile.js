@@ -31,69 +31,73 @@ export default class interconnfile {
         this.send = send;
         const onmessage = async (data) => {
             const { stat, ...payload } = data;
-            switch (stat) {
-                case "startTransfer":
-                    this.isCoverOnly = false;
-                    await this.startTransfer(payload);
-                    break;
-                case "start_cover_transfer":
-                    this.isCoverOnly = true;
-                    await this.startCoverTransfer(payload);
-                    break;
-                case "d":
-                    await this.saveChapter(payload);
-                    break;
-                case "chapter_complete":
-                    await this.completeChapterTransfer(payload);
-                    break;
-                case "transfer_complete":
-                    await this.handleTransferComplete();
-                    break;
-                case "cancel":
-                    await this.handleCancel();
-                    break;
-                case "get_book_status":
-                    await this.getBookStatus(payload);
-                    break;
-                case "cover_chunk":
-                    await this.saveCoverChunk(payload);
-                    break;
-                case "cover_transfer_complete":
-                    await this.completeCoverTransfer();
-                    break;
-                case "update_book_info":
-                    await this.updateBookInfo(payload);
-                    break;
-                case "get_reading_data":
-                    await this.getReadingData(payload);
-                    break;
-                case "set_reading_data":
-                    await this.setReadingData(payload);
-                    break;
-                case "set_batch_reading_data":
-                    await this.setBatchReadingData(payload);
-                    break;
-                case "delete_chapters":
-                    await this.deleteChapters(payload);
-                    break;
-                case "delete_book":
-                    await this.deleteBook(payload);
-                    break;
-                case "get_storage_info":
-                    await this.getStorageInfo();
-                    break;
-                case "get_settings":
-                    await this.getSettings(payload);
-                    break;
-                case "set_settings":
-                    await this.setSettings(payload);
-                    break;
-                case "get_bookmarks":
-                    await this.getBookmarks(payload);
-                    break;
-                case "set_bookmarks":
-                    await this.setBookmarks(payload);
-                    break;
+            try {
+                switch (stat) {
+                    case "startTransfer":
+                        this.isCoverOnly = false;
+                        await this.startTransfer(payload);
+                        break;
+                    case "start_cover_transfer":
+                        this.isCoverOnly = true;
+                        await this.startCoverTransfer(payload);
+                        break;
+                    case "d":
+                        await this.saveChapter(payload);
+                        break;
+                    case "chapter_complete":
+                        await this.completeChapterTransfer(payload);
+                        break;
+                    case "transfer_complete":
+                        await this.handleTransferComplete();
+                        break;
+                    case "cancel":
+                        await this.handleCancel();
+                        break;
+                    case "get_book_status":
+                        await this.getBookStatus(payload);
+                        break;
+                    case "cover_chunk":
+                        await this.saveCoverChunk(payload);
+                        break;
+                    case "cover_transfer_complete":
+                        await this.completeCoverTransfer();
+                        break;
+                    case "update_book_info":
+                        await this.updateBookInfo(payload);
+                        break;
+                    case "get_reading_data":
+                        await this.getReadingData(payload);
+                        break;
+                    case "set_reading_data":
+                        await this.setReadingData(payload);
+                        break;
+                    case "set_batch_reading_data":
+                        await this.setBatchReadingData(payload);
+                        break;
+                    case "delete_chapters":
+                        await this.deleteChapters(payload);
+                        break;
+                    case "delete_book":
+                        await this.deleteBook(payload);
+                        break;
+                    case "get_storage_info":
+                        await this.getStorageInfo();
+                        break;
+                    case "get_settings":
+                        await this.getSettings(payload);
+                        break;
+                    case "set_settings":
+                        await this.setSettings(payload);
+                        break;
+                    case "get_bookmarks":
+                        await this.getBookmarks(payload);
+                        break;
+                    case "set_bookmarks":
+                        await this.setBookmarks(payload);
+                        break;
+                }
+            } catch (e) {
+                this.handleError(e, "Message processing error");
             }
         };
         addListener(onmessage);
@@ -264,7 +268,7 @@ export default class interconnfile {
             this.currentBookCoverUri = bookUri + '/' + newCoverFileName;
             this.send({ type: "cover_ready" });
         } catch (error) {
-            this.send({ type: "error", message: `Start cover transfer failed: ${error.message}`, count: 0 });
+            this.handleError(error, "Start cover transfer failed");
         }
     }
 
