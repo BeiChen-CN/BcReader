@@ -114,12 +114,16 @@ export default {
           this.persent = (data.progress*100).toFixed(0);
           break;
         case "error":
-          this.state = "upload"
-          this.state2 = "error"
+          if (this.state === "upload") {
+            this.state2 = "error";
+          } else {
+            this.updateConnState();
+          }
           break;
         case "success":
-          this.state = "upload"
-          this.state2 = "succ"
+          if (this.state === "upload") {
+            this.state2 = "succ";
+          }
           break;
         case "cancel":
           this.state = "ready";
