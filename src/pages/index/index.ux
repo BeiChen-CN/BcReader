@@ -41,7 +41,7 @@
 
 		<img if="{{allBooks.length == 0}}" static src="/common/images/push.png" style="position: absolute;left: 308px;top: 420px;width: 82px;height: 82px;" @click="routerTo('push')" />
 		
-		<div if="{{showSearchBar}}" class="search-fab-container">
+		<div if="{{showSearchBar && allBooks.length > 0}}" class="search-fab-container">
 			<img static src="/common/images/search_shadow.png" class="search-fab-shadow" />
 			<img static src="/common/images/search.png" class="search-fab" @click="openSearch" />
 		</div>
