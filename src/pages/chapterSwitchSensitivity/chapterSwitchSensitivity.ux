@@ -1,28 +1,15 @@
 <import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page" style="flex-direction: column;">
-		<div class="preview-container">
-			<div class="preview-screen">
-				<div class="content-area">
-					<text static class="preview-text">
-						内容
-					</text>
-				</div>
-			</div>
-			<div class="info-panel">
-				<text static class="info-title">滑动灵敏度</text>
-				<text class="info-value">{{ chapterSwitchSensitivity }}</text>
-				<text static class="info-desc">滑动多长的距离触发换章</text>
-			</div>
-		</div>
-
-		<number style="position: absolute;bottom:6px" max.static="240" min.static="10" step.static="10" value="{{ chapterSwitchSensitivity }}" @change="change" name.static="调整灵敏度"></number>
-
+		<number style="top: 185px;left:32px;width: 416px;height: 110px;position: absolute;border-radius: 55px;" max.static="240" min.static="10" step.static="10" value="{{ chapterSwitchSensitivity }}" @change="change" name.static="调整灵敏度"></number>
 		
-		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-		<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-			越界换章
+		<text static class="page-title" style="position: absolute;font-size: 38px;color: #ffffff99;top: 334px;width: 100%;text-align: center;">
+			再次滑动的灵敏度
 		</text>
+	<img static src="/common/images/set.png" @click="back()" class="header-more"/>
+	<text static class="header-title">
+		越界翻章
+	</text>
 	</div>
 </template>
 
