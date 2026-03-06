@@ -4,31 +4,23 @@
 	  <list class="list">
 		<list-item class="page-title-item" type="title">
 			<text static class="page-title">
-				滑动翻页
+				翻页方式
 			</text>
 		</list-item>
 
 		  <list-item class="item {{onSelect==2?'item2':''}}" @click="select('2')" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>上下滑动</text>
-				<text class="itemtext2" static>仅上下滑动翻页</text>
-			</div>
-			  <img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{onSelect==2}}"/>
+			<text class="itemtext" static>上下滑动</text>
+			  <img src="/common/images/check.png" class="check" if="{{onSelect==2}}"/>
 		  </list-item>
 
 		  <list-item class="item {{onSelect==3?'item2':''}}" @click="select('3')" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>点击翻页</text>
-				<text class="itemtext2" static>点击上下半屏翻页</text>
-			</div>
-			<img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{onSelect==3}}"/>
+			<text class="itemtext" static>点击翻页</text>
+			<img src="/common/images/check.png" class="check" if="{{onSelect==3}}"/>
 		  </list-item>
 
 	  </list>
-	  <text style="position: absolute;top:-100px;left:0px;">{{txtNum}}</text>
 
-	  
-	  <img static src="/common/images/info.png" @click="routerTo('info')" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+	  <img static src="/common/images/set.png" @click="back()" class="header-more"/>
 	</div>
   </template>
 

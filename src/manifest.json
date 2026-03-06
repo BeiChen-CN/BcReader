@@ -79,17 +79,11 @@
       "pages/fontSetting": {
         "component": "fontSetting"
       },
-      "pages/marginSetting": {
-        "component": "marginSetting"
-      },
       "pages/chapterSwitchSensitivity": {
         "component": "chapterSwitchSensitivity"
       },
       "pages/push": {
         "component": "push"
-      },
-      "pages/info": {
-        "component": "info"
       },
       "pages/swipe": {
         "component": "swipe"
