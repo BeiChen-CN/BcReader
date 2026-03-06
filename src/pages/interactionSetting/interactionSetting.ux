@@ -32,7 +32,7 @@
         </list>
 
     
-	  <img static src="/common/images/more2.png" @click="routerTo('more')" class="header-more"/>
+	  <img static src="/common/images/more2.png" @click="back()" class="header-more"/>
     </div>
 </template>
 
