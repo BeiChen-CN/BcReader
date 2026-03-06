@@ -6,53 +6,33 @@
 				交互设置
 			</text>
 		</list-item>
-            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
-                <text class="section-title" static>时间格式</text>
-            </list-item>
-            <list-item class="item {{timeFormat === '24h' ? 'item2' : ''}}" @click="selectTimeFormat('24h')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>24小时制</text>
-                    <text class="itemtext2" static>例如：13:45</text>
-                </div>
-                <img if="{{timeFormat === '24h'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
-            </list-item>
-            <list-item class="item {{timeFormat === '12h' ? 'item2' : ''}}" @click="selectTimeFormat('12h')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>12小时制</text>
-                    <text class="itemtext2" static>例如：下午 1:45</text>
-                </div>
-                <img if="{{timeFormat === '12h'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
-            </list-item>
-
-            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
-                <text class="section-title" static>手势设置</text>
-            </list-item>
+		<list-item style="height: 64px;" class="center" type="title">
+		  <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+			  手势设置
+		  </text>
+		</list-item>
             <list-item class="item {{gesture === 'single' ? 'item2' : ''}}" @click="selectGesture('single')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>单击切换</text>
-                    <text class="itemtext2" static>单击屏幕切换UI</text>
-                </div>
-                <img if="{{gesture === 'single'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>单击屏幕切换UI</text>
+                <img if="{{gesture === 'single'}}" src="/common/images/check.png" class="check" static />
             </list-item>
             <list-item class="item {{gesture === 'double' ? 'item2' : ''}}" @click="selectGesture('double')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>双击切换</text>
-                    <text class="itemtext2" static>双击屏幕切换UI</text>
-                </div>
-                <img if="{{gesture === 'double'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>双击屏幕切换UI</text>
+                <img if="{{gesture === 'double'}}" src="/common/images/check.png" class="check" static />
             </list-item>
 
-            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
-                <text class="section-title" static>老师屏</text>
-            </list-item>
+            <list-item style="height: 64px;" class="center" type="title">
+                <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+                    老师屏
+                </text>
+              </list-item>
             <list-item class="item" @click="toggleTeacherScreen" type="item">
     <text class="itemtext" static>快速退出应用</text>
     <img src="{{teacherScreenEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
 </list-item>
         </list>
 
-        
-        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;" />
+    
+	  <img static src="/common/images/more2.png" @click="routerTo('more')" class="header-more"/>
     </div>
 </template>
 
