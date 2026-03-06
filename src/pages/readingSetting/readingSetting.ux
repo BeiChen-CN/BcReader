@@ -27,10 +27,6 @@
     <text class="itemtext" static>字号</text>
     <img src="/common/images/enter.png" class="arrow" static />
 </list-item>
-		  <list-item class="item" @click="routerTo('marginSetting')" type="item">
-    <text class="itemtext" static>垂直边距</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
 		  <list-item class="item" @click="routerTo('extraContentSetting')" type="item">
     <text class="itemtext" static>额外内容</text>
     <img src="/common/images/enter.png" class="arrow" static />

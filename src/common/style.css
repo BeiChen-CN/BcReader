@@ -76,6 +76,10 @@
   align-items: center;
 }
 
+.item2 {
+	background-color: #0D6EFF !important;
+}
+
 .itemtext {
   width: 100%;
   font-size: 38px;
@@ -92,6 +96,11 @@
 .switch {
   width: 88px;
   height: 50px;
+}
+
+.check {
+  width: 48px;
+  height: 48px;
 }
 
 text {

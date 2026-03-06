@@ -8,18 +8,29 @@
 			</text>
 		</list-item>
             <list-item class="item" @click="toggleShowInfo" type="item">
-    <text class="itemtext" static>章节预览</text>
+    <text class="itemtext" static>显示章节名称</text>
     <img src="{{showChapterInfo ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
 </list-item>
+<list-item style="height: 64px;" class="center" type="title">
+  <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+	  触发灵敏度
+  </text>
+</list-item>
+<list-item style="height: 92px;" @click="toggleShowInfo" type="item">
+		<number style="left: 80px;" max.static="200" min.static="0" step.static="5" unit.static="px" value="{{scrollSensitivity}}" @change="onSensitivityChange" name.static="触发灵敏度">
+		</number>
+	</list-item>
+	<list-item style="height: 92px;" class="center" type="title">
+	  <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+		  按钮高度
+	  </text>
+	</list-item>
+	<list-item style="height: 92px;" @click="toggleShowInfo" type="item">
+		<number style="left: 80px;" max.static="200" min.static="25" step.static="5" unit.static="px" value="{{buttonHeight}}" @change="onHeightChange" name.static="按钮高度">
+		</number>
+		</list-item>
         </list>
-
-		<number style="position: absolute; bottom: 28px; left: 112px;" max.static="200" min.static="0" step.static="5" unit.static="px" value="{{scrollSensitivity}}" @change="onSensitivityChange" name.static="触发灵敏度">
-		</number>
-		<number style="position: absolute; bottom: 28px; left: 112px;" max.static="200" min.static="25" step.static="5" unit.static="px" value="{{buttonHeight}}" @change="onHeightChange" name.static="按钮高度">
-		</number>
-
-		
-		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+		<img static src="/common/images/set.png" @click="back()" class="header-more"/>
 	</div>
 </template>
 

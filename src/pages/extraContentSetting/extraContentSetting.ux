@@ -24,8 +24,7 @@
 </list-item>
         </list>
 
-        
-        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;" />
+		<img static src="/common/images/more2.png" @click="back()" class="header-more"/>
     </div>
 </template>
 
