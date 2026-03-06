@@ -1,11 +1,10 @@
 <template>
     <div show="{{display}}" class="number_choose" style="{{style}}">
-        <img static onclick="minus" onlongpress="minusL" ontouchend="end" src="/common/images/minis.png" style="position: absolute;left: 24px;width: 44px;height: 44px;"/>
-		
         <text style="width: 100%;font-weight:bold;font-size:{{fontsize}};color:white;text-align:center;">
 			{{ value + unit }}
 		</text>
 		
+        <img static onclick="minus" onlongpress="minusL" ontouchend="end" src="/common/images/minis.png" style="position: absolute;left: 24px;width: 44px;height: 44px;"/>
         <img static onclick="add" onlongpress="addL" ontouchend="end" src="/common/images/plus.png" style="position: absolute;right: 24px;width: 44px;height: 44px;"/>
     </div>
 </template>

@@ -127,9 +127,6 @@
       "pages/swipeSensitivity": {
         "component": "swipeSensitivity"
       },
-      "pages/autoReadDistanceSetting": {
-        "component": "autoReadDistanceSetting"
-      },
       "pages/readingSetting": {
         "component": "readingSetting"
       },

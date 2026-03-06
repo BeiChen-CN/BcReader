@@ -55,10 +55,6 @@
     <text class="itemtext" static>自动翻页</text>
     <img src="/common/images/enter.png" class="arrow" static />
 </list-item>
-		  <list-item class="item" @click="routerTo('autoReadDistanceSetting')" type="item" if="{{readMode !== 'nostalgic'}}">
-    <text class="itemtext" static>翻页距离</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
 		  <list-item class="item" @click="routerTo('progressBarSetting')" type="item">
     <text class="itemtext" static>章节进度条</text>
     <img src="/common/images/enter.png" class="arrow" static />
