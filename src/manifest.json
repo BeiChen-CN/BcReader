@@ -112,9 +112,6 @@
       "pages/list": {
         "component": "list"
       },
-      "pages/progressBarSetting": {
-        "component": "progressBarSetting"
-      },
       "pages/textReader": {
         "component": "textReader"
       },
@@ -150,9 +147,6 @@
       },
       "pages/readModeSetting": {
         "component": "readModeSetting"
-      },
-      "pages/progressBarOpacitySetting": {
-        "component": "progressBarOpacitySetting"
       },
       "pages/readingTime": {
         "component": "readingTime"
