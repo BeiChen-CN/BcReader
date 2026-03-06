@@ -1,10 +1,18 @@
 <template>
   <div class="page" style="flex-direction: column;">
-    <img if="{{allBookmarks.length === 0}}" static src="/common/images/empty.png" style="position: absolute;left: 104px;top: 146px;width: 128px;height: 128px;" />
-    <text if="{{allBookmarks.length === 0}}" static style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">暂无书签</text>
+    <div if="{{allBookmarks.length === 0}}" class="full">
+      <img static src="/common/images/empty.png" style="position: absolute; width: 160px; height: 160px; top: 104px; left: 160px;" />
+      <text static style="position: absolute; font-weight:bold; font-size:38px; text-align:center;top: 278px;width: 480px;">暂无书签</text>
+    </div>
 
     <list class="list" if="{{allBookmarks.length > 0}}">
-      <list-item for="{{visibleBookmarks}}" class="item" type="bookmark">
+      <list-item class="page-title-item" type="title">
+        <text static class="page-title">
+          书签管理
+        </text>
+      </list-item>
+
+      <list-item for="{{visibleBookmarks}}" class="item bookmark-item" type="bookmark">
         <div class="text-content" @click="jumpTo($idx)">
           <marquee if="{{bookmarkMarqueeEnabled}}" class="itemtext" scrollamount="20" text-offset="25">{{$item.name}}</marquee>
           <text else class="itemtext" style="lines: 1;">{{$item.name}}</text>
@@ -12,10 +20,11 @@
           <text else class="itemtext2" style="lines: 1;">{{formatBookmarkLocation($item)}} | {{formatTime($item.time)}}</text>
         </div>
         <div class="button-container">
-          <img static src="/common/images/edit.png" @click="editBookmark($idx)" style="width: 72px; height: 72px;" />
-          <img static src="/common/images/delete.png" @click="deleteBookmark($idx)" style="width: 72px; height: 72px;" />
+          <img static src="/common/images/edit.png" @click="editBookmark($idx)" style="width: 80px; height: 80px;" />
+          <img static src="/common/images/delete.png" @click="deleteBookmark($idx)" style="width: 80px; height: 80px;" />
         </div>
       </list-item>
+
       <list-item type="pagination" class="pagination-container" if="{{totalPages > 1}}">
         <div class="pagination-controls">
           <img src="/common/images/pre.png" if="{{currentPage > 0}}" @click="prevPage" class="pagination-button"/>
@@ -25,12 +34,7 @@
       </list-item>
     </list>
 
-    
-    
-    <img static src="/common/images/info.png" @click="showBookmarkHelp" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-    <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-      书签管理
-    </text>
+    <img static src="/common/images/set.png" @click="back()" class="header-more"/>
   </div>
 </template>
 
@@ -40,7 +44,7 @@ import prompt from '@system.prompt'
 import bookStorage from '../../utils/bookStorage.js'
 import storage from '../../utils/storage.js'
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 6;
 
 export default {
   private: {
@@ -52,7 +56,7 @@ export default {
     timer: null,
     isNavigating: false,
     bookmarkMarqueeEnabled: false,
-	  readMode: 'scroll'
+    readMode: 'scroll'
   },
   protected: {
     name: ''
@@ -83,9 +87,9 @@ export default {
         this.bookmarkMarqueeEnabled = false;
       }
     });
-		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
-			if (data) this.readMode = data;
-		}});
+    storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
+      if (data) this.readMode = data;
+    }});
     
     await this.loadBookmarks();
   },
@@ -130,7 +134,6 @@ export default {
     if (this.isNavigating) return;
 
     if (this.readMode === 'nostalgic') {
-
       router.push({
           uri: '/pages/help',
           params: {
@@ -152,7 +155,6 @@ export default {
       return;
     }
 
-    
     const progressData = {
         chapterIndex: bookmark.chapterIndex !== undefined && bookmark.chapterIndex !== null 
             ? parseInt(bookmark.chapterIndex) 
@@ -234,13 +236,22 @@ export default {
 
 <style>
   @import '../../common/style.css';
+
+.bookmark-item {
+  width: 418px;
+  height: 220px;
+  padding: 24px 36px;
+  border-radius: 54px;
+  flex-direction: column;
+}
+
 .text-content {
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-around;
   align-items: flex-start;
   width: 100%;
-  padding: 5px;
-  flex-grow: 1;
+  flex: 1;
+  overflow: hidden;
 }
 
 .button-container {
@@ -248,31 +259,34 @@ export default {
   align-items: center;
   justify-content: space-around;
   width: 100%;
-  margin-top: 8px;
+  margin-top: 16px;
   flex-shrink: 0;
 }
 
 .pagination-container {
-    width: 100%;
-    height: 80px;
-    justify-content: center;
-    align-items: center;
+  width: 100%;
+  height: 96px;
+  background-color: transparent;
+  justify-content: center;
+  align-items: center;
 }
 
 .pagination-controls {
-    width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-    padding: 0 8px;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 12px;
 }
+
 .pagination-button {
-    width: 72px;
-    height: 72px;
+  width: 80px;
+  height: 80px;
 }
+
 .pagination-text {
-    font-size: 28px;
-    font-weight: bold;
-    color: white;
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
 }
 </style>

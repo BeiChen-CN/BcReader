@@ -4,7 +4,6 @@
 		<list-item class="page-title-item" type="title">
 			<text static class="page-title">菜单</text>
 		</list-item>
-		
 		<list-item class="item" @click="routerTo('list')" type="item">
 			<text class="itemtext" static>章节列表</text>
 			<img src="/common/images/enter.png" class="arrow" static />
@@ -17,13 +16,10 @@
 			<text class="itemtext" static>跳转百分比</text>
 			<img src="/common/images/enter.png" class="arrow" static/>
 		</list-item>
-
-		<!-- 新增：添加书签 -->
 		<list-item class="item" @click="addBookmark" type="item">
 			<text class="itemtext" static>添加书签</text>
 			<img src="/common/images/enter.png" class="arrow" static />
 		</list-item>
-
 		<list-item class="item" @click="routerTo('bookmarks')" type="item">
 			<text class="itemtext" static>书签管理</text>
 			<img src="/common/images/enter.png" class="arrow" static />

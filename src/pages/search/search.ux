@@ -1,12 +1,13 @@
 <import name="input-method" src="../../components/InputMethod/InputMethod.ux"></import>
 <template>
-	<div class="page">
+	<div class="page" style="flex-direction: column;">
 		<list class="list">
-		<list-item class="page-title-item" type="title">
-			<text static class="page-title">
-				搜索书籍
-			</text>
-		</list-item>
+			<list-item class="page-title-item" type="title">
+				<text static class="page-title">
+					搜索书籍
+				</text>
+			</list-item>
+			
 			<list-item class="search-input-container" @click="toggleKeyboard" type="search">
 				<div class="search-input-field">
 					<text static class="search-input-label">关键字</text>
@@ -20,27 +21,29 @@
 				</div>
 			</list-item>
 
-			<list-item for="{{filteredBooks}}" if="{{query}}" class="item" @click="openBook($item)" type="book">
-				<div class="item-content">
+			<list-item for="{{filteredBooks}}" if="{{query}}" class="item book center" @click="openBook($item)" type="book">
+				<div class="text-content">
 					<text class="itemtext">{{$item.name}}</text>
 					<text class="itemtext2">{{getProgressSubtitle($item)}}</text>
 				</div>
 			</list-item>
+			
 			<list-item type="empty" if="{{query && allBooks.length > 0 && filteredBooks.length == 0}}" class="empty-item">
 				<text class="empty-text">未找到匹配的书籍</text>
 			</list-item>
+			
 			<list-item type="empty" if="{{query && allBooks.length == 0}}" class="empty-item">
 				<text class="empty-text">暂无书籍</text>
 			</list-item>
 		</list>
 
-		
-		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;" />
+		<img static src="/common/images/set.png" @click="back()" class="header-more"/>
+
 		<input-method
 			hide="{{hideKeyboard}}"
 			keyboardtype.static="QWERTY"
 			vibratemode.static="short"
-			screentype.static="rect"
+			screentype.static="circle"
 			@complete="onInput"
 			@delete="onDelete"
 			@visibilityChange="onVisibilityChange" />
@@ -179,70 +182,92 @@ export default {
 </script>
 
 <style>
-  @import '../../common/style.css';
+@import '../../common/style.css';
+
 .search-input-container {
-	position: absolute;
-	top: 116px;
-	left: 6px;
-	width: 324px;
-	height: 182px;
-	flex-direction: column;
+    width: 420px;
+	height: 180px;
+    flex-direction: column;
 }
+
 .search-input-field {
 	width: 100%;
 	background-color: #262626;
-	border-radius: 36px;
-	padding: 10px 20px;
+	border-radius: 46px;
+	padding: 20px 36px;
 	flex-direction: column;
 }
+
 .search-input-label {
-	font-size: 20px;
-	line-height: 28px;
+	font-size: 24px;
+	line-height: 32px;
 	color: rgba(255, 255, 255, 0.6);
-	margin-bottom: 6px;
+	margin-bottom: 8px;
 }
+
 .search-input-display {
 	flex-direction: row;
 	align-items: center;
 	justify-content: flex-start;
 	width: 100%;
 }
+
 .search-input-text {
-	font-size: 28px;
-	line-height: 36px;
+	font-size: 32px;
+	line-height: 40px;
 	color: white;
 	text-overflow: ellipsis;
 	lines: 1;
 }
+
 .search-input-placeholder {
-	font-size: 28px;
-	line-height: 36px;
+	font-size: 32px;
+	line-height: 40px;
 	color: rgba(255, 255, 255, 0.4);
 }
+
 .search-input-counter {
-	margin-top: 6px;
+	margin-top: 8px;
 	flex-direction: row;
 	justify-content: flex-end;
 }
+
 .search-counter-text {
-	font-size: 20px;
-	line-height: 24px;
+	font-size: 24px;
+	line-height: 28px;
 	color: rgba(255, 255, 255, 0.4);
 }
+
+.text-content {
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: flex-start;
+	flex: 1;
+	height: 100%;
+	overflow: hidden;
+}
+
+.book {
+	height: 160px;
+	width: 418px;
+	padding: 28px 36px;
+	border-radius: 54px;
+}
+
 .empty-item {
-	width: 100%;
-	height: 112px;
-	border-radius: 36px;
+	width: 418px;
+	height: 160px;
+	border-radius: 54px;
 	align-items: center;
 	justify-content: center;
 	background-color: transparent;
 }
+
 .empty-text {
-	font-size: 26px;
-	line-height: 32px;
+	font-size: 28px;
+	line-height: 36px;
 	color: rgba(255, 255, 255, 0.6);
 	text-align: center;
 	width: 100%;
 }
 </style>
-
