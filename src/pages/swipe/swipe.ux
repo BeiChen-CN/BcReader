@@ -2,6 +2,11 @@
 	<div class="page" style="flex-direction: column;">
 
 	  <list class="list">
+		<list-item class="page-title-item" type="title">
+			<text static class="page-title">
+				滑动翻页
+			</text>
+		</list-item>
 
 		  <list-item class="item {{onSelect==2?'item2':''}}" @click="select('2')" type="item">
 			<div class="item-content">
@@ -22,14 +27,8 @@
 	  </list>
 	  <text style="position: absolute;top:-100px;left:0px;">{{txtNum}}</text>
 
-	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+	  
 	  <img static src="/common/images/info.png" @click="routerTo('info')" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-		  {{nowTime}}
-		</text>
-		<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-			滑动翻页
-		</text>
 	</div>
   </template>
 
@@ -167,60 +166,11 @@
   </script>
 
   <style>
-  .page {
-	width: 336px;
-	height: 480px;
-	  background-color: #000000;
-  }
-
-  .list {
-	width: 336px;
-	height: 480px;
-	position: absolute;
-	top:0px;
-	left:0px;
-    padding: 86px 6px;
-}
-
-.item {
-	width: 100%;
-	height: 112px;
-	padding: 14px 20px;
-	margin-bottom: 8px;
-	background-color: #262626;
-	border-radius: 36px;
-	align-items: center;
-  justify-content: space-between;
-}
+  @import '../../common/style.css';
   
   .item2 {
 	  background-color: #0D6EFF !important;
   }
 
-.itemtext {
-	font-size: 32px;
-	line-height:40px;
-	width: 100%;
-	font-weight: bold;
-	color: white;
-	text-overflow: ellipsis;
-	lines: 1;
-}
 
-.itemtext2 {
-	font-size: 28px;
-	line-height: 37px;
-	font-weight: bold;
-	color: rgba(255,255,255,0.6);
-	text-overflow: ellipsis;
-	lines: 1;
-}
-
-
-.item-content {
-	height: 100%;
-	flex:1;
-	flex-direction: column;
-	justify-content: space-between;
-}
   </style>

@@ -19,11 +19,8 @@
 	  
 	  <number style="position: absolute;bottom:6px" max.static="120" min.static="10" step.static="5" value="{{ distanceValue }}" @change="change" name.static="调整距离"></number>
   
-	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+	  
 	  <img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-		  {{nowTime}}
-		</text>
 		<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 			翻页距离
 		</text>
@@ -111,11 +108,7 @@
   </script>
   
   <style>
-  .page {
-	  width: 336px;
-	  height: 480px;
-	  background-color: #000000;
-  }
+  @import '../../common/style.css';
   
   .preview-container {
 	  position: absolute;

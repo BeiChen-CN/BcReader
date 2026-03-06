@@ -1,55 +1,39 @@
 <template>
     <div class="page" style="flex-direction: column;">
         <list class="list">
+		<list-item class="page-title-item" type="title">
+			<text static class="page-title">
+				性能设置
+			</text>
+		</list-item>
             <list-item class="item" @click="routerTo('pageSizeSetting')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>分段大小</text>
-                    <text class="itemtext2" static>翻页加载的文本量</text>
-                </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-            </list-item>
+    <text class="itemtext" static>分段大小</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
             <list-item class="item" @click="togglePreventParagraphSplitting" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>段落防分割</text>
-                    <text class="itemtext2" static>避免段落被截断</text>
-                </div>
-                <img src="{{preventParagraphSplitting ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
-            </list-item>
+    <text class="itemtext" static>段落防分割</text>
+    <img src="{{preventParagraphSplitting ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+</list-item>
             <list-item class="item" @click="toggleReadingTimeRecording" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>阅读时长记录</text>
-                    <text class="itemtext2" static>记录阅读时长统计</text>
-                </div>
-                <img src="{{readingTimeRecording ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
-            </list-item>
+    <text class="itemtext" static>阅读时长记录</text>
+    <img src="{{readingTimeRecording ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+</list-item>
             <list-item class="item" @click="routerTo('progressSavingSetting')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>阅读进度保存</text>
-                    <text class="itemtext2" static>设置进度保存方式</text>
-                </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-            </list-item>
+    <text class="itemtext" static>阅读进度保存</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
             <list-item class="item" @click="routerTo('marqueeSetting')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>跑马灯设置</text>
-                    <text class="itemtext2" static>各页面跑马灯开关</text>
-                </div>
-                <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-            </list-item>
+    <text class="itemtext" static>跑马灯设置</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
             <list-item class="item" style="padding: 7px 16px;" type="tip">
                 <text class="itemtext2" style="lines: 3;">调整前猜一猜，为什么这里叫"性能设置"。</text>
             </list-item>
         </list>
 
 
-        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
+        
         <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;" />
-        <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-            {{nowTime}}
-        </text>
-        <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-            性能设置
-        </text>
     </div>
 </template>
 
@@ -157,56 +141,6 @@
 </script>
 
 <style>
-    .page {
-        width: 336px;
-        height: 480px;
-        background-color: #000000;
-    }
+  @import '../../common/style.css';
 
-    .list {
-        width: 336px;
-        height: 480px;
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        padding: 86px 6px;
-    }
-
-    .item {
-        width: 100%;
-        height: 112px;
-        padding: 14px 20px;
-        margin-bottom: 8px;
-        background-color: #262626;
-        border-radius: 36px;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .itemtext {
-        font-size: 32px;
-        line-height: 40px;
-        width: 100%;
-        font-weight: bold;
-        color: white;
-        text-overflow: ellipsis;
-        lines: 1;
-    }
-
-    .itemtext2 {
-        font-size: 28px;
-        line-height: 37px;
-        font-weight: bold;
-        color: rgba(255, 255, 255, 0.6);
-        text-overflow: ellipsis;
-        lines: 1;
-    }
-
-
-    .item-content {
-        height: 100%;
-        flex: 1;
-        flex-direction: column;
-        justify-content: space-between;
-    }
 </style>

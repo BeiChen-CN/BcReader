@@ -35,7 +35,6 @@
 		<img show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
 		<img show="{{showSetting}}" src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;" />
 		<img show="{{showSetting}}" src="/common/images/more.png" @click="gotoSetting" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;" />
-		<text show="{{showSetting || (alwaysShowTime && !isNearTopForHd)}}" style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">{{nowTime}}</text>
 		<marquee if="{{textReaderMarqueeEnabled}}" scrollamount="50" show="{{showSetting}}" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{currentChapterName}}</marquee>
 		<text else show="{{showSetting}}" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;lines: 1;">{{currentChapterName}}</text>
 		<text if="{{showProgressBar && showProgressBarPercent}}" class="progress-bar-percent" style="bottom: {{progressBarHeight + 1}}px;">{{Math.round(chapterProgress)}}%</text>
@@ -1388,11 +1387,7 @@ export default {
 </script>
 
 <style>
-.page {
-	width: 336px;
-	height: 480px;
-	background-color: #000000;
-}
+  @import '../../common/style.css';
 .progress-bar-container {
 	position: absolute;
 	bottom: 0px;

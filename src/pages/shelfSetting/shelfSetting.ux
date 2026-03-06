@@ -2,6 +2,11 @@
 <template>
     <div class="page" style="flex-direction: column;">
         <list class="list">
+		<list-item class="page-title-item" type="title">
+			<text static class="page-title">
+				书架设置
+			</text>
+		</list-item>
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
                 <text class="section-title" static>书架样式</text>
             </list-item>
@@ -21,28 +26,19 @@
             </list-item>
 
             <list-item class="item" @click="toggleLastRead" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>置顶上次阅读</text>
-                    <text class="itemtext2" static>显示上次阅读</text>
-                </div>
-                <img src="{{lastReadOnTop ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
-            </list-item>
+    <text class="itemtext" static>置顶上次阅读</text>
+    <img src="{{lastReadOnTop ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+</list-item>
             
             <list-item class="item" @click="toggleStorageWarning" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>存储提示</text>
-                    <text class="itemtext2" static>存储不足时提示</text>
-                </div>
-                <img src="{{showStorageWarning ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
-            </list-item>
+    <text class="itemtext" static>存储提示</text>
+    <img src="{{showStorageWarning ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+</list-item>
 
             <list-item class="item" @click="toggleSearchBar" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>搜索按钮</text>
-                    <text class="itemtext2" static>右下角搜索入口</text>
-                </div>
-                <img src="{{showSearchBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
-            </list-item>
+    <text class="itemtext" static>搜索按钮</text>
+    <img src="{{showSearchBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+</list-item>
 
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
                 <text class="section-title" static>首页展示方式</text>
@@ -63,12 +59,9 @@
             </list-item>
             
             <list-item class="item" @click="toggleCategoryPagination" type="item" if="{{displayMode === 'category'}}">
-                <div class="item-content">
-                    <text class="itemtext" static>分类分页</text>
-                    <text class="itemtext2" static>分类列表开启分页</text>
-                </div>
-                <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
-            </list-item>
+    <text class="itemtext" static>分类分页</text>
+    <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+</list-item>
             
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
                 <text class="section-title" static>首页进度显示</text>
@@ -110,15 +103,9 @@
         <img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 336px;height: 102px;" />
         <number style="position: absolute;bottom:6px" max.static="15" min.static="2" step.static="1" value="{{shelfPageSize}}" @change="changePageSize" name.static="每页数量"></number>
 
-        <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
-        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+        
+        
 		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-		<text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-          {{nowTime}}
-        </text>
-        <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-            书架设置
-        </text>
     </div>
 </template>
 
@@ -341,60 +328,9 @@
 </script>
 
 <style>
-    .page {
-        width: 336px;
-        height: 480px;
-        background-color: #000000;
-    }
-
-    .list {
-        width: 336px;
-        height: 480px;
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        padding: 86px 6px;
-    }
-
-    .item {
-        width: 100%;
-        height: 112px;
-        padding: 14px 20px;
-        margin-bottom: 8px;
-        background-color: #262626;
-        border-radius: 36px;
-        align-items: center;
-        justify-content: space-between;
-    }
-
+  @import '../../common/style.css';
     .item2 {
         background-color: #0D6EFF;
-    }
-
-    .itemtext {
-        font-size: 32px;
-        line-height: 40px;
-        width: 100%;
-        font-weight: bold;
-        color: white;
-        text-overflow: ellipsis;
-        lines: 1;
-    }
-
-    .itemtext2 {
-        font-size: 28px;
-        line-height: 37px;
-        font-weight: bold;
-        color: rgba(255, 255, 255, 0.6);
-        text-overflow: ellipsis;
-        lines: 1;
-    }
-
-    .item-content {
-        height: 100%;
-        flex: 1;
-        flex-direction: column;
-        justify-content: space-between;
     }
 
     .section-title {

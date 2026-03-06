@@ -29,11 +29,8 @@
 	  </div>
   
   
-	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
+	  
 	  <img static src="/common/images/conform.png" @click="onClick('conform')" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-		{{nowTime}}
-	  </text>
 	  <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 		  跳转百分比
 	  </text>
@@ -187,24 +184,8 @@
   </script>
   
   <style>
-  .page {
-	width: 336px;
-	height: 480px;
-	  background-color: #000000;
-  }
+  @import '../../common/style.css';
   
-  .item {
-	  position: absolute;
-	  left: 6px;
-	  top: 86px;
-	  width: 324px;
-	  height: 115px;
-	  border-radius: 36px;
-	  flex-direction: column;
-	  border: 3px solid #262626;
-	  justify-content: center;
-  }
-
   .row {
 	  position:absolute;
 	  width:336px;

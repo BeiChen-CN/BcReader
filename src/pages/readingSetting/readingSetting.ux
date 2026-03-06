@@ -2,129 +2,77 @@
 	<div class="page" style="flex-direction: column;">
   
 	<list class="list">
+		<list-item class="page-title-item" type="title">
+			<text static class="page-title">
+				阅读设置
+			</text>
+		</list-item>
 		  <list-item class="item" @click="routerTo('opacity')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext" static>字体亮度</text>
-				  <text class="itemtext2" static>设置阅读字体亮度</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
+    <text class="itemtext" static>字体亮度</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="toggleBold" type="item">
-			  <div class="item-content">
-				  <text class="itemtext" static>粗体字体</text>
-				  <text class="itemtext2" static>开启字体粗体显示</text>
-			  </div>
-			  <img src="{{boldEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
-		  </list-item>
+    <text class="itemtext" static>粗体字体</text>
+    <img src="{{boldEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+</list-item>
 		  <list-item class="item" @click="routerTo('screenBrightness')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext" static>屏幕亮度</text>
-				  <text class="itemtext2" static>应用内屏幕亮度</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
+    <text class="itemtext" static>屏幕亮度</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('timeSetting')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext" static>时间常驻</text>
-				  <text class="itemtext2" static>始终显示时间</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
+    <text class="itemtext" static>时间常驻</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('fontSetting')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext" static>字号</text>
-				  <text class="itemtext2" static>设置阅读字体大小</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
+    <text class="itemtext" static>字号</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('marginSetting')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext" static>垂直边距</text>
-				  <text class="itemtext2" static>调整屏幕留白</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
+    <text class="itemtext" static>垂直边距</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('extraContentSetting')" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>额外内容</text>
-				<text class="itemtext2" static>章节名、编号等</text>
-			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
+    <text class="itemtext" static>额外内容</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('chapterSwitchStyle')" type="item" if="{{readMode !== 'nostalgic'}}">
-			<div class="item-content">
-				<text class="itemtext" static>翻章方式</text>
-				<text class="itemtext2" static>按钮或滑动翻章</text>
-			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-	  	</list-item>
+    <text class="itemtext" static>翻章方式</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('chapterSwitchSetting')" type="item" if="{{chapterSwitchStyle == 'button' && readMode !== 'nostalgic'}}">
-			<div class="item-content">
-				<text class="itemtext" static>换章按钮</text>
-				<text class="itemtext2" static>调整翻章按钮</text>
-			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-	  	</list-item>
+    <text class="itemtext" static>换章按钮</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('chapterSwitchSensitivity')" type="item" if="{{chapterSwitchStyle == 'boundary' && readMode !== 'nostalgic'}}">
-			<div class="item-content">
-				<text class="itemtext" static>换章灵敏度</text>
-				<text class="itemtext2" static>越界换章灵敏度</text>
-			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		</list-item>
+    <text class="itemtext" static>换章灵敏度</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		<list-item class="item" @click="routerTo('swipeSensitivity')" type="item" if="{{chapterSwitchStyle == 'swipe' && readMode !== 'nostalgic'}}">
-			<div class="item-content">
-				<text class="itemtext" static>换章灵敏度</text>
-				<text class="itemtext2" static>左右滑动灵敏度</text>
-			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		</list-item>
+    <text class="itemtext" static>换章灵敏度</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('swipe')" type="item" if="{{readMode !== 'nostalgic'}}">
-			  <div class="item-content">
-				  <text class="itemtext" static>滑动翻页</text>
-				  <text class="itemtext2" static>管理滑动翻页选项</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
+    <text class="itemtext" static>滑动翻页</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('autoRead')" type="item">
-			  <div class="item-content">
-				  <text class="itemtext" static>自动翻页</text>
-				  <text class="itemtext2" static>设置自动翻页选项</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
+    <text class="itemtext" static>自动翻页</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('autoReadDistanceSetting')" type="item" if="{{readMode !== 'nostalgic'}}">
-			<div class="item-content">
-				<text class="itemtext" static>翻页距离</text>
-				<text class="itemtext2" static>自动翻页距离</text>
-			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-	  	</list-item>
+    <text class="itemtext" static>翻页距离</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('progressBarSetting')" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>章节进度条</text>
-				<text class="itemtext2" static>开关和功能样式</text>
-			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		</list-item>
+    <text class="itemtext" static>章节进度条</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 		  <list-item class="item" @click="routerTo('readModeSetting')" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>阅读模式</text>
-				<text class="itemtext2" static>环间电子书的衣</text>
-			</div>
-			<img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		</list-item>
+    <text class="itemtext" static>阅读模式</text>
+    <img src="/common/images/enter.png" class="arrow" static />
+</list-item>
 	  </list>
-  
-	  
-	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
-	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
-	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
-		{{nowTime}}
-	  </text>
-	  <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-		  阅读设置
-	  </text>
+		<img static src="/common/images/more2.png" @click="back()" class="header-more"/>
 	</div>
   </template>
   
@@ -254,55 +202,10 @@
   </script>
   
   <style>
-  .page {
-	width: 336px;
-	height: 480px;
-	  background-color: #000000;
-  }
-  .list {
-	width: 336px;
-	height: 480px;
-	position: absolute;
-	top:0px;
-	left:0px;
-    padding: 86px 6px;
-  }
-  
-  .item {
-	  width: 100%;
-	  height: 112px;
-	  padding: 14px 20px;
-	  margin-bottom: 8px;
-	  background-color: #262626;
-	  border-radius: 36px;
-	  align-items: center;
-	justify-content: space-between;
-  }
-  
-  .itemtext {
-	  font-size: 32px;
-	  line-height:40px;
-	  width: 100%;
-	  font-weight: bold;
-	  color: white;
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
-  
-  .itemtext2 {
-	  font-size: 28px;
-	  line-height: 37px;
-	  font-weight: bold;
-	  color: rgba(255,255,255,0.6);
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
+  @import '../../common/style.css';
   
   
-  .item-content {
-	  height: 100%;
-	  flex:1;
-	  flex-direction: column;
-	  justify-content: space-between;
-  }
+  
+  
+  
   </style>
