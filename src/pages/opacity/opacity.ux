@@ -2,16 +2,16 @@
 <template>
 	<div class="page" style="flex-direction: column">
 
-		<div class="item">
+		<div class="preview-item">
 			<text style="font-size: {{fontSize}}px;font-weight: bold;color: white;opacity:{{opacity/100}};text-overflow: ellipsis;">
-				文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本
+				文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本预览文本
 			</text>
 		</div>
 		<number style="position: absolute; bottom: 28px; left: 112px;" max.static="100" min.static="10" step.static="1" unit.static="%" value="{{opacity}}" @change="change" name.static="当前亮度"></number>
 
 		
-		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-		<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<img static src="/common/images/set.png" @click="back()" class="header-more"/>
+		<text static class="header-title">
 			字体亮度
 		</text>
 	</div>

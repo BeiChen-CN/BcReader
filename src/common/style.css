@@ -17,6 +17,15 @@
   height: 28px;
 }
 
+.header-title {
+  position: absolute;
+  top: 68px;
+  width: 100%;
+  font-weight:bold;
+  font-size: 42px;
+  text-align: center;
+}
+
 .page-title-item {
   width: 100%;
   height: 82px;
@@ -27,6 +36,17 @@
 .page-title {
   font-weight:bold;
   font-size: 42px;
+}
+
+.preview-item {
+  position: absolute;
+  width: 400px;
+  height: 200px;
+  top: 140px;
+  left: 40px;
+  border-radius: 54px;
+  border: #262626 4px;
+  padding: 16px 20px;
 }
 
 .list {
