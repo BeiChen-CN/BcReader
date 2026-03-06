@@ -1,108 +1,76 @@
 <template>
-	<div class="page" style="flex-direction: column;">
+	<div class="page">
 	  <list class="list">
 		<list-item class="page-title-item" type="title">
-			<text static class="page-title">
-				菜单
-			</text>
+			<text static class="page-title">菜单</text>
 		</list-item>
-		  <list-item class="item" @click="routerTo('list')" type="item">
-    <text class="itemtext" static>章节列表</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item type="item" class="item" @click="routerTo('readPresent')">
-			  <div class="item-content">
-				  <text class="itemtext" static>跳转章节</text>
-				  <text class="itemtext2" static>按章节号跳转</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
-		  <list-item type="item" class="item" @click="routerTo('readPercent')">
-			  <div class="item-content">
-				  <text class="itemtext" static>跳转百分比</text>
-				  <text class="itemtext2" static>当前章节百分比</text>
-			  </div>
-			  <img src="/common/images/enter.png" style="width:40px;height: 40px;" static/>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('bookmarks')" type="item">
-    <text class="itemtext" static>书签管理</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="toggleKeepScreenOnClick" type="item">
-    <text class="itemtext" static>屏幕常亮</text>
-    <img src="{{isKeepScreenOn ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
-		  <list-item type="item" class="item" @click="backToFirst">
-			  <div class="item-content">
-				  <text class="itemtext" static>回到第一段</text>
-				  <text class="itemtext2" static>跳转到本章开头</text>
-			  </div>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('more')" type="item">
-    <text class="itemtext" static>全局设置</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="del" type="item">
-    <text class="itemtext" static>删除书籍</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('bookinfo')" type="item">
-    <text class="itemtext" static>书籍详情</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('readingTime')" type="item">
-    <text class="itemtext" static>阅读时长</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
+		
+		<list-item class="item" @click="routerTo('list')" type="item">
+			<text class="itemtext" static>章节列表</text>
+			<img src="/common/images/enter.png" class="arrow" static />
+		</list-item>
+		<list-item type="item" class="item" @click="routerTo('readPresent')">
+			<text class="itemtext" static>跳转章节</text>
+			<img src="/common/images/enter.png" class="arrow" static/>
+		</list-item>
+		<list-item type="item" class="item" @click="routerTo('readPercent')">
+			<text class="itemtext" static>跳转百分比</text>
+			<img src="/common/images/enter.png" class="arrow" static/>
+		</list-item>
+
+		<!-- 新增：添加书签 -->
+		<list-item class="item" @click="addBookmark" type="item">
+			<text class="itemtext" static>添加书签</text>
+			<img src="/common/images/enter.png" class="arrow" static />
+		</list-item>
+
+		<list-item class="item" @click="routerTo('bookmarks')" type="item">
+			<text class="itemtext" static>书签管理</text>
+			<img src="/common/images/enter.png" class="arrow" static />
+		</list-item>
+		<list-item class="item" @click="toggleKeepScreenOnClick" type="item">
+			<text class="itemtext" static>屏幕常亮</text>
+			<img src="{{isKeepScreenOn ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+		</list-item>
+		<list-item type="item" class="item" @click="backToFirst">
+			<text class="itemtext" static>回到开头第一段</text>
+		</list-item>
+		<list-item class="item" @click="routerTo('more')" type="item">
+			<text class="itemtext" static>全局设置</text>
+			<img src="/common/images/enter.png" class="arrow" static />
+		</list-item>
+		<list-item class="item" @click="del" type="item">
+			<text class="itemtext" static>删除书籍</text>
+			<img src="/common/images/enter.png" class="arrow" static />
+		</list-item>
+		<list-item class="item" @click="routerTo('bookinfo')" type="item">
+			<text class="itemtext" static>书籍详情</text>
+			<img src="/common/images/enter.png" class="arrow" static />
+		</list-item>
+		<list-item class="item" @click="routerTo('readingTime')" type="item">
+			<text class="itemtext" static>阅读时长</text>
+			<img src="/common/images/enter.png" class="arrow" static />
+		</list-item>
 	  </list>
-		<img static src="/common/images/more2.png" @click="back()" class="header-more"/>
+	  <img static src="/common/images/more2.png" @click="back()" class="header-more"/>
 	</div>
-  </template>
+</template>
   
-  <script>
-  import router from '@system.router'
-  import prompt from '@system.prompt'
-  import app from '@system.app'
-  import bookStorage from '../../utils/bookStorage.js'
-  
-  
-  export default {
+<script>
+import router from '@system.router'
+import prompt from '@system.prompt'
+import bookStorage from '../../utils/bookStorage.js'
+
+export default {
 	private: {
 		isKeepScreenOn: false,
-		nowTime: "00:00",
-		timer: null
+		isProcessingClick: false
 	},
 	protected: {
 		name: ''
 	},
-	updateTime() {
-	  const date = new Date();
-	  let hours = date.getHours();
-	  let minutes = date.getMinutes();
-  
-	  hours = hours < 10 ? '0' + hours : hours;
-	  minutes = minutes < 10 ? '0' + minutes : minutes;
-  
-	  this.nowTime = `${hours}:${minutes}`;
-	},
-	onInit() {
-	  this.updateTime();
-	  this.timer = setInterval(() => {
-		this.updateTime();
-	  }, 1000);
-	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
-  
-	},
-	onShow(){
+
+	onShow() {
 		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber || globalThis.justJumpedFromPercent) {
 			router.back();
 			return;
@@ -111,37 +79,69 @@
 			this.isKeepScreenOn = globalThis.isKeepScreenOn;
 		}
 	},
-	onBackPress(){
-	},
-	del(){
+
+	routerTo(url) {
 		router.push({
-            uri: '/pages/confirm',
-            params: {
-                action: 'deleteBook',
-                title: '删除书籍',
-                confirmText: '确认删除吗？',
-                subText: '删除后不可恢复',
-                cPath: 'internal://files/books/' + this.name
-            }
-        });
-	},
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail',
-			params: { name: item.dirName }
+			uri: '/pages/' + url,
+			params: { name: this.name }
 		})
 	},
-	routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url,
-		params: { name: this.name }
-	  })
+
+	del() {
+		router.push({
+			uri: '/pages/confirm',
+			params: {
+				action: 'deleteBook',
+				title: '删除书籍',
+				confirmText: '确认删除吗？',
+				subText: '删除后不可恢复',
+				cPath: 'internal://files/books/' + this.name
+			}
+		});
 	},
+
 	toggleKeepScreenOnClick() {
 		this.isKeepScreenOn = !this.isKeepScreenOn;
 		globalThis.isKeepScreenOn = this.isKeepScreenOn;
 	},
-	async backToFirst(){
+
+	// 适配菜单页的添加书签逻辑
+	async addBookmark() {
+		if (this.isProcessingClick) return;
+		this.isProcessingClick = true;
+
+		try {
+			// 从 storage 获取当前阅读进度（因为菜单页没有阅读页的上下文变量）
+			let progress = await bookStorage.get(this.name);
+			if (!progress || progress.chapterIndex === null || progress.chapterIndex === undefined) {
+				prompt.showToast({ message: '无法添加书签，未找到阅读进度' });
+				this.isProcessingClick = false;
+				return;
+			}
+
+			let bookmarks = await bookStorage.getBookmarks(this.name) || [];
+
+			bookmarks.push({
+				chapterIndex: progress.chapterIndex,
+				chapterName: progress.chapterName || `第${progress.chapterIndex + 1}章`,
+				offsetInChapter: Math.max(0, Math.floor(progress.offsetInChapter || 0)),
+				scrollOffset: Math.max(0, Math.floor(progress.scrollOffset || 0)),
+				time: new Date().getTime(),
+				name: `书签${bookmarks.length + 1}`
+			});
+
+			bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
+			
+			await bookStorage.setBookmarks(this.name, bookmarks);
+			prompt.showToast({ message: '添加书签成功' });
+		} catch (e) { 
+			prompt.showToast({ message: '添加书签失败' }); 
+		}
+		
+		this.isProcessingClick = false;
+	},
+
+	async backToFirst() {
 		try {
 			let progress = await bookStorage.get(this.name);
 			if (progress.chapterIndex === null || progress.chapterIndex === undefined) {
@@ -152,7 +152,7 @@
 			progress.offsetInChapter = 0;
 			progress.scrollOffset = 0;
 			await bookStorage.set(this.name, progress);
-      progress = null;
+			progress = null;
 			
 			prompt.showToast({ message: '已跳转到第一段', duration: 1500 });
 			globalThis.justJumpedFromPageNumber = true;
@@ -162,21 +162,13 @@
 			prompt.showToast({ message: '跳转失败', duration: 2000 });
 		}
 	},
-	back(){
+
+	back() {
 		router.back();
-	},
-	exit(){
-		app.terminate();
 	}
-  }
-  </script>
+}
+</script>
   
-  <style>
-  @import '../../common/style.css';
-  
-  
-  
-  
-  
-  
-  </style>
+<style>
+@import '../../common/style.css';
+</style>

@@ -1,7 +1,12 @@
 <template>
   <div class="page">
     <list class="list">
-      <list-item for="{{visibleChapters}}" class="item" @click="selectChapter($item)" onlongpress="deleteChapter($item)" type="chapter">
+      <list-item class="page-title-item" type="title">
+        <text static class="page-title">
+          章节列表
+        </text>
+      </list-item>
+      <list-item for="{{visibleChapters}}" style="height: 135px;" class="item" @click="selectChapter($item)" onlongpress="deleteChapter($item)" type="chapter">
         <div class="chapter-info">
             <text class="itemtext {{currentChapterIndex == $item.index ? 'itemtext-current' : ''}}">{{$item.name}}</text>
             <text class="itemtext2">{{$item.wordCount}} 字</text>
@@ -15,25 +20,15 @@
         </div>
       </list-item>
     </list>
-
-    
-    
-    <marquee if="{{chapterListMarqueeEnabled}}" text-offset="25" scrollamount="12" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-      {{bookTitle}}
-    </marquee>
-    <text else style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;lines: 1;">
-      {{bookTitle}}
-    </text>
+    <img static src="/common/images/set.png" @click="back()" class="header-more"/>
   </div>
 </template>
 
 <script>
 import router from '@system.router';
-import file from '@system.file';
 import prompt from '@system.prompt';
 import bookStorage from '../../utils/bookStorage.js';
 import chapterManager from '../../utils/chapterManager.js';
-import storage from '../../utils/storage.js';
 
 const PAGE_SIZE = 8;
 
@@ -44,79 +39,23 @@ export default {
     totalPages: 1,
     totalChapters: 0,
     currentChapterIndex: -1,
-    nowTime: "00:00",
-    timer: null,
-    bookTitle: "",
     loading: false,
-    timeFormat: '24h',
-    chapterListMarqueeEnabled: false,
     longPressTriggered: false,
     longPressTimeout: null
   },
   protected: {
     name: ''
   },
-  updateTime() {
-    const date = new Date();
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    if (this.timeFormat === '12h') {
-        let ampm = hours >= 12 ? '下午' : '上午';
-        hours = hours % 12;
-        hours = hours ? hours : 12; 
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${ampm} ${hours}:${minutes}`;
-    } else {
-        hours = hours < 10 ? '0' + hours : hours;
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${hours}:${minutes}`;
-    }
-  },
+  
   onInit() {
-    storage.get({
-        key: 'EBOOK_TIME_FORMAT',
-        success: (data) => {
-            if (data) {
-                this.timeFormat = data;
-            }
-            this.updateTime();
-        },
-        fail: () => {
-            this.updateTime();
-        }
-    });
-    storage.get({
-        key: 'EBOOK_CHAPTER_LIST_MARQUEE_ENABLED',
-        success: (data) => {
-            this.chapterListMarqueeEnabled = data === 'true';
-        },
-        fail: () => {
-            this.chapterListMarqueeEnabled = false;
-        }
-    });
-    this.timer = setInterval(() => { this.updateTime(); }, 1000);
-    this.loadBookInfo();
     this.initChapterList();
   },
+  
   onShow() {
-    storage.get({
-        key: 'EBOOK_CHAPTER_LIST_MARQUEE_ENABLED',
-        success: (data) => {
-            this.chapterListMarqueeEnabled = data === 'true';
-        },
-        fail: () => {
-            this.chapterListMarqueeEnabled = false;
-        }
-    });
-    
     this.initChapterList();
   },
+  
   onDestroy() {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-    
     if (this.longPressTimeout) {
       clearTimeout(this.longPressTimeout);
       this.longPressTimeout = null;
@@ -128,24 +67,7 @@ export default {
       global.runGC();
     }
   },
-  loadBookInfo() {
-    const that = this;
-    const bookInfoUri = `internal://files/books/${this.name}/book_info.json`;
-    file.readText({
-      uri: bookInfoUri,
-      success: function(data) {
-        try {
-          const bookInfo = JSON.parse(data.text);
-          that.bookTitle = bookInfo.name;
-        } catch (e) {
-          that.bookTitle = that.name;
-        }
-      },
-      fail: function() {
-        that.bookTitle = that.name;
-      }
-    });
-  },
+
   async initChapterList() {
     if (this.loading) return;
     this.loading = true;
@@ -154,7 +76,6 @@ export default {
       const progress = await bookStorage.get(this.name);
       const chapterIndex = (progress && progress.chapterIndex !== null) ? progress.chapterIndex : -1;
       this.currentChapterIndex = chapterIndex;
-
       
       const allChapters = await chapterManager.getAllAvailableChapters(this.name);
       this.totalChapters = allChapters.length;
@@ -162,7 +83,6 @@ export default {
 
       let targetPage = 0;
       if (chapterIndex >= 0) {
-          
           const indexInAvailable = allChapters.findIndex(ch => ch.index === chapterIndex);
           if (indexInAvailable >= 0) {
               targetPage = Math.floor(indexInAvailable / PAGE_SIZE);
@@ -185,6 +105,7 @@ export default {
       this.loading = false;
     }
   },
+
   async loadPage(page) {
     if (this.loading) return;
     this.loading = true;
@@ -201,23 +122,25 @@ export default {
       this.loading = false;
     }
   },
+
   prevPage() {
     if (this.currentPage > 0 && !this.loading) {
         this.loadPage(this.currentPage - 1);
     }
   },
+
   nextPage() {
     if (this.currentPage < this.totalPages - 1 && !this.loading) {
         this.loadPage(this.currentPage + 1);
     }
   },
+
   async selectChapter(chapter) {
     if (this.longPressTriggered) {
       return;
     }
     
     try {
-      
       let progress = await bookStorage.get(this.name);
       progress.chapterIndex = chapter.index;
       progress.offsetInChapter = 0;
@@ -233,6 +156,7 @@ export default {
       prompt.showToast({ message: '跳转失败', duration: 2000 });
     }
   },
+
   deleteChapter(chapter) {
     this.longPressTriggered = true;
     
@@ -258,6 +182,7 @@ export default {
       }
     });
   },
+
   back() {
     router.back();
   }

@@ -471,10 +471,4 @@ export default {
   padding: 28px 36px;
   border-radius: 54px;
 }
-
-.itemtext2 {
-  color: #ffffff99;
-  font-size: 34px;
-  lines: 1;
-}
 </style>
