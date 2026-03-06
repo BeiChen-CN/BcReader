@@ -4,7 +4,7 @@
       <img static src="/common/images/empty.png" style="width: 160px; height: 160px; top: 104px; left: 160px;" />
       <text static style="position: absolute; font-weight:bold; font-size:38px; text-align:center;top: 278px;width: 480px;">书架空空</text>
 
-      <div static class="item" style="position: absolute; width: 256px; left: 112px;bottom: 28px;height: 92px;border-radius: 46px;justify-content: center;align-items: center;">
+      <div static class="item" @click="routerTo('push')" style="position: absolute; width: 256px; left: 112px;bottom: 28px;height: 92px;border-radius: 46px;justify-content: center;align-items: center;">
         <text static style="text-align: center;font-weight:bold;">从手机导入</text>
       </div>
     </div>

@@ -1,67 +1,37 @@
 <template>
-  <div class="page" style="flex-direction: column;width: 336px;">
+  <div class="page" style="flex-direction: column;">
+    <img static class="item" if="{{state == 'wait' || state == 'ready'}}" src="../../common/images/push_wait.png" style="position: absolute;left: 0px;top: 0px;width : 100%;height: 100%;" />
+    <img static class="item" if="{{state == 'upload' && state2 == 'ing'}}" src="../../common/images/push_ing.png" style="position: absolute;left: 0px;top: 0px;width : 100%;height: 100%;" />
+    <img static class="item" if="{{state == 'upload' && state2 == 'error'}}" src="../../common/images/push_fail.png" style="position: absolute;left: 0px;top: 0px;width : 100%;height: 100%;" />
+    <img static class="item" if="{{state == 'upload' && state2 == 'succ'}}" src="../../common/images/push_succ.png" style="position: absolute;left: 0px;top: 0px;width : 100%;height: 100%;" />
 
-      <div style="flex-direction: column;margin-top: 46px;width: 336px;" if="{{state == 'wait'}}">
-        <img static src="/common/images/connect.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
-        <text static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-top: 0px;">
-          	等待客户端连接
-          </text>
-          <text static style="width: 286px;left:25px;font-size: 24px;font-weight:bold;color: rgb(153, 153, 153);text-align: left;margin-top: 10px;padding: 10px;">请下载安装《弦电子书》专用手机客户端，在客户端中连接手环。
-          </text>
-      </div>
-      <div style="flex-direction: column;margin-top: 46px;width: 336px;" if="{{state == 'ready'}}">
-        <img static src="/common/images/choose.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
-        <text static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-top: 0px;">
-            等待选择文本
-          </text>
-          <text static style="width: 286px;left:25px;font-size: 24px;font-weight:bold;color: rgb(153, 153, 153);text-align: left;margin-top: 10px;padding: 10px;">连接成功，请在手机找到对应书籍后点击“同步”按钮。
-          </text>
-      </div>
-      <div style="flex-direction: column;margin-top: 46px;width: 336px;" if="{{state == 'upload'}}">
-        <img if="{{state2 == 'ing'}}" static src="/common/images/download.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
-        <text if="{{state2 == 'ing'}}" static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
-            正在同步
-          </text>
-          <img if="{{state2 == 'error'}}" static src="/common/images/error.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
-          <text if="{{state2 == 'error'}}" static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
-            同步失败
-          </text>
-          <img if="{{state2 == 'succ'}}" static src="/common/images/succ.png" style="margin-left: 104px;margin-bottom:24px;margin-top:100px" />
-          <text if="{{state2 == 'succ'}}" static style="width: 336px;font-size: 32px;font-weight:bold;color: white;text-align: center;margin-bottom:36px;">
-            同步成功
-          </text>
-          <div class="item">
-            <text class="itemtext" style="flex:1" static>书籍内容</text>
-            <text class="itemtext" style="color:rgb(168, 168, 168)">{{persent}}%</text>
-          </div>
-      </div>
-
-
-      
-      <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-        书籍同步
-      </text>
+    <div static class="item" if="{{state == 'wait'}}" style="position: absolute; width: 416px; left: 32px;top: 185px;height: 110px;border-radius: 55px;justify-content: center;align-items: center;background-color: #262626b2;">
+      <text static style="text-align: center;font-weight:bold;font-size: 38px;">等待连接手机</text>
+    </div>
+    <div static class="item" if="{{state == 'ready'}}" style="position: absolute; width: 416px; left: 32px;top: 185px;height: 110px;border-radius: 55px;justify-content: center;align-items: center;background-color: #262626b2;">
+      <text static style="text-align: center;font-weight:bold;font-size: 38px;">等待传输书籍</text>
+    </div>
+    
+    <div class="item" if="{{state == 'upload'}}" style="position: absolute; width: 416px; left: 32px;top: 185px;height: 110px;border-radius: 55px;justify-content: center;align-items: center;background-color: #262626b2;">
+      <text style="font-size: 38px;font-weight:bold;color: {{textColor}};">正在传输</text>
+      <text style="font-size: 38px;font-weight:bold;color: {{percentColor}};left: 12px;">{{persent}}%</text>
+    </div>
   </div>	
 </template>
 
-
-
 <script>
-import router from '@system.router'
 import brightness from "@system.brightness"
-import storage from '../../utils/storage.js'
 
 export default {
   private: {
-      fileName: '',
       persent: 0,
       state: 'wait',
       state2: 'ing',
-      nowTime: "00:00",
       timer: null,
-      connState: null,
-      timeFormat: '24h'
+      textColor: '',
+      percentColor: '#ffffff99'
   },
+  
   updateConnState() {
     if (this.state === "upload") return;
     const connected = !!(globalThis.conn && globalThis.conn.connected);
@@ -71,54 +41,33 @@ export default {
       this.state = "wait";
     }
   },
-  updateTime() {
-    const date = new Date();
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    if (this.timeFormat === '12h') {
-      let ampm = hours >= 12 ? '下午' : '上午';
-      hours = hours % 12;
-      hours = hours ? hours : 12;
-      minutes = minutes < 10 ? '0' + minutes : minutes;
-      this.nowTime = `${ampm} ${hours}:${minutes}`;
-    } else {
-      hours = hours < 10 ? '0' + hours : hours;
-      minutes = minutes < 10 ? '0' + minutes : minutes;
-      this.nowTime = `${hours}:${minutes}`;
-    }
-  },
+
   onInit() {
-    storage.get({
-      key: 'EBOOK_TIME_FORMAT',
-      success: (data) => {
-        if(data) this.timeFormat = data;
-        this.updateTime();
-      },
-      fail: () => {
-        this.updateTime();
-      }
-    });
     this.timer = setInterval(() => {
-      this.updateTime();
       this.updateConnState();
     }, 1000);
     this.updateConnState();
-    this.eventlistener=globalThis.conn.addEventListener((data)=>{
+
+    this.eventlistener = globalThis.conn.addEventListener((data) => {
       if (data !== "open") {
         if (this.state !== "upload") this.state = "wait";
       }
-    })
+    });
+
     globalThis.connfile.setCallback((data) => {
       switch (data.msg) {
         case "next":
-          this.state = "upload"
-          this.state2 = "ing"
-          this.fileName = data.fileName;
-          this.persent = (data.progress*100).toFixed(0);
+          this.state = "upload";
+          this.state2 = "ing";
+          this.persent = (data.progress * 100).toFixed(0);
+          this.textColor = '';
+          this.percentColor = '#ffffff99';
           break;
         case "error":
           if (this.state === "upload") {
             this.state2 = "error";
+            this.textColor = '#DD3636';
+            this.percentColor = '#DD3636';
           } else {
             this.updateConnState();
           }
@@ -126,6 +75,8 @@ export default {
         case "success":
           if (this.state === "upload") {
             this.state2 = "succ";
+            this.textColor = '#1DCC72';
+            this.percentColor = '#1DCC72';
           }
           break;
         case "cancel":
@@ -134,41 +85,28 @@ export default {
         default:
           break;
       }
-    })
+    });
   },
 
   onShow() {
-		brightness.setKeepScreenOn({
-			keepScreenOn: true,
-		});
-		this.updateConnState();
-	},
-
-	onHide() {
-		brightness.setKeepScreenOn({
-			keepScreenOn: false,
-		});
-	},
-
-  next(){
-    if (this.state=="wait"){
-      this.state="ready"
-    }else if (this.state=="ready"){
-      this.state="upload"
-    }else if (this.state=="upload"){
-      this.state="wait"
-    }
-
+    brightness.setKeepScreenOn({
+      keepScreenOn: true,
+    });
+    this.updateConnState();
   },
-  back(){
-  	router.back();
+
+  onHide() {
+    brightness.setKeepScreenOn({
+      keepScreenOn: false,
+    });
   },
+
   onDestroy() {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
-    globalThis.conn.removeEventListener(this.eventlistener)
+    globalThis.conn.removeEventListener(this.eventlistener);
   }
 }
 </script>
