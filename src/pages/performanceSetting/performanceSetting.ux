@@ -1,31 +1,31 @@
 <template>
     <div class="page" style="flex-direction: column;">
         <list class="list">
-		<list-item class="page-title-item" type="title">
-			<text static class="page-title">
-				性能设置
-			</text>
-		</list-item>
+            <list-item class="page-title-item" type="title">
+                <text static class="page-title">
+                    性能设置
+                </text>
+            </list-item>
             <list-item class="item" @click="routerTo('pageSizeSetting')" type="item">
-    <text class="itemtext" static>分段大小</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
+                <text class="itemtext" static>分段大小</text>
+                <img src="/common/images/enter.png" class="arrow" static />
+            </list-item>
             <list-item class="item" @click="togglePreventParagraphSplitting" type="item">
-    <text class="itemtext" static>段落防分割</text>
-    <img src="{{preventParagraphSplitting ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
+                <text class="itemtext" static>段落防分割</text>
+                <img src="{{preventParagraphSplitting ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+            </list-item>
             <list-item class="item" @click="toggleReadingTimeRecording" type="item">
-    <text class="itemtext" static>阅读时长记录</text>
-    <img src="{{readingTimeRecording ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
+                <text class="itemtext" static>阅读时长记录</text>
+                <img src="{{readingTimeRecording ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+            </list-item>
             <list-item class="item" @click="routerTo('progressSavingSetting')" type="item">
-    <text class="itemtext" static>阅读进度保存</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
+                <text class="itemtext" static>阅读进度保存</text>
+                <img src="/common/images/enter.png" class="arrow" static />
+            </list-item>
             <list-item class="item" @click="routerTo('marqueeSetting')" type="item">
-    <text class="itemtext" static>跑马灯设置</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
+                <text class="itemtext" static>跑马灯设置</text>
+                <img src="/common/images/enter.png" class="arrow" static />
+            </list-item>
         </list>
 
         <img static src="/common/images/set.png" @click="back()" class="header-more"/>
@@ -38,46 +38,12 @@
 
     export default {
         private: {
-            nowTime: "00:00",
-            timer: null,
-            timeFormat: '24h',
             preventParagraphSplitting: false,
             readingTimeRecording: true
         },
-        updateTime() {
-            const date = new Date();
-            let hours = date.getHours();
-            let minutes = date.getMinutes();
-
-            if (this.timeFormat === '12h') {
-                let ampm = hours >= 12 ? '下午' : '上午';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${ampm} ${hours}:${minutes}`;
-            } else {
-                hours = hours < 10 ? '0' + hours : hours;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${hours}:${minutes}`;
-            }
-        },
+        
         onInit() {
-            storage.get({
-                key: 'EBOOK_TIME_FORMAT',
-                success: (data) => {
-                    if (data) {
-                        this.timeFormat = data;
-                    }
-                    this.updateTime();
-                },
-                fail: () => {
-                    this.updateTime();
-                }
-            });
-            this.timer = setInterval(() => {
-                this.updateTime();
-            }, 1000);
-            
+            // 获取段落防分割设置
             storage.get({
                 key: 'EBOOK_PREVENT_PARAGRAPH_SPLITTING',
                 success: (data) => {
@@ -90,6 +56,7 @@
                 }
             });
             
+            // 获取阅读时长记录设置
             storage.get({
                 key: 'EBOOK_READING_TIME_RECORDING',
                 success: (data) => {
@@ -104,17 +71,13 @@
                 }
             });
         },
-        onDestroy() {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
-        },
+        
         routerTo(url) {
             router.push({
                 uri: '/pages/' + url
             })
         },
+        
         togglePreventParagraphSplitting() {
             this.preventParagraphSplitting = !this.preventParagraphSplitting;
             storage.set({
@@ -122,6 +85,7 @@
                 value: this.preventParagraphSplitting.toString()
             });
         },
+        
         toggleReadingTimeRecording() {
             this.readingTimeRecording = !this.readingTimeRecording;
             storage.set({
@@ -129,6 +93,7 @@
                 value: this.readingTimeRecording.toString()
             });
         },
+        
         back() {
             router.back();
         }
@@ -137,5 +102,4 @@
 
 <style>
   @import '../../common/style.css';
-
 </style>

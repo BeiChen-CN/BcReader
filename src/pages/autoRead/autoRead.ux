@@ -1,29 +1,28 @@
 <import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
   <div class="page" style="flex-direction: column;">
-	<list class="list">
-		<list-item class="page-title-item" type="title">
-			<text static class="page-title">
-				自动翻页
-			</text>
-		</list-item>
-		<list-item class="item" @click="onClick" type="item">
-      <text class="itemtext" static>开启自动翻页</text>
-			<img src="{{enable ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-		</list-item>
-		<list-item if="{{enable}}" style="height: 64px;" class="center" type="title">
-		  <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
-			  翻页距离设置
-		  </text>
-		</list-item>
-	</list>
+    <list class="list">
+      <list-item class="page-title-item" type="title">
+        <text static class="page-title">
+          自动翻页
+        </text>
+      </list-item>
+      
+      <list-item class="item" @click="onClick" type="item">
+        <text class="itemtext" static>开启自动翻页</text>
+        <img src="{{enable ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+      </list-item>
+      
+      <list-item if="{{enable}}" style="height: 64px;" class="center" type="title">
+        <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+          翻页距离设置
+        </text>
+      </list-item>
+    </list>
 
-	<number if="{{enable}}" style="position: absolute; bottom: 56px; left: 112px;" max.static="120" min.static="10" step.static="5" value="{{ distanceValue }}" @change="change" name.static="调整距离"></number>
+    <number if="{{enable}}" style="position: absolute; bottom: 56px; left: 112px;" max.static="120" min.static="10" step.static="5" value="{{ distanceValue }}" @change="change" name.static="调整距离"></number>
   
-	<img static src="/common/images/set.png" @click="back()" class="header-more"/>
-	<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-		
-	</text>
+    <img static src="/common/images/set.png" @click="back()" class="header-more"/>
   </div>
 </template>
 
@@ -36,85 +35,53 @@ const DEFAULT_DISTANCE = 100;
 
 export default {
   private: {
-	distanceValue: DEFAULT_DISTANCE,
-		enable: false,
-		nowTime: "00:00",
-		timer: null,
-		timeFormat: '24h'
+    distanceValue: DEFAULT_DISTANCE,
+    enable: false
   },
-  updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
-	},
+  
   onInit() {
-	storage.get({
-		key: 'EBOOK_TIME_FORMAT',
-		success: (data) => {
-			if(data) this.timeFormat = data;
-			this.updateTime();
-		},
-		fail: () => {
-			this.updateTime();
-		}
-	});
-	this.timer = setInterval(() => {
-		this.updateTime();
-	}, 1000);
     storage.get({
       key: 'EBOOK_AUTO',
       success: (data) => {
         if (data) {
-			({enable:this.enable}=JSON.parse(data))
+          ({enable: this.enable} = JSON.parse(data));
         }
       }
-    })
-		  storage.get({
-			  key: DISTANCE_KEY,
-			  success: (data) => {
-				  if (data) {
-					  this.distanceValue = parseInt(data);
-				  }
-			  },
-		  });
+    });
+    
+    storage.get({
+      key: DISTANCE_KEY,
+      success: (data) => {
+        if (data) {
+          this.distanceValue = parseInt(data);
+        }
+      },
+    });
   },
-  onDestroy(){
-	  if (this.timer) {
-		  clearInterval(this.timer);
-		  this.timer = null;
-	  }
-	},
-	  change(e) {
-		  this.distanceValue = e.detail.value;
-		  storage.set({
-			  key: DISTANCE_KEY,
-			  value: this.distanceValue.toString(),
-		  });
-	  },
-  back(){
-	  router.back();
-	this.save()
+
+  change(e) {
+    this.distanceValue = e.detail.value;
+    storage.set({
+      key: DISTANCE_KEY,
+      value: this.distanceValue.toString(),
+    });
   },
-  save(){
-	  storage.set({
-		  key: 'EBOOK_AUTO',
-		  value: JSON.stringify({enable:this.enable})
-	  })
-	},
-  onClick(){
-	  this.enable = !this.enable;
-	  this.save()
+  
+  back() {
+    this.save();
+    router.back();
+  },
+  
+  save() {
+    storage.set({
+      key: 'EBOOK_AUTO',
+      value: JSON.stringify({enable: this.enable})
+    });
+  },
+  
+  onClick() {
+    this.enable = !this.enable;
+    this.save();
   }
 }
 </script>

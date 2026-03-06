@@ -1,30 +1,30 @@
 <template>
     <div class="page" style="flex-direction: column;">
         <list class="list">
-		<list-item class="page-title-item" type="title">
-			<text static class="page-title">
-				额外内容
-			</text>
-		</list-item>
+            <list-item class="page-title-item" type="title">
+                <text static class="page-title">
+                    额外内容
+                </text>
+            </list-item>
             <list-item class="item" @click="toggleEmptyLines" type="item">
-    <text class="itemtext" static>章节开头空行</text>
-    <img src="{{emptyLines ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
+                <text class="itemtext" static>章节开头空行</text>
+                <img src="{{emptyLines ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+            </list-item>
             <list-item class="item" @click="toggleNumber" type="item">
-    <text class="itemtext" static>显示章节编号</text>
-    <img src="{{showNumber ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
+                <text class="itemtext" static>显示章节编号</text>
+                <img src="{{showNumber ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+            </list-item>
             <list-item class="item" @click="toggleName" type="item">
-    <text class="itemtext" static>显示章节名称</text>
-    <img src="{{showName ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
+                <text class="itemtext" static>显示章节名称</text>
+                <img src="{{showName ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+            </list-item>
             <list-item class="item" @click="toggleWordCount" type="item">
-    <text class="itemtext" static>显示章节字数</text>
-    <img src="{{showWordCount ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
+                <text class="itemtext" static>显示章节字数</text>
+                <img src="{{showWordCount ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+            </list-item>
         </list>
 
-		<img static src="/common/images/more2.png" @click="back()" class="header-more"/>
+        <img static src="/common/images/more2.png" @click="back()" class="header-more"/>
     </div>
 </template>
 
@@ -34,48 +34,13 @@
 
     export default {
         private: {
-            nowTime: "00:00",
-            timer: null,
-            timeFormat: '24h',
             emptyLines: false,
             showNumber: false,
             showName: false,
             showWordCount: false
         },
-        updateTime() {
-            const date = new Date();
-            let hours = date.getHours();
-            let minutes = date.getMinutes();
-
-            if (this.timeFormat === '12h') {
-                let ampm = hours >= 12 ? '下午' : '上午';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${ampm} ${hours}:${minutes}`;
-            } else {
-                hours = hours < 10 ? '0' + hours : hours;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${hours}:${minutes}`;
-            }
-        },
+        
         onInit() {
-            storage.get({
-                key: 'EBOOK_TIME_FORMAT',
-                success: (data) => {
-                    if (data) {
-                        this.timeFormat = data;
-                    }
-                    this.updateTime();
-                },
-                fail: () => {
-                    this.updateTime();
-                }
-            });
-            this.timer = setInterval(() => {
-                this.updateTime();
-            }, 1000);
-            
             storage.get({
                 key: 'EBOOK_CHAPTER_START_EMPTY_LINES',
                 success: (data) => {
@@ -101,12 +66,7 @@
                 }
             });
         },
-        onDestroy() {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
-        },
+
         toggleEmptyLines() {
             this.emptyLines = !this.emptyLines;
             storage.set({
@@ -114,6 +74,7 @@
                 value: this.emptyLines.toString()
             });
         },
+        
         toggleNumber() {
             this.showNumber = !this.showNumber;
             storage.set({
@@ -121,6 +82,7 @@
                 value: this.showNumber.toString()
             });
         },
+        
         toggleName() {
             this.showName = !this.showName;
             storage.set({
@@ -128,6 +90,7 @@
                 value: this.showName.toString()
             });
         },
+        
         toggleWordCount() {
             this.showWordCount = !this.showWordCount;
             storage.set({
@@ -135,6 +98,7 @@
                 value: this.showWordCount.toString()
             });
         },
+        
         back() {
             router.back();
         }

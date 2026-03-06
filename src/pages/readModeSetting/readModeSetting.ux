@@ -1,6 +1,5 @@
 <template>
 	<div class="page" style="flex-direction: column;">
-
 	  <list class="list">
 		<list-item class="page-title-item" type="title">
 			<text static class="page-title">
@@ -32,173 +31,83 @@
 			<text class="itemtext" static>上下点击</text>
 			  <img src="/common/images/check.png" class="check" if="{{nostalgicPageTurnMode === 'topBottomClick'}}"/>
 		  </list-item>
-
 	  </list>
 	  <img static src="/common/images/more2.png" @click="back()" class="header-more"/>
 	</div>
-  </template>
+</template>
 
-  <script>
+<script>
   import router from '@system.router'
   import storage from '../../utils/storage.js'
-  import app from '@system.app'
 
   export default {
 	private: {
 		readMode: 'scroll',
-		nostalgicPageTurnMode: 'topBottomClick',
-		txtNum:0,
-		nowTime: "00:00",
-		timer: null,
-		timeFormat: '24h'
+		nostalgicPageTurnMode: 'topBottomClick'
 	},
-	protected: {
-	  cPath: '',
-		name: ''
-	},
-	updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
-	},
-	onInit() {
-		storage.get({
-			key: 'EBOOK_TIME_FORMAT',
-			success: (data) => {
-				if(data) this.timeFormat = data;
-				this.updateTime();
-			},
-			fail: () => {
-				this.updateTime();
-			}
-		});
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
-	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
 
-	},
-	onShow(){
-	  var that = this;
+	onShow() {
+	  const that = this;
 	  storage.get({
 		  key: 'EBOOK_READ_MODE',
 		  success: function(data) {
-			if (data) {
-				that.readMode = data;
-			} else {
-				that.readMode = 'scroll';
-			}
+			that.readMode = data || 'scroll';
+			
 			if (that.readMode === 'nostalgic') {
 				storage.get({
 					key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
 					success: function(modeData) {
-						if (modeData) {
-							that.nostalgicPageTurnMode = modeData;
-						} else {
-							that.nostalgicPageTurnMode = 'topBottomClick';
-						}
-						that.updateScene();
+						that.nostalgicPageTurnMode = modeData || 'topBottomClick';
 					},
 					fail: function() {
 						that.nostalgicPageTurnMode = 'topBottomClick';
-						that.updateScene();
 					}
 				});
-			} else {
-				that.updateScene();
 			}
 		  },
-		  fail: function(data, code) {
+		  fail: function() {
 			that.readMode = 'scroll';
-			that.updateScene();
 		  }
 	  })
 	},
-	onBackPress(){
-	},
 
-	select(mode){
-	  if (this.readMode === mode) {
-		  return;
-	  }
+	select(mode) {
+	  if (this.readMode === mode) return;
+	  
 	  this.readMode = mode;
 	  storage.set({
 		  key: 'EBOOK_READ_MODE',
 		  value: mode,
 	  });
+
 	  if (mode === 'nostalgic') {
 		  storage.get({
 			  key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
 			  success: (modeData) => {
-				  if (modeData) {
-					  this.nostalgicPageTurnMode = modeData;
-				  } else {
-					  this.nostalgicPageTurnMode = 'topBottomClick';
-				  }
-				  this.updateScene();
+				  this.nostalgicPageTurnMode = modeData || 'topBottomClick';
 			  },
 			  fail: () => {
 				  this.nostalgicPageTurnMode = 'topBottomClick';
-				  this.updateScene();
 			  }
 		  });
-	  } else {
-		  this.updateScene();
 	  }
 	},
+
 	selectPageTurnMode(mode) {
-	  if (this.nostalgicPageTurnMode === mode) {
-		  return;
-	  }
+	  if (this.nostalgicPageTurnMode === mode) return;
+	  
 	  this.nostalgicPageTurnMode = mode;
 	  storage.set({
 		  key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
 		  value: mode,
 	  });
-	  this.updateScene();
 	},
 
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail'
-		})
-	},
-	routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url
-	  })
-	},
-	back(){
+	back() {
 		router.back();
-	},
-	exit(){
-		app.terminate();
-	},
-	updateScene(){
-		this.txtNum += 1;
 	}
   }
-  </script>
+</script>
 
 <style>
   @import '../../common/style.css';

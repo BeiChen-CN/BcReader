@@ -35,41 +35,10 @@ export default {
   private: {
     alwaysShowTime: false,
     distanceValue: DEFAULT_DISTANCE,
-    nowTime: "00:00",
-    timer: null,
-	  readMode: 'scroll',
-    timeFormat: '24h'
+	  readMode: 'scroll'
   },
-  updateTime() {
-    const date = new Date();
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    if (this.timeFormat === '12h') {
-      let ampm = hours >= 12 ? '下午' : '上午';
-      hours = hours % 12;
-      hours = hours ? hours : 12; 
-      minutes = minutes < 10 ? '0' + minutes : minutes;
-      this.nowTime = `${ampm} ${hours}:${minutes}`;
-    } else {
-      hours = hours < 10 ? '0' + hours : hours;
-      minutes = minutes < 10 ? '0' + minutes : minutes;
-      this.nowTime = `${hours}:${minutes}`;
-    }
-  },
+  
   onInit() {
-    storage.get({
-      key: 'EBOOK_TIME_FORMAT',
-      success: (data) => {
-        if(data) this.timeFormat = data;
-        this.updateTime();
-      },
-      fail: () => {
-        this.updateTime();
-      }
-    });
-    this.timer = setInterval(() => {
-      this.updateTime();
-    }, 1000);
     storage.get({
       key: 'EBOOK_ALWAYS_SHOW_TIME',
       success: (data) => {
@@ -78,9 +47,14 @@ export default {
         }
       }
     });
-		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
-			if (data) this.readMode = data;
-		}});
+    
+		storage.get({ 
+      key: 'EBOOK_READ_MODE', 
+      success: (data) => {
+			  if (data) this.readMode = data;
+		  }
+    });
+    
     storage.get({
       key: DISTANCE_KEY,
       success: (data) => {
@@ -90,42 +64,29 @@ export default {
       },
     });
   },
-  onDestroy(){
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-  },
+
   back(){
     router.back();
   },
+
   save(){
     storage.set({
       key: 'EBOOK_ALWAYS_SHOW_TIME',
       value: this.alwaysShowTime.toString()
-    })
+    });
   },
+
   onClick(){
     this.alwaysShowTime = !this.alwaysShowTime;
-    this.save()
+    this.save();
   },
+
   changeDistance(e) {
     this.distanceValue = e.detail.value;
     storage.set({
       key: DISTANCE_KEY,
       value: this.distanceValue.toString(),
     });
-  },
-  reset() {
-    this.distanceValue = DEFAULT_DISTANCE;
-    this.alwaysShowTime = false;
-    storage.set({ key: DISTANCE_KEY, value: this.distanceValue.toString() });
-    storage.set({ key: "EBOOK_ALWAYS_SHOW_TIME", value: 'false' });
-  },
-  routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url
-	  })
   }
 }
 </script>

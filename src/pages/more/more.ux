@@ -1,163 +1,65 @@
 <template>
 	<div class="page" style="flex-direction: column;">
-  
-	<list class="list">
-		<list-item class="page-title-item" type="title">
-			<text static class="page-title">
-				设置
-			</text>
-		</list-item>
-		<list-item class="item" @click="routerTo('readingSetting')" type="item">
-			<text class="itemtext" static>阅读设置</text>
-			<img src="/common/images/enter.png" class="arrow" static />
-		</list-item>
-		<list-item class="item" @click="routerTo('performanceSetting')" type="item">
-			<text class="itemtext" static>性能设置</text>
-			<img src="/common/images/enter.png" class="arrow" static/>
-		</list-item>
-		  <list-item class="item" @click="routerTo('shelfSetting')" type="item">
-			<text class="itemtext" static>书架设置</text>
-			  <img src="/common/images/enter.png" class="arrow" static/>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('interactionSetting')" type="item">
-			<text class="itemtext" static>交互设置</text>
-			  <img src="/common/images/enter.png" class="arrow" static/>
-		  </list-item>
-	      <list-item class="item" @click="routerTo('storageManagement')" type="item">
-			<text class="itemtext" static>存储管理</text>
-			  <img src="/common/images/enter.png" class="arrow" static/>
-		  </list-item>
-		  <list-item class="item" @click="routerTo('push')" type="item">
-			<text class="itemtext" static>书籍同步</text>
-			  <img src="/common/images/enter.png" class="arrow" static />
-		  </list-item>
-		  <list-item class="item" @click="routerTo('readingTime')" type="item">
-			<text class="itemtext" static>阅读时长</text>
-			  <img src="/common/images/enter.png" class="arrow" static />
-		  </list-item>
-		  <list-item class="item" @click="routerTo('about')" type="item">
-			<text class="itemtext" static>关于</text>
-			  <img src="/common/images/enter.png" class="arrow" static />
-		  </list-item>
-	  </list>
-  
-	  <img static src="/common/images/more2.png" @click="routerTo('more')" class="header-more"/>
+		<list class="list">
+			<list-item class="page-title-item" type="title">
+				<text static class="page-title">
+					设置
+				</text>
+			</list-item>
+			<list-item class="item" @click="routerTo('readingSetting')" type="item">
+				<text class="itemtext" static>阅读设置</text>
+				<img src="/common/images/enter.png" class="arrow" static />
+			</list-item>
+			<list-item class="item" @click="routerTo('performanceSetting')" type="item">
+				<text class="itemtext" static>性能设置</text>
+				<img src="/common/images/enter.png" class="arrow" static/>
+			</list-item>
+			<list-item class="item" @click="routerTo('shelfSetting')" type="item">
+				<text class="itemtext" static>书架设置</text>
+				<img src="/common/images/enter.png" class="arrow" static/>
+			</list-item>
+			<list-item class="item" @click="routerTo('interactionSetting')" type="item">
+				<text class="itemtext" static>交互设置</text>
+				<img src="/common/images/enter.png" class="arrow" static/>
+			</list-item>
+			<list-item class="item" @click="routerTo('storageManagement')" type="item">
+				<text class="itemtext" static>存储管理</text>
+				<img src="/common/images/enter.png" class="arrow" static/>
+			</list-item>
+			<list-item class="item" @click="routerTo('push')" type="item">
+				<text class="itemtext" static>书籍同步</text>
+				<img src="/common/images/enter.png" class="arrow" static />
+			</list-item>
+			<list-item class="item" @click="routerTo('readingTime')" type="item">
+				<text class="itemtext" static>阅读时长</text>
+				<img src="/common/images/enter.png" class="arrow" static />
+			</list-item>
+			<list-item class="item" @click="routerTo('about')" type="item">
+				<text class="itemtext" static>关于</text>
+				<img src="/common/images/enter.png" class="arrow" static />
+			</list-item>
+		</list>
+
+		<img static src="/common/images/more2.png" @click="back()" class="header-more"/>
 	</div>
-  </template>
+</template>
   
-  <script>
+<script>
   import router from '@system.router'
-  import prompt from '@system.prompt'
-  import app from '@system.app'
-  import storage from '../../utils/storage.js'
-  
   
   export default {
-	private: {
-	  nowTime: "00:00",
-	  timer: null,
-	  showProgressBar: true,
-	  chapterSwitchStyle: 'button',
-    timeFormat: '24h'
-	},
-	protected: {
-	  cPath: '',
-		name: '',
-  
-	},
-	updateTime() {
-	  const date = new Date();
-	  let hours = date.getHours();
-	  let minutes = date.getMinutes();
-  
-    if (this.timeFormat === '12h') {
-        let ampm = hours >= 12 ? '下午' : '上午';
-        hours = hours % 12;
-        hours = hours ? hours : 12; 
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${ampm} ${hours}:${minutes}`;
-    } else {
-        hours = hours < 10 ? '0' + hours : hours;
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${hours}:${minutes}`;
-    }
-	},
-	onInit() {
-    storage.get({
-        key: 'EBOOK_TIME_FORMAT',
-        success: (data) => {
-            if (data) {
-                this.timeFormat = data;
-            }
-            this.updateTime();
-        },
-        fail: () => {
-            this.updateTime();
-        }
-    });
-	  this.timer = setInterval(() => {
-		this.updateTime();
-	  }, 1000);
-	},
-	loadSettings() {
-    storage.get({ key: 'EBOOK_TIME_FORMAT', success: (data) => {
-        if (data) this.timeFormat = data;
-    }});
-	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
-  
-	},
-	onShow(){
-		this.loadSettings();
-	},
-	clearBooks(){
-	  router.push({
-            uri: '/pages/help',
-            params: {
-                title: '清空数据',
-                content: '为防止卡死，请手动将小程序卸载后重新安装。'
-            }
-        });
-	},
-	onBackPress(){
-	},
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail'
-		})
-	},
 	routerTo(url) {
 	  router.push({
 		uri: '/pages/' + url
 	  })
 	},
-	back(){
+  
+  	back(){
 		router.back();
-	},
-	exit(){
-		app.terminate();
-	},
-	toggleProgressBar() {
-		this.showProgressBar = !this.showProgressBar;
-		storage.set({
-			key: 'EBOOK_SHOW_PROGRESS_BAR',
-			value: this.showProgressBar.toString(),
-			success: () => {
-				prompt.showToast({ message: this.showProgressBar ? '已开启章节进度条' : '已关闭章节进度条' });
-			}
-		});
 	}
   }
-  </script>
+</script>
   
-  <style>
+<style>
   @import '../../common/style.css';
-  </style>
+</style>

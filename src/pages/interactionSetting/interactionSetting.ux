@@ -1,16 +1,16 @@
 <template>
     <div class="page" style="flex-direction: column;">
         <list class="list">
-		<list-item class="page-title-item" type="title">
-			<text static class="page-title">
-				交互设置
-			</text>
-		</list-item>
-		<list-item style="height: 64px;" class="center" type="title">
-		  <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
-			  手势设置
-		  </text>
-		</list-item>
+            <list-item class="page-title-item" type="title">
+                <text static class="page-title">
+                    交互设置
+                </text>
+            </list-item>
+            <list-item style="height: 64px;" class="center" type="title">
+                <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+                    手势设置
+                </text>
+            </list-item>
             <list-item class="item {{gesture === 'single' ? 'item2' : ''}}" @click="selectGesture('single')" type="item">
                 <text class="itemtext" static>单击屏幕切换UI</text>
                 <img if="{{gesture === 'single'}}" src="/common/images/check.png" class="check" static />
@@ -24,15 +24,14 @@
                 <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
                     老师屏
                 </text>
-              </list-item>
+            </list-item>
             <list-item class="item" @click="toggleTeacherScreen" type="item">
-    <text class="itemtext" static>快速退出应用</text>
-    <img src="{{teacherScreenEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
+                <text class="itemtext" static>快速退出应用</text>
+                <img src="{{teacherScreenEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+            </list-item>
         </list>
 
-    
-	  <img static src="/common/images/more2.png" @click="back()" class="header-more"/>
+        <img static src="/common/images/more2.png" @click="back()" class="header-more"/>
     </div>
 </template>
 
@@ -42,46 +41,12 @@
 
     export default {
         private: {
-            nowTime: "00:00",
-            timer: null,
-            timeFormat: '24h',
             gesture: 'single',
             teacherScreenEnabled: false
         },
-        updateTime() {
-            const date = new Date();
-            let hours = date.getHours();
-            let minutes = date.getMinutes();
-
-            if (this.timeFormat === '12h') {
-                let ampm = hours >= 12 ? '下午' : '上午';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${ampm} ${hours}:${minutes}`;
-            } else {
-                hours = hours < 10 ? '0' + hours : hours;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${hours}:${minutes}`;
-            }
-        },
+        
         onInit() {
-            storage.get({
-                key: 'EBOOK_TIME_FORMAT',
-                success: (data) => {
-                    if (data) {
-                        this.timeFormat = data;
-                    }
-                    this.updateTime();
-                },
-                fail: () => {
-                    this.updateTime();
-                }
-            });
-            this.timer = setInterval(() => {
-                this.updateTime();
-            }, 1000);
-            
+            // 获取手势设置
             storage.get({
                 key: 'EBOOK_GESTURE',
                 success: (data) => {
@@ -94,6 +59,7 @@
                 }
             });
             
+            // 获取老师屏设置
             storage.get({
                 key: 'EBOOK_TEACHER_SCREEN_ENABLED',
                 success: (data) => {
@@ -104,23 +70,7 @@
                 }
             });
         },
-        onDestroy() {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
-        },
-        selectTimeFormat(format) {
-            if (this.timeFormat === format) {
-                return;
-            }
-            this.timeFormat = format;
-            storage.set({
-                key: 'EBOOK_TIME_FORMAT',
-                value: format
-            });
-            this.updateTime();
-        },
+
         selectGesture(gestureType) {
             if (this.gesture === gestureType) {
                 return;
@@ -131,6 +81,7 @@
                 value: gestureType
             });
         },
+
         toggleTeacherScreen() {
             const targetState = !this.teacherScreenEnabled;
             if (targetState) {
@@ -154,15 +105,7 @@
                 });
             }
         },
-        reset() {
-            this.timeFormat = '24h';
-            this.gesture = 'single';
-            this.teacherScreenEnabled = false;
-            storage.set({ key: "EBOOK_TIME_FORMAT", value: '24h' });
-            storage.set({ key: "EBOOK_GESTURE", value: 'single' });
-            storage.set({ key: "EBOOK_TEACHER_SCREEN_ENABLED", value: 'false' });
-            this.updateTime();
-        },
+
         back() {
             router.back();
         }
@@ -170,16 +113,5 @@
 </script>
 
 <style>
-  @import '../../common/style.css';
-
-    .item2 {
-        background-color: #0D6EFF;
-    }
-
-    .section-title {
-        font-size: 24px;
-        line-height: 36px;
-        font-weight: bold;
-        color: rgba(255, 255, 255, 0.5);
-    }
+    @import '../../common/style.css';
 </style>

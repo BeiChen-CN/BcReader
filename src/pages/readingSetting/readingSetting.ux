@@ -1,199 +1,131 @@
 <template>
 	<div class="page" style="flex-direction: column;">
-  
 	<list class="list">
 		<list-item class="page-title-item" type="title">
 			<text static class="page-title">
 				阅读设置
 			</text>
 		</list-item>
-		  <list-item class="item" @click="routerTo('opacity')" type="item">
-    <text class="itemtext" static>字体亮度</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="toggleBold" type="item">
-    <text class="itemtext" static>粗体字体</text>
-    <img src="{{boldEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
-		  <list-item class="item" @click="routerTo('screenBrightness')" type="item">
-    <text class="itemtext" static>屏幕亮度</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('timeSetting')" type="item">
-    <text class="itemtext" static>时间常驻</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('fontSetting')" type="item">
-    <text class="itemtext" static>字号</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('extraContentSetting')" type="item">
-    <text class="itemtext" static>额外内容</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('chapterSwitchStyle')" type="item" if="{{readMode !== 'nostalgic'}}">
-    <text class="itemtext" static>翻章方式</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('chapterSwitchSetting')" type="item" if="{{chapterSwitchStyle == 'button' && readMode !== 'nostalgic'}}">
-    <text class="itemtext" static>换章按钮</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('chapterSwitchSensitivity')" type="item" if="{{chapterSwitchStyle == 'boundary' && readMode !== 'nostalgic'}}">
-    <text class="itemtext" static>换章灵敏度</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
+		<list-item class="item" @click="routerTo('opacity')" type="item">
+            <text class="itemtext" static>字体亮度</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="toggleBold" type="item">
+            <text class="itemtext" static>粗体字体</text>
+            <img src="{{boldEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+        </list-item>
+		<list-item class="item" @click="routerTo('screenBrightness')" type="item">
+            <text class="itemtext" static>屏幕亮度</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="routerTo('timeSetting')" type="item">
+            <text class="itemtext" static>时间常驻</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="routerTo('fontSetting')" type="item">
+            <text class="itemtext" static>字号</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="routerTo('extraContentSetting')" type="item">
+            <text class="itemtext" static>额外内容</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="routerTo('chapterSwitchStyle')" type="item" if="{{readMode !== 'nostalgic'}}">
+            <text class="itemtext" static>翻章方式</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="routerTo('chapterSwitchSetting')" type="item" if="{{chapterSwitchStyle == 'button' && readMode !== 'nostalgic'}}">
+            <text class="itemtext" static>换章按钮</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="routerTo('chapterSwitchSensitivity')" type="item" if="{{chapterSwitchStyle == 'boundary' && readMode !== 'nostalgic'}}">
+            <text class="itemtext" static>换章灵敏度</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
 		<list-item class="item" @click="routerTo('swipeSensitivity')" type="item" if="{{chapterSwitchStyle == 'swipe' && readMode !== 'nostalgic'}}">
-    <text class="itemtext" static>换章灵敏度</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('swipe')" type="item" if="{{readMode !== 'nostalgic'}}">
-    <text class="itemtext" static>翻页方式</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('autoRead')" type="item">
-    <text class="itemtext" static>自动翻页</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-		  <list-item class="item" @click="routerTo('readModeSetting')" type="item">
-    <text class="itemtext" static>阅读模式</text>
-    <img src="/common/images/enter.png" class="arrow" static />
-</list-item>
-	  </list>
-		<img static src="/common/images/more2.png" @click="back()" class="header-more"/>
+            <text class="itemtext" static>换章灵敏度</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="routerTo('swipe')" type="item" if="{{readMode !== 'nostalgic'}}">
+            <text class="itemtext" static>翻页方式</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="routerTo('autoRead')" type="item">
+            <text class="itemtext" static>自动翻页</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+		<list-item class="item" @click="routerTo('readModeSetting')" type="item">
+            <text class="itemtext" static>阅读模式</text>
+            <img src="/common/images/enter.png" class="arrow" static />
+        </list-item>
+	</list>
+	<img static src="/common/images/more2.png" @click="back()" class="header-more"/>
 	</div>
-  </template>
+</template>
   
-  <script>
-  import router from '@system.router'
-  import app from '@system.app'
-  import storage from '../../utils/storage.js'
-  
-  
-  export default {
-  private: {
-	  nowTime: "00:00",
-	  timer: null,
-	  chapterSwitchStyle: 'button',
-    timeFormat: '24h',
-	  readMode: 'scroll',
-	  boldEnabled: true
-	},
-	protected: {
-	  cPath: '',
-		name: '',
-  
-	},
-	updateTime() {
-	  const date = new Date();
-	  let hours = date.getHours();
-	  let minutes = date.getMinutes();
-  
-    if (this.timeFormat === '12h') {
-        let ampm = hours >= 12 ? '下午' : '上午';
-        hours = hours % 12;
-        hours = hours ? hours : 12; 
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${ampm} ${hours}:${minutes}`;
-    } else {
-        hours = hours < 10 ? '0' + hours : hours;
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${hours}:${minutes}`;
-    }
-	},
-	onInit() {
-    storage.get({
-        key: 'EBOOK_TIME_FORMAT',
-        success: (data) => {
-            if (data) {
-                this.timeFormat = data;
+<script>
+import router from '@system.router'
+import storage from '../../utils/storage.js'
+
+export default {
+    private: {
+        chapterSwitchStyle: 'button',
+        readMode: 'scroll',
+        boldEnabled: true
+    },
+
+    onInit() {
+        this.loadSettings();
+    },
+
+    onShow() {
+        this.loadSettings();
+    },
+
+    loadSettings() {
+        storage.get({ 
+            key: 'EBOOK_CHAPTER_SWITCH_STYLE', 
+            success: (data) => { if (data) this.chapterSwitchStyle = data; }
+        });
+        storage.get({ 
+            key: 'EBOOK_READ_MODE', 
+            success: (data) => { if (data) this.readMode = data; }
+        });
+        storage.get({ 
+            key: 'EBOOK_BOLD_ENABLED', 
+            success: (data) => {
+                if (data !== undefined && data !== '') {
+                    this.boldEnabled = data === 'true';
+                } else {
+                    this.boldEnabled = true;
+                }
+            }, 
+            fail: () => {
+                this.boldEnabled = true;
             }
-            this.updateTime();
-        },
-        fail: () => {
-            this.updateTime();
-        }
-    });
-	  this.timer = setInterval(() => {
-		this.updateTime();
-	  }, 1000);
-		storage.get({ key: 'EBOOK_BOLD_ENABLED', success: (data) => {
-			if (data !== undefined && data !== '') {
-				this.boldEnabled = data === 'true';
-			} else {
-				this.boldEnabled = true;
-			}
-		}, fail: () => {
-			this.boldEnabled = true;
-		}});
-	},
-	loadSettings() {
-		storage.get({ key: 'EBOOK_CHAPTER_SWITCH_STYLE', success: (data) => { 
-			if (data) this.chapterSwitchStyle = data;
-		}});
-    storage.get({ key: 'EBOOK_TIME_FORMAT', success: (data) => {
-        if (data) this.timeFormat = data;
-    }});
-		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
-			if (data) this.readMode = data;
-		}});
-		storage.get({ key: 'EBOOK_BOLD_ENABLED', success: (data) => {
-			if (data !== undefined && data !== '') {
-				this.boldEnabled = data === 'true';
-			} else {
-				this.boldEnabled = true;
-			}
-		}, fail: () => {
-			this.boldEnabled = true;
-		}});
-	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
+        });
+    },
+
+    routerTo(url) {
+        router.push({
+            uri: '/pages/' + url
+        });
+    },
+
+    back() {
+        router.back();
+    },
+
+    toggleBold() {
+        this.boldEnabled = !this.boldEnabled;
+        storage.set({
+            key: 'EBOOK_BOLD_ENABLED',
+            value: this.boldEnabled.toString()
+        });
     }
-	},
-	onReady(){
-	},
-	resetList(){
+}
+</script>
   
-	},
-	onShow(){
-		this.loadSettings();
-	},
-	onBackPress(){
-	},
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail'
-		})
-	},
-	routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url
-	  })
-	},
-	back(){
-		router.back();
-	},
-	exit(){
-		app.terminate();
-	},
-	toggleBold() {
-		this.boldEnabled = !this.boldEnabled;
-		storage.set({
-			key: 'EBOOK_BOLD_ENABLED',
-			value: this.boldEnabled.toString()
-		});
-	}
-  }
-  </script>
-  
-  <style>
-  @import '../../common/style.css';
-  
-  
-  
-  
-  
-  </style>
+<style>
+@import '../../common/style.css';
+</style>

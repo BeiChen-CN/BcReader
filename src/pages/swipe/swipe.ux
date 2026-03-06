@@ -1,6 +1,5 @@
 <template>
 	<div class="page" style="flex-direction: column;">
-
 	  <list class="list">
 		<list-item class="page-title-item" type="title">
 			<text static class="page-title">
@@ -17,152 +16,55 @@
 			<text class="itemtext" static>点击翻页</text>
 			<img src="/common/images/check.png" class="check" if="{{onSelect==3}}"/>
 		  </list-item>
-
 	  </list>
 
 	  <img static src="/common/images/set.png" @click="back()" class="header-more"/>
 	</div>
-  </template>
+</template>
 
-  <script>
+<script>
   import router from '@system.router'
   import storage from '../../utils/storage.js'
-  import app from '@system.app'
 
   export default {
 	private: {
-		onSelect:3,
-		txtNum:0,
-		nowTime: "00:00",
-		timer: null,
-		timeFormat: '24h'
+		onSelect: 3
 	},
-	protected: {
-	  cPath: '',
-		name: ''
-	},
-	updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
-	},
-	onInit() {
-		storage.get({
-			key: 'EBOOK_TIME_FORMAT',
-			success: (data) => {
-				if(data) this.timeFormat = data;
-				this.updateTime();
-			},
-			fail: () => {
-				this.updateTime();
-			}
-		});
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
-	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
-
-	},
-	onShow(){
-	  var that = this;
+	
+	onShow() {
 	  storage.get({
 		  key: 'EBOOK_SWIPE',
-		  success: function(data) {
-			if (data=="off") {
-				that.onSelect=3
-			} else if(data=="column") {
-				that.onSelect=2
-			} else if(data=="row") {
-				that.onSelect=1
+		  success: (data) => {
+			if (data === "off") {
+				this.onSelect = 3;
+			} else if (data === "column") {
+				this.onSelect = 2;
+			} else if (data === "row") {
+				this.onSelect = 1;
 			}
-			that.updateScene();
-		  },
-		  fail: function(data, code) {
-			
 		  }
 	  })
 	},
-	onBackPress(){
-		
-	},
 
-	select(fun){
-	  if (fun=='2'){
-		  	if(this.onSelect!=2){
-				this.onSelect=2
-			  storage.set({
-	  			key: 'EBOOK_SWIPE',
-	  			value: 'column',
-	  		})
-			}
-	  }else if(fun=='1'){
-		  	if(this.onSelect!=1){
-				this.onSelect=1
-			  storage.set({
-	  			key: 'EBOOK_SWIPE',
-	  			value: 'row',
-	  		})
-			}
-	  }else{
-			if(this.onSelect!=3){
-				this.onSelect=3
-			  storage.set({
-	  			key: 'EBOOK_SWIPE',
-	  			value: 'off',
-	  		})
-			}
+	select(fun) {
+	  if (fun === '2' && this.onSelect !== 2) {
+		this.onSelect = 2;
+		storage.set({ key: 'EBOOK_SWIPE', value: 'column' });
+	  } else if (fun === '1' && this.onSelect !== 1) {
+		this.onSelect = 1;
+		storage.set({ key: 'EBOOK_SWIPE', value: 'row' });
+	  } else if (fun === '3' && this.onSelect !== 3) {
+		this.onSelect = 3;
+		storage.set({ key: 'EBOOK_SWIPE', value: 'off' });
 	  }
-	  this.updateScene();
 	},
 
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail'
-		})
-	},
-	routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url
-	  })
-	},
-	back(){
+	back() {
 		router.back();
-	},
-	exit(){
-		app.terminate();
-	},
-	updateScene(){
-		this.txtNum += 1;
 	}
   }
-  </script>
+</script>
 
-  <style>
+<style>
   @import '../../common/style.css';
-  
-  .item2 {
-	  background-color: #0D6EFF !important;
-  }
-
-
-  </style>
+</style>

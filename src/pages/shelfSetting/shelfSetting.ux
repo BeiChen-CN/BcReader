@@ -108,9 +108,6 @@
 
     export default {
         private: {
-            nowTime: "00:00",
-            timer: null,
-            timeFormat: '24h',
             shelfStyle: 'list',
             shelfPageSize: 6,
             lastReadOnTop: true,
@@ -121,42 +118,11 @@
             refreshMode: 'onExit',
             showSearchBar: true
         },
-        updateTime() {
-            const date = new Date();
-            let hours = date.getHours();
-            let minutes = date.getMinutes();
-
-            if (this.timeFormat === '12h') {
-                let ampm = hours >= 12 ? '下午' : '上午';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${ampm} ${hours}:${minutes}`;
-            } else {
-                hours = hours < 10 ? '0' + hours : hours;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${hours}:${minutes}`;
-            }
-        },
+        
         onInit() {
-            storage.get({
-                key: 'EBOOK_TIME_FORMAT',
-                success: (data) => {
-                    if (data) {
-                        this.timeFormat = data;
-                    }
-                    this.updateTime();
-                },
-                fail: () => {
-                    this.updateTime();
-                }
-            });
-            this.timer = setInterval(() => {
-                this.updateTime();
-            }, 1000);
-            
             this.loadSettings();
         },
+        
         loadSettings() {
             storage.get({
                 key: 'EBOOK_SHELF_STYLE',
@@ -204,12 +170,7 @@
                 fail: () => { this.showSearchBar = true; }
             });
         },
-        onDestroy() {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
-        },
+        
         selectShelfStyle(style) {
             if (this.shelfStyle === style) {
                 return;
@@ -229,6 +190,7 @@
                 });
             }
         },
+        
         changePageSize(e) {
             this.shelfPageSize = e.detail.value;
             storage.set({
@@ -236,6 +198,7 @@
                 value: this.shelfPageSize.toString()
             });
         },
+        
         toggleLastRead() {
             this.lastReadOnTop = !this.lastReadOnTop;
             storage.set({
@@ -243,6 +206,7 @@
                 value: this.lastReadOnTop.toString()
             });
         },
+        
         toggleStorageWarning() {
             this.showStorageWarning = !this.showStorageWarning;
             storage.set({
@@ -250,6 +214,7 @@
                 value: this.showStorageWarning.toString()
             });
         },
+        
         toggleSearchBar() {
             this.showSearchBar = !this.showSearchBar;
             storage.set({
@@ -257,6 +222,7 @@
                 value: this.showSearchBar.toString()
             });
         },
+        
         toggleCategoryPagination() {
             this.categoryPagination = !this.categoryPagination;
             storage.set({
@@ -264,6 +230,7 @@
                 value: this.categoryPagination.toString()
             });
         },
+        
         selectDisplayMode(mode) {
             if (this.displayMode === mode) {
                 return;
@@ -274,6 +241,7 @@
                 value: mode
             });
         },
+        
         selectProgressMode(mode) {
             if (this.progressMode === mode) {
                 return;
@@ -284,6 +252,7 @@
                 value: mode
             });
         },
+        
         selectRefreshMode(mode) {
             if (this.refreshMode === mode) {
                 return;
@@ -294,26 +263,7 @@
                 value: mode
             });
         },
-        reset() {
-            this.shelfStyle = 'list';
-            this.shelfPageSize = 6;
-            this.lastReadOnTop = true;
-            this.displayMode = 'all';
-            this.progressMode = 'book';
-            this.showStorageWarning = true;
-            this.categoryPagination = false;
-            this.refreshMode = 'onEnter';
-            this.showSearchBar = true;
-            storage.set({ key: "EBOOK_SHELF_STYLE", value: 'list' });
-            storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '6' });
-            storage.set({ key: "EBOOK_TOP_LAST_READ", value: 'true' });
-            storage.set({ key: "EBOOK_HOME_DISPLAY_MODE", value: 'all' });
-            storage.set({ key: "EBOOK_HOME_PROGRESS_MODE", value: 'book' });
-            storage.set({ key: "EBOOK_SHOW_STORAGE_WARNING", value: 'true' });
-            storage.set({ key: "EBOOK_CATEGORY_PAGINATION", value: 'false' });
-            storage.set({ key: "EBOOK_SHELF_REFRESH_MODE", value: 'onExit' });
-            storage.set({ key: "EBOOK_HOME_SEARCH_ENABLED", value: 'true' });
-        },
+        
         back() {
             router.back();
         }
@@ -322,14 +272,4 @@
 
 <style>
   @import '../../common/style.css';
-    .item2 {
-        background-color: #0D6EFF;
-    }
-
-    .section-title {
-        font-size: 24px;
-        line-height: 36px;
-        font-weight: bold;
-        color: rgba(255, 255, 255, 0.5);
-    }
 </style>

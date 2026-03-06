@@ -2,33 +2,33 @@
 <template>
 	<div class="page" style="flex-direction: column">
         <list class="list">
-		<list-item class="page-title-item" type="title">
-			<text static class="page-title">
-				翻章按钮
-			</text>
-		</list-item>
+            <list-item class="page-title-item" type="title">
+                <text static class="page-title">
+                    翻章按钮
+                </text>
+            </list-item>
             <list-item class="item" @click="toggleShowInfo" type="item">
-    <text class="itemtext" static>显示章节名称</text>
-    <img src="{{showChapterInfo ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
-<list-item style="height: 64px;" class="center" type="title">
-  <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
-	  触发灵敏度
-  </text>
-</list-item>
-<list-item style="height: 92px;" type="item">
-		<number style="left: 80px;" max.static="200" min.static="0" step.static="5" unit.static="px" value="{{scrollSensitivity}}" @change="onSensitivityChange" name.static="触发灵敏度">
-		</number>
-	</list-item>
-	<list-item style="height: 92px;" class="center" type="title">
-	  <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
-		  按钮高度
-	  </text>
-	</list-item>
-	<list-item style="height: 92px;" type="item">
-		<number style="left: 80px;" max.static="200" min.static="25" step.static="5" unit.static="px" value="{{buttonHeight}}" @change="onHeightChange" name.static="按钮高度">
-		</number>
-		</list-item>
+                <text class="itemtext" static>显示章节名称</text>
+                <img src="{{showChapterInfo ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+            </list-item>
+            <list-item style="height: 64px;" class="center" type="title">
+                <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+                    触发灵敏度
+                </text>
+            </list-item>
+            <list-item style="height: 92px;" type="item">
+                <number style="left: 80px;" max.static="200" min.static="0" step.static="5" unit.static="px" value="{{scrollSensitivity}}" @change="onSensitivityChange" name.static="触发灵敏度">
+                </number>
+            </list-item>
+            <list-item style="height: 92px;" class="center" type="title">
+                <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+                    按钮高度
+                </text>
+            </list-item>
+            <list-item style="height: 92px;" type="item">
+                <number style="left: 80px;" max.static="200" min.static="25" step.static="5" unit.static="px" value="{{buttonHeight}}" @change="onHeightChange" name.static="按钮高度">
+                </number>
+            </list-item>
         </list>
 		<img static src="/common/images/set.png" @click="back()" class="header-more"/>
 	</div>
@@ -48,23 +48,10 @@ export default {
 	private: {
 		buttonHeight: DEFAULT_HEIGHT,
 		scrollSensitivity: DEFAULT_SENSITIVITY,
-        showChapterInfo: false,
-		nowTime: "00:00",
-		timer: null
+        showChapterInfo: false
 	},
-	updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		hours = hours < 10 ? '0' + hours : hours;
-		minutes = minutes < 10 ? '0' + minutes : minutes;
-		this.nowTime = `${hours}:${minutes}`;
-	},
+    
 	onInit() {
-		this.updateTime();
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
 		storage.get({
 			key: HEIGHT_STORAGE_KEY,
 			success: (data) => {
@@ -91,12 +78,7 @@ export default {
             }
         });
 	},
-	onDestroy(){
-	  if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
+
 	onHeightChange(e) {
 		this.buttonHeight = e.detail.value;
 		storage.set({
@@ -104,6 +86,7 @@ export default {
 			value: this.buttonHeight.toString(),
 		});
 	},
+
 	onSensitivityChange(e) {
 		this.scrollSensitivity = e.detail.value;
 		storage.set({
@@ -111,6 +94,7 @@ export default {
 			value: this.scrollSensitivity.toString(),
 		});
 	},
+
     toggleShowInfo() {
         this.showChapterInfo = !this.showChapterInfo;
         storage.set({
@@ -118,37 +102,13 @@ export default {
             value: this.showChapterInfo.toString()
         });
     },
-	reset() {
-		this.buttonHeight = DEFAULT_HEIGHT;
-		this.scrollSensitivity = DEFAULT_SENSITIVITY;
-        this.showChapterInfo = false;
-		storage.set({
-			key: HEIGHT_STORAGE_KEY,
-			value: this.buttonHeight.toString(),
-		});
-		storage.set({
-			key: SENSITIVITY_STORAGE_KEY,
-			value: this.scrollSensitivity.toString(),
-		});
-        storage.set({
-            key: SHOW_INFO_STORAGE_KEY,
-            value: 'false'
-        });
-	},
+
 	back() {
 		router.back();
-	},
+	}
 };
 </script>
 
 <style>
   @import '../../common/style.css';
-.description {
-	font-size: 24px;
-	color: white;
-	text-align: left;
-	width: 100%;
-}
-
-
 </style>
