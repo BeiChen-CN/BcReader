@@ -8,20 +8,19 @@
 			</text>
 		</list-item>
 		<list-item class="item" @click="onClick" type="item">
-			<div class="item-content">
-				<text class="itemtext" static>时间常驻</text>
-				<marquee scrollamount="30" class="itemtext2" static>在阅读页始终显示时间</marquee>
-			</div>
-			<img src="{{alwaysShowTime ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 40px;"/>
+      <text class="itemtext" static>始终显示时间</text>
+			<img src="{{alwaysShowTime ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+		</list-item>
+		<list-item if="{{alwaysShowTime && readMode !== 'nostalgic'}}" style="height: 64px;" class="center" type="title">
+		  <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+			  显示距离设置
+		  </text>
 		</list-item>
 	</list>
 	
-  <img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 336px;height: 102px;" />
-	<number if="{{alwaysShowTime && readMode !== 'nostalgic'}}" style="position: absolute;bottom:6px" max.static="500" min.static="0" step.static="10" value="{{distanceValue}}" @change="changeDistance" name.static="调整距离"></number>
+	<number if="{{alwaysShowTime && readMode !== 'nostalgic'}}" style="position: absolute; bottom: 56px; left: 112px;" max.static="500" min.static="0" step.static="10" value="{{distanceValue}}" @change="changeDistance" name.static="调整距离" unit="px"></number>
 
-	
-        
-		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+  <img static src="/common/images/set.png" @click="back()" class="header-more"/>
   </div>
 </template>
 

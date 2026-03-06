@@ -17,9 +17,9 @@
 .header-more {
   position: absolute;
   left: 211px;
-  top: 22px;
+  top: 10px;
   width: 58px;
-  height: 28px;
+  height: 58px;
 }
 
 .header-title {
@@ -33,9 +33,10 @@
 
 .page-title-item {
   width: 100%;
-  height: 82px;
+  height: 54px;
   justify-content: center;
   align-items: center;
+  margin-bottom: 22px;
 }
 
 .page-title {
@@ -61,13 +62,13 @@
   position: absolute;
   top: 0px;
   left: 0px;
-  padding: 86px 6px 160px 6px;
+  padding: 68px 32px 160px 32px;
 }
 
 .item {
   width: 100%;
   height: 110px;
-  padding: 14px 32px;
+  padding: 30px 32px;
   margin-bottom: 8px;
   background-color: #262626;
   border-radius: 55px;
@@ -89,8 +90,8 @@
 }
 
 .switch {
-  width:96px;
-  height: 52px;
+  width: 88px;
+  height: 50px;
 }
 
 text {
