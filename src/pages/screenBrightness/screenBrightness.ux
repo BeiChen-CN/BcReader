@@ -1,20 +1,16 @@
 <import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page" style="flex-direction: column;">
-		<div class="item">
-			<text static style="font-size: 24px;font-weight:bold;color: rgba(255, 255, 255, 0.6);text-align: center;margin-bottom:40px;top: 30px;">跟随系统亮度</text>
-			<img static src="/common/images/Switch_ON.png" style="width: 113px;height: 80px;" @click="toggleFollowSystem" if="{{followSystem}}"/>
-			<img static src="/common/images/Switch_OFF.png" style="width: 113px;height: 80px;" @click="toggleFollowSystem" else/>
-			<text style="font-size: 36px;font-weight:bold;color: white;width: 100%;text-align: center;">
-				{{followSystem ? 'ON' : 'OFF'}}
-			</text>
+		<div class="preview-item center">
+			<text static style="font-size: 34px;font-weight:bold;color: rgba(255, 255, 255, 0.6);text-align: center;margin-bottom: 12px;">跟随系统亮度</text>
+			<img static src="{{ followSystem ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png' }}" style="width: 87px;height: 62px;" @click="toggleFollowSystem" />
 		</div>
 
 		<number show="{{!followSystem}}" style="position: absolute; bottom: 28px; left: 112px;" max.static="255" min.static="10" step.static="1" unit.static="" value="{{brightnessValue}}" @change="change" name.static="自定义亮度">
 		</number>
-
         
-		<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<img static src="/common/images/set.png" @click="back()" class="header-more"/>
+		<text static class="header-title">
 			屏幕亮度
 		</text>
 	</div>

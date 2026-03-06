@@ -4,6 +4,11 @@
   background-color: #000000;
 }
 
+.center {
+  justify-content: center;
+  align-items: center;
+}
+
 .full {
   width: 480px;
   height: 480px;
@@ -47,6 +52,7 @@
   border-radius: 54px;
   border: #262626 4px;
   padding: 16px 20px;
+  flex-direction: column;
 }
 
 .list {
