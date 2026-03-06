@@ -2,7 +2,7 @@
     <div show="{{display}}" class="number_choose" style="{{style}}">
         <img static onclick="minus" onlongpress="minusL" ontouchend="end" src="/common/images/minis.png" style="position: absolute;left: 24px;width: 44px;height: 44px;"/>
 		
-        <text style="width: 100%;font-weight:bold;font-size:32px;color:white;text-align:center;">
+        <text style="width: 100%;font-weight:bold;font-size:{{fontsize}};color:white;text-align:center;">
 			{{ value + unit }}
 		</text>
 		
@@ -36,6 +36,9 @@ export default {
         },
         display: {
             default: true,
+        },
+        fontsize: {
+            default: "32px",
         },
     },
     add(){

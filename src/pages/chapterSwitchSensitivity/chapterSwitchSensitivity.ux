@@ -1,7 +1,7 @@
 <import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page" style="flex-direction: column;">
-		<number style="top: 185px;left:32px;width: 416px;height: 110px;position: absolute;border-radius: 55px;" max.static="240" min.static="10" step.static="10" value="{{ chapterSwitchSensitivity }}" @change="change" name.static="调整灵敏度"></number>
+		<number style="top: 185px;left:32px;width: 416px;height: 110px;position: absolute;border-radius: 55px;" fontsize.static="38px" max.static="240" min.static="10" step.static="10" value="{{ chapterSwitchSensitivity }}" @change="change" name.static="调整灵敏度"></number>
 		
 		<text static class="page-title" style="position: absolute;font-size: 38px;color: #ffffff99;top: 334px;width: 100%;text-align: center;">
 			再次滑动的灵敏度
