@@ -1,15 +1,21 @@
 <template>
-    <div class="page">
+    <div class="page" style="flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%;">
+        <img static src="/common/images/bin.png" style="width: 128px; height: 128px; margin-bottom: 20px;top: 28px;" />
         
+        <text style="width: 100%; line-height: 42px; font-weight: bold; font-size: 32px; color: white; text-align: center; margin-bottom: 8px;top: 18px;">
+            {{confirmText}}
+        </text>
         
-        <img static if="{{action!=='versionError'}}" src="/common/images/delete.png" @click="confirmAction" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-        <text style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-            {{title}}
+        <text style="width: 100%; line-height: 32px; font-weight: bold; font-size: 24px; color: rgba(255,255,255,0.6); text-align: center; padding: 0 40px; margin-bottom: 30px;top: 12px;">
+            {{subText}}
         </text>
 
-        <img static src="/common/images/bin.png" style="position: absolute;left: 104px;top: 146px;width: 128px;height: 128px;" />
-        <text style="position: absolute;left: 0px;top: 298px;width: 336px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{confirmText}}</text>
-        <text style="position: absolute;left: 0px;top: 340px;width: 336px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;padding:0 20px;">{{subText}}</text>
+        <img static if="{{action !== 'versionError'}}" src="/common/images/delete.png" @click="confirmAction" style="width: 80px; height: 80px; position: absolute; bottom: 28px;" />
+        
+		<img static src="/common/images/more2.png" @click="back()" class="header-more"/>
+		<text static class="header-title">
+			{{title}}
+		</text>
     </div>
 </template>
 
@@ -23,10 +29,6 @@ import chapterManager from '../../utils/chapterManager.js'
 import readingTimeStorage from '../../utils/readingTimeStorage.js'
 
 export default {
-    private: {
-        nowTime: "00:00",
-        timer: null,
-    },
     protected: {
         action: '',
         cPath: '',
@@ -38,32 +40,14 @@ export default {
         chapterIndex: -1,
         chapterName: ''
     },
-    updateTime() {
-        const date = new Date();
-        let hours = date.getHours();
-        let minutes = date.getMinutes();
-        hours = hours < 10 ? '0' + hours : hours;
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${hours}:${minutes}`;
-    },
-    onInit() {
-        this.updateTime();
-        this.timer = setInterval(() => {
-            this.updateTime();
-        }, 1000);
-    },
-    onDestroy() {
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-    },
+
     back() {
         if (this.action === 'versionError') {
             return app.terminate();
         }
         router.back();
     },
+
     confirmAction() {
         switch (this.action) {
             case 'deleteBook':
@@ -83,6 +67,7 @@ export default {
                 router.back();
         }
     },
+
     async deleteBookmark() {
         if (!this.bookName || this.bookmarkIndex < 0) {
             prompt.showToast({ message: '参数错误' });
@@ -91,25 +76,21 @@ export default {
         }
 
         try {
-            
             let bookmarks = await bookStorage.getBookmarks(this.bookName);
             if (bookmarks && bookmarks[this.bookmarkIndex] !== undefined) {
                 bookmarks.splice(this.bookmarkIndex, 1);
-                
                 await bookStorage.setBookmarks(this.bookName, bookmarks);
-                bookmarks = null;
                 prompt.showToast({ message: '删除成功' });
-                router.back();
             } else {
-                bookmarks = null;
                 prompt.showToast({ message: '找不到书签' });
-                router.back();
             }
+            router.back();
         } catch (e) {
             prompt.showToast({ message: '删除失败' });
             router.back();
         }
     },
+
     deleteBook() {
         prompt.showToast({ message: '开始删除...', duration: 500 });
         if (!this.cPath) {
@@ -117,6 +98,7 @@ export default {
             router.back();
             return;
         }
+        
         const that = this;
         const dirName = this.cPath.split('/').pop();
 
@@ -137,16 +119,15 @@ export default {
             }
         });
     },
+
     async updateBookshelf(dirName) {
-        if (!dirName) {
-            prompt.showToast({ message: '删除成功', duration: 1000 });
-            router.replace({ uri: '/pages/index' });
-            return;
+        if (dirName) {
+            await bookStorage.removeBook(dirName);
         }
-        await bookStorage.removeBook(dirName);
         prompt.showToast({ message: '删除成功', duration: 1000 });
         router.replace({ uri: '/pages/index' });
     },
+
     async deleteChapter() {
         if (!this.bookName || this.chapterIndex < 0) {
             prompt.showToast({ message: '参数错误' });
@@ -183,6 +164,7 @@ export default {
             router.back();
         }
     },
+
     async clearReadingTime() {
         try {
             await readingTimeStorage.clearAllReadingTime();
