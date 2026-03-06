@@ -1,19 +1,18 @@
 <import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page" style="flex-direction: column">
-		<div class="item">
-			<text static style="font-size: 24px; color: white; text-align: left; padding: 20px; lines: 5;">
+		<div class="preview-item">
+			<text static style="font-size: 24px;">
 				此设置影响翻页时加载的文本量。
 				值越大，每页加载的文本越多，但也可能增加单次加载时间。
 				修改后需重进阅读页生效。
 			</text>
 		</div>
-		<number style="position: absolute; bottom: 28px; left: 112px;" max.static="800" min.static="200" step.static="100" unit.static="字节" value="{{pageSize}}" @change="change" name.static="分段大小">
+		<number style="position: absolute; bottom: 28px; left: 112px;" max.static="1200" min.static="400" step.static="100" unit.static="B" value="{{pageSize}}" @change="change" name.static="分段大小">
 		</number>
 
-		
-		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-		<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
+		<img static src="/common/images/set.png" @click="back()" class="header-more"/>
+		<text static class="header-title">
 			分段大小
 		</text>
 	</div>

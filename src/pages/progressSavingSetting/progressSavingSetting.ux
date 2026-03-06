@@ -1,31 +1,35 @@
 <import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page" style="flex-direction: column">
-		<div class="item">
-			<text static style="font-size: 24px; color: white; text-align: left; padding: 20px; lines: 5;">
-				选择阅读器保存阅读进度的方式。
+        <list class="list">
+		<list-item class="page-title-item" type="title">
+			<text static class="page-title">
+				进度保存
 			</text>
-		</div>
+		</list-item>
 
-        <div class="setting-group">
-            <div class="setting-item" @click="changeMode('exit')">
-                <text class="setting-label">退出时保存</text>
-                <img class="radio-icon" if="{{saveMode === 'exit'}}" src="/common/images/check.png" />
-            </div>
-            <div class="setting-item" @click="changeMode('periodic')">
-                <text class="setting-label">定时保存</text>
-                <img class="radio-icon" if="{{saveMode === 'periodic'}}" src="/common/images/check.png" />
-            </div>
-        </div>
 
-		<number if="{{saveMode === 'periodic'}}" style="position: absolute; bottom: 28px; left: 112px;" max.static="60" min.static="1" step.static="1" unit.static="秒" value="{{saveInterval}}" @change="change" name.static="保存间隔">
-		</number>
+		<list-item class="item {{saveMode === 'exit'?'item2':''}}" @click="changeMode('exit')" type="item">
+			<text class="itemtext" static>退出时保存</text>
+			  <img src="/common/images/check.png" class="check" if="{{saveMode === 'exit'}}"/>
+		  </list-item>
 
-		
-		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-		<text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-			进度保存
-		</text>
+		  <list-item class="item {{saveMode === 'periodic'?'item2':''}}" @click="changeMode('periodic')" type="item">
+			<text class="itemtext" static>定时保存</text>
+			<img src="/common/images/check.png" class="check" if="{{saveMode === 'periodic'}}"/>
+		  </list-item>
+
+<list-item if="{{saveMode === 'periodic'}}" style="height: 64px;" class="center" type="title">
+  <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+	  保存时间间隔
+  </text>
+</list-item>
+<list-item style="height: 92px;" type="item">
+	<number if="{{saveMode === 'periodic'}}" style="left: 80px;" max.static="60" min.static="1" step.static="1" unit.static="秒" value="{{saveInterval}}" @change="change" name.static="保存间隔">
+	</number>
+	</list-item>
+        </list>
+		<img static src="/common/images/set.png" @click="back()" class="header-more"/>
 	</div>
 </template>
 

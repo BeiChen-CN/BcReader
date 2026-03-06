@@ -16,7 +16,7 @@
 	  触发灵敏度
   </text>
 </list-item>
-<list-item style="height: 92px;" @click="toggleShowInfo" type="item">
+<list-item style="height: 92px;" type="item">
 		<number style="left: 80px;" max.static="200" min.static="0" step.static="5" unit.static="px" value="{{scrollSensitivity}}" @change="onSensitivityChange" name.static="触发灵敏度">
 		</number>
 	</list-item>
@@ -25,7 +25,7 @@
 		  按钮高度
 	  </text>
 	</list-item>
-	<list-item style="height: 92px;" @click="toggleShowInfo" type="item">
+	<list-item style="height: 92px;" type="item">
 		<number style="left: 80px;" max.static="200" min.static="25" step.static="5" unit.static="px" value="{{buttonHeight}}" @change="onHeightChange" name.static="按钮高度">
 		</number>
 		</list-item>

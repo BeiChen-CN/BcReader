@@ -26,14 +26,9 @@
     <text class="itemtext" static>跑马灯设置</text>
     <img src="/common/images/enter.png" class="arrow" static />
 </list-item>
-            <list-item class="item" style="padding: 7px 16px;" type="tip">
-                <text class="itemtext2" style="lines: 3;">调整前猜一猜，为什么这里叫"性能设置"。</text>
-            </list-item>
         </list>
 
-
-        
-        <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;" />
+        <img static src="/common/images/set.png" @click="back()" class="header-more"/>
     </div>
 </template>
 
