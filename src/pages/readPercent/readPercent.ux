@@ -1,77 +1,58 @@
 <template>
-	<div class="page" style="flex-direction: column;">
-	  <div class="item">
-		  <text style="font-size: 36px;font-weight:bold;color: white;width: 100%;text-align: center;">
-			  {{inputPercent}}%
-		  </text>
-		  <text style="font-size: 24px;font-weight:bold;color: rgba(255, 255, 255, 0.6);width: 100%;text-align: center;">
-			  当前章节进度
-		  </text>
-	  </div>
-	  <div class="row" style="top:209px">
-		  <img static src="/common/images/num_pad/7.png" @click="onClick('7')"/>
-		  <img static src="/common/images/num_pad/8.png" @click="onClick('8')"/>
-		  <img static src="/common/images/num_pad/9.png" @click="onClick('9')"/>
-	  </div>
-	  <div class="row" style="top:276px">
-		  <img static src="/common/images/num_pad/4.png" @click="onClick('4')"/>
-		  <img static src="/common/images/num_pad/5.png" @click="onClick('5')"/>
-		  <img static src="/common/images/num_pad/6.png" @click="onClick('6')"/>
-	  </div>
-	  <div class="row" style="top:343px">
-		  <img static src="/common/images/num_pad/1.png" @click="onClick('1')"/>
-		  <img static src="/common/images/num_pad/2.png" @click="onClick('2')"/>
-		  <img static src="/common/images/num_pad/3.png" @click="onClick('3')"/>
-	  </div>
-	  <div class="row" style="top:410px">
-		  <img static src="/common/images/num_pad/0.png" @click="onClick('0')"/>
-		  <img static src="/common/images/num_pad/del.png" @click="onClick('del')"/>
-	  </div>
-  
-  
-	  
-	  <img static src="/common/images/conform.png" @click="onClick('conform')" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
-	  <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
-		  跳转百分比
-	  </text>
+	<div class="page" style="flex-direction: column; justify-content: center; align-items: center; width: 100%;">
+		<div style="flex-direction: column; align-items: center; margin-bottom: 20px;">
+			<text style="font-size: 48px; font-weight: bold; color: #3498db;">{{inputPercent}}%</text>
+			<text style="font-size: 24px; font-weight: bold; color: rgba(255, 255, 255, 0.6); margin-top: 4px;">
+				当前章节进度
+			</text>
+		</div>
+
+		<div style="flex-direction: column; align-items: center; width: 340px;">
+			<div class="row">
+				<div class="key-btn" @click="onClick('7')"><text class="key-text">7</text></div>
+				<div class="key-btn" @click="onClick('8')"><text class="key-text">8</text></div>
+				<div class="key-btn" @click="onClick('9')"><text class="key-text">9</text></div>
+			</div>
+			<div class="row">
+				<div class="key-btn" @click="onClick('4')"><text class="key-text">4</text></div>
+				<div class="key-btn" @click="onClick('5')"><text class="key-text">5</text></div>
+				<div class="key-btn" @click="onClick('6')"><text class="key-text">6</text></div>
+			</div>
+			<div class="row">
+				<div class="key-btn" @click="onClick('1')"><text class="key-text">1</text></div>
+				<div class="key-btn" @click="onClick('2')"><text class="key-text">2</text></div>
+				<div class="key-btn" @click="onClick('3')"><text class="key-text">3</text></div>
+			</div>
+			<div class="row">
+				<div class="key-btn btn-del" @click="onClick('del')"><text class="key-text" style="font-size: 26px;">删除</text></div>
+				<div class="key-btn" @click="onClick('0')"><text class="key-text">0</text></div>
+				<div class="key-btn btn-confirm" @click="onClick('conform')"><text class="key-text" style="font-size: 26px;">跳转</text></div>
+			</div>
+		</div>
 	</div>
-  </template>
+</template>
   
-  <script>
-  import router from '@system.router'
-  import prompt from '@system.prompt'
-  import file from '@system.file'
-  import bookStorage from '../../utils/bookStorage.js'
-  import chapterManager from '../../utils/chapterManager.js'
-  import runAsyncFunc from '../../utils/runAsyncFunc.js'
-  
-  export default {
+<script>
+import router from '@system.router'
+import prompt from '@system.prompt'
+import file from '@system.file'
+import bookStorage from '../../utils/bookStorage.js'
+import chapterManager from '../../utils/chapterManager.js'
+import runAsyncFunc from '../../utils/runAsyncFunc.js'
+
+export default {
 	private: {
-	  inputPercent: '0',
-	  nowTime: "00:00",
-	  timer: null,
-	  currentChapterIndex: null
+		inputPercent: '0',
+		currentChapterIndex: null
 	},
 	protected: {
 		name: ''
 	},
-	updateTime() {
-	  const date = new Date();
-	  let hours = date.getHours();
-	  let minutes = date.getMinutes();
-  
-	  hours = hours < 10 ? '0' + hours : hours;
-	  minutes = minutes < 10 ? '0' + minutes : minutes;
-  
-	  this.nowTime = `${hours}:${minutes}`;
-	},
+
 	onInit() {
-	  this.updateTime();
-	  this.timer = setInterval(() => {
-		this.updateTime();
-	  }, 1000);
-	  this.loadData();
+		this.loadData();
 	},
+
 	async loadData() {
 		let progress = await bookStorage.get(this.name);
 		if (progress.chapterIndex !== null && progress.chapterIndex !== undefined) {
@@ -91,107 +72,119 @@
 			this.inputPercent = '0';
 		}
 	},
-	onDestroy(){
-		if (this.timer) {
-			clearInterval(this.timer);
-			this.timer = null;
+
+	async onClick(num) {
+		if (num === 'del') {
+			if (this.inputPercent.length > 1) {
+				this.inputPercent = this.inputPercent.slice(0, -1);
+			} else {
+				this.inputPercent = '0';
+			}
+			return;
+		}
+
+		if (num === 'conform') {
+			if (this.currentChapterIndex === null || this.currentChapterIndex === undefined) {
+				prompt.showToast({ message: '无法跳转，章节信息错误', duration: 2000 });
+				return;
+			}
+
+			let targetPercent = parseFloat(this.inputPercent);
+			if (isNaN(targetPercent) || targetPercent < 0) {
+				targetPercent = 0;
+			}
+			if (targetPercent > 100) {
+				targetPercent = 100;
+			}
+
+			try {
+				const chapter = await chapterManager.getChapterByIndex(this.name, this.currentChapterIndex);
+				if (!chapter) {
+					prompt.showToast({ message: '章节不存在', duration: 2000 });
+					return;
+				}
+
+				let allSize = 0;
+				if (globalThis.readerChapterIndex === this.currentChapterIndex && globalThis.readerChapterAllSize > 0) {
+					allSize = globalThis.readerChapterAllSize;
+				} else {
+					const chapterPath = `internal://files/books/${this.name}/content/${chapter.index}.txt`;
+					const fileInfo = await runAsyncFunc(file.get, { uri: chapterPath });
+					allSize = fileInfo.length;
+				}
+				
+				if (allSize <= 0) {
+					prompt.showToast({ message: '章节内容为空', duration: 2000 });
+					return;
+				}
+
+				const targetOffset = Math.floor((targetPercent / 100) * allSize);
+				const segmentSize = globalThis.readerTxtSizePage ? globalThis.readerTxtSizePage * 2 : 800 * 2;
+				const segmentStart = Math.floor(targetOffset / segmentSize) * segmentSize;
+				const maxSegmentStart = Math.max(0, allSize - segmentSize);
+				const offsetInChapter = Math.max(0, Math.min(segmentStart, maxSegmentStart));
+				
+				let progress = await bookStorage.get(this.name);
+				progress.chapterIndex = this.currentChapterIndex;
+				progress.offsetInChapter = offsetInChapter;
+				progress.scrollOffset = 0;
+				await bookStorage.set(this.name, progress);
+				progress = null;
+				
+				prompt.showToast({ message: '设置成功', duration: 1000 });
+				globalThis.justJumpedFromPercent = true;
+				globalThis.justJumpedChapterIndex = this.currentChapterIndex;
+				globalThis.justJumpedOffsetInChapter = offsetInChapter;
+				globalThis.justJumpedTargetPercent = targetPercent;
+				router.back();
+			} catch (e) {
+				prompt.showToast({ message: '设置失败: ' + (e.message || '未知错误'), duration: 2000 });
+			}
+			return;
+		}
+
+		const currentVal = this.inputPercent === '0' ? '' : this.inputPercent;
+		const newValStr = currentVal + num;
+		const newVal = parseFloat(newValStr);
+
+		if (newVal > 100) {
+			prompt.showToast({ message: '最大百分比为 100%', duration: 1000 });
+		} else {
+			this.inputPercent = newValStr;
 		}
 	},
-	async onClick(num){
-	  if (num === 'del') {
-		  if (this.inputPercent.length > 1) {
-			  this.inputPercent = this.inputPercent.slice(0, -1);
-		  } else {
-			  this.inputPercent = '0';
-		  }
-		  return;
-	  }
-  
-	  if (num === 'conform') {
-		  if (this.currentChapterIndex === null || this.currentChapterIndex === undefined) {
-			  prompt.showToast({ message: '无法跳转，章节信息错误', duration: 2000 });
-			  return;
-		  }
 
-		  let targetPercent = parseFloat(this.inputPercent);
-		  if (isNaN(targetPercent) || targetPercent < 0) {
-			  targetPercent = 0;
-		  }
-		  if (targetPercent > 100) {
-			  targetPercent = 100;
-		  }
-
-		  try {
-			  const chapter = await chapterManager.getChapterByIndex(this.name, this.currentChapterIndex);
-			  if (!chapter) {
-				  prompt.showToast({ message: '章节不存在', duration: 2000 });
-				  return;
-			  }
-
-			  let allSize = 0;
-			  if (globalThis.readerChapterIndex === this.currentChapterIndex && globalThis.readerChapterAllSize > 0) {
-				  allSize = globalThis.readerChapterAllSize;
-			  } else {
-				  const chapterPath = `internal://files/books/${this.name}/content/${chapter.index}.txt`;
-				  const fileInfo = await runAsyncFunc(file.get, { uri: chapterPath });
-				  allSize = fileInfo.length;
-			  }
-			  
-			  if (allSize <= 0) {
-				  prompt.showToast({ message: '章节内容为空', duration: 2000 });
-				  return;
-			  }
-
-			  const targetOffset = Math.floor((targetPercent / 100) * allSize);
-			  const segmentSize = globalThis.readerTxtSizePage ? globalThis.readerTxtSizePage * 2 : 800 * 2;
-			  const segmentStart = Math.floor(targetOffset / segmentSize) * segmentSize;
-			  const maxSegmentStart = Math.max(0, allSize - segmentSize);
-			  const offsetInChapter = Math.max(0, Math.min(segmentStart, maxSegmentStart));
-			  
-			  let progress = await bookStorage.get(this.name);
-			  progress.chapterIndex = this.currentChapterIndex;
-			  progress.offsetInChapter = offsetInChapter;
-			  progress.scrollOffset = 0;
-			  await bookStorage.set(this.name, progress);
-        progress = null;
-			  
-			  prompt.showToast({ message: '设置成功', duration: 1000 });
-			  globalThis.justJumpedFromPercent = true;
-			  globalThis.justJumpedChapterIndex = this.currentChapterIndex;
-			  globalThis.justJumpedOffsetInChapter = offsetInChapter;
-			  globalThis.justJumpedTargetPercent = targetPercent;
-			  router.back();
-		  } catch (e) {
-			  prompt.showToast({ message: '设置失败: ' + (e.message || '未知错误'), duration: 2000 });
-		  }
-		  return;
-	  }
-  
-	  const currentVal = this.inputPercent === '0' ? '' : this.inputPercent;
-	  const newValStr = currentVal + num;
-	  const newVal = parseFloat(newValStr);
-  
-	  if (newVal > 100) {
-		  prompt.showToast({ message: '最大百分比为 100%', duration: 1000 });
-	  } else {
-		  this.inputPercent = newValStr;
-	  }
-	},
-	back(){
+	back() {
 		router.back();
 	}
-  }
-  </script>
+}
+</script>
   
-  <style>
-  @import '../../common/style.css';
-  
-  .row {
-	  position:absolute;
-	  width:336px;
-	  height:64px;
-	  padding:0px 6px;
-	  justify-content: space-between;
-  }
-  </style>
+<style>
+@import '../../common/style.css';
+.row {
+	width: 100%;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+.key-btn {
+	width: 110px;
+	height: 64px;
+	background-color: #333333;
+	border-radius: 32px;
+	justify-content: center;
+	align-items: center;
+}
+.key-text {
+	color: #ffffff;
+	font-size: 32px;
+	font-weight: bold;
+}
 
+.btn-del {
+	background-color: #4a2323;
+}
+.btn-confirm {
+	background-color: #3498db;
+}
+</style>
