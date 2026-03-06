@@ -58,6 +58,8 @@ import storage from '../../utils/storage.js';
 import chapterManager from '../../utils/chapterManager.js';
 import device from '@system.device';
 import { calculateStorageInfo, isStorageLow } from '../../utils/storageUtils.js';
+import file from '@system.file';
+import runAsyncFunc from '../../utils/runAsyncFunc.js';
 
 export default {
   private: {
@@ -84,7 +86,7 @@ export default {
     showSearchBar: true
   },
   
-  onInit() {
+  async onInit() {
     bookStorage.load();
   },
   
@@ -473,5 +475,6 @@ export default {
 .itemtext2 {
   color: #ffffff99;
   font-size: 34px;
+  lines: 1;
 }
 </style>
