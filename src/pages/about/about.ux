@@ -1,142 +1,97 @@
 <template>
-	<div class="page">
-    <scroll scroll-y="{{true}}" bounces="{{true}}" style="position: absolute;width: 336px;height: 480px;">
-      <img static src="/common/images/about_img.png" style="width: 100%;"/>
+	<div class="page" style="flex-direction: column">
+    <list class="list">
+      <list-item class="page-title-item" type="title">
+        <text static class="page-title">
+          关于
+        </text>
+      </list-item>
+      <list-item type="content" class="item center" style="width: 416px;height: 110px;">
+        <text style="font-size: 38px;font-weight:bold;">弦电子书</text>
+        <text style="font-size: 38px;font-weight:bold;color: #ffffff99;left: 12px;">{{displayVersion}}</text>
+      </list-item>
+      <list-item style="height: 64px;" class="center" type="title">
+        <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+          参与开发的人员
+        </text>
+      </list-item>
+      <list-item type="content" class="item center" style="width: 416px;height: 248px;flex-direction: column;">
+        <text style="font-size: 38px;font-weight:bold;">@爅峫moye</text>
+        <text style="font-size: 38px;font-weight:bold;top: 5px;">@乐色桶</text>
+        <text style="font-size: 38px;font-weight:bold;top: 5px;">@NEORUAA</text>
+        <text style="font-size: 38px;font-weight:bold;top: 5px;">@无源流沙</text>
+      </list-item>
+      <list-item style="height: 64px;" class="center" type="title">
+        <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+          官网
+        </text>
+      </list-item>
+      <list-item type="content" class="item center" style="width: 416px;height: 110px;">
+        <text style="font-size: 38px;font-weight:bold;">vs.lucky-e.top</text>
+      </list-item>
+      <list-item style="height: 64px;" class="center" type="title">
+        <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+          QQ交流群
+        </text>
+      </list-item>
+      <list-item type="content" class="item center" style="width: 416px;height: 110px;">
+        <text style="font-size: 38px;font-weight:bold;">1067415278</text>
+      </list-item>
+      <list-item style="height: 64px;" class="center" type="title">
+        <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+          更多资源请访问
+        </text>
+      </list-item>
+      <list-item type="content" class="center" style="width: 100%;height: 40px;">
+        <text style="font-size: 38px;font-weight:bold;">bandbbs.cn</text>
+      </list-item>
+    </list>
 
-      <text style="position: absolute;left: 26px;top: 102px;width: 282px;height: 48px;font-size: 36px;font-weight: bold;color: #FFFFFF;">
-        弦{{appName}}
-      </text>
-      <text style="position: absolute;left: 26px;top: 144px;width: 204px;height: 48px;font-size: 36px;font-weight: bold;color: rgba(255, 255, 255, 0.6);">
-        {{displayVersion}}
-      </text>
-      <text style="position: absolute;left: 26px;top: 186px;width: 282px;height: 36px;font-size: 24px;font-weight: bold;color: rgba(255, 255, 255, 0.4);">
-        {{versionType}}
-      </text>
-    </scroll>
-    
-    <text static style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">关于</text>
-    
+	  <img static src="/common/images/about.png" @click="back()" class="header-more"/>
 	</div>
-  </template>
+</template>
   
-  <script>
+<script>
   import router from '@system.router'
   import app from '@system.app' 
-  import storage from '../../utils/storage.js'
   
   export default {
-	private: {
-    nowTime:':',
-    appName:'弦电子书',
-    appVer:'1.0.0',
-    displayVersion:'1.0.0',
-    versionType:'',
-    timer:null,
-    timeFormat: '24h'
-	},
-	protected: {
-  
-	},
-	onInit() {
-    this.loadTimeFormat();
-		const that = this;
-    this.timer = setInterval(function(){
-      that.updateTime();
-    }, 60000);
-    this.appName=app.getInfo().name;
-    this.appVer=app.getInfo().versionName;
-    this.parseVersion();
-	},
-  onShow(){
-	  this.updateTime();
-  },
-  onDestroy(){
-	  if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-  },
-	back(){
-		router.back();
-	},
-  loadTimeFormat() {
-    storage.get({
-        key: 'EBOOK_TIME_FORMAT',
-        success: (data) => {
-            if (data) {
-                this.timeFormat = data;
-            }
-            this.updateTime();
-        },
-        fail: () => {
-            this.updateTime();
-        }
-    });
-  },
-  updateTime() {
-    const date = new Date();
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    if (this.timeFormat === '12h') {
-        let ampm = hours >= 12 ? '下午' : '上午';
-        hours = hours % 12;
-        hours = hours ? hours : 12; 
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${ampm} ${hours}:${minutes}`;
-    } else {
-        hours = hours < 10 ? '0' + hours : hours;
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${hours}:${minutes}`;
-    }
-  },
-  parseVersion() {
-    const version = this.appVer;
+    private: {
+      appVer: '1.0.0',
+      displayVersion: '1.0.0'
+    },
     
-    const parts = version.split('.');
-    let mainVersion = '';
-    let versionTypeCode = '';
+    onInit() {
+      this.appVer = app.getInfo().versionName;
+      this.parseVersion();
+    },
     
-    if (parts.length >= 3) {
-      mainVersion = parts.slice(0, 3).join('.');
+    back() {
+      router.back();
+    },
+    
+    parseVersion() {
+      const version = this.appVer;
+      const parts = version.split('.');
+      let mainVersion = '';
       
-      if (parts.length > 3) {
-        versionTypeCode = parts[3];
-      } else if (parts[2].includes('RW') || parts[2].includes('BAND')) {
-        const thirdPart = parts[2];
-        if (thirdPart.includes('RW')) {
-          mainVersion = thirdPart.replace('RW', '');
-          versionTypeCode = 'RW';
-        } else if (thirdPart.includes('BAND10')) {
-          mainVersion = thirdPart.replace('BAND10', '');
-          versionTypeCode = 'BAND10';
-        } else if (thirdPart.includes('BAND')) {
-          mainVersion = thirdPart.replace('BAND', '');
-          versionTypeCode = 'BAND';
+      if (parts.length >= 3) {
+        mainVersion = parts.slice(0, 3).join('.');
+        
+        if (parts.length <= 3 && (parts[2].includes('RW') || parts[2].includes('BAND'))) {
+          mainVersion = mainVersion.replace('RW', '')
+                                   .replace('BAND10', '')
+                                   .replace('BAND', '');
         }
+      } else {
+        mainVersion = version;
       }
-    } else {
-      mainVersion = version;
-    }
-    
-    this.displayVersion = mainVersion;
-    
-    switch(versionTypeCode) {
-      case 'RW':
-        this.versionType = '红米手表版';
-        break;
-      case 'BAND10':
-        this.versionType = '米环10版';
-        break;
-      default:
-      case 'BAND':
-        this.versionType = '米环Pro版';
-        break;
+      
+      this.displayVersion = mainVersion;
     }
   }
+</script>
   
-  }
-  </script>
-  
-  <style>
+<style>
   @import '../../common/style.css';
-  </style>
+</style>
