@@ -7,24 +7,25 @@
 				书架设置
 			</text>
 		</list-item>
-            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
-                <text class="section-title" static>书架样式</text>
-            </list-item>
+        <list-item style="height: 64px;" class="center" type="title">
+          <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+              书架样式
+          </text>
+        </list-item>
             <list-item class="item {{shelfStyle === 'list' ? 'item2' : ''}}" @click="selectShelfStyle('list')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>列表样式</text>
-                    <text class="itemtext2" static>默认的列表样式</text>
-                </div>
-                <img if="{{shelfStyle === 'list'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>列表样式</text>
+                <img if="{{shelfStyle === 'list'}}" src="/common/images/check.png" class="check" static />
             </list-item>
             <list-item class="item {{shelfStyle === 'cover' ? 'item2' : ''}}" @click="selectShelfStyle('cover')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>封面样式</text>
-                    <text class="itemtext2" static>展示书籍封面</text>
-                </div>
-                <img if="{{shelfStyle === 'cover'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>封面样式</text>
+                <img if="{{shelfStyle === 'cover'}}" src="/common/images/check.png" class="check" static />
             </list-item>
 
+            <list-item style="height: 64px;" class="center" type="title">
+                <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+                    书架功能
+                </text>
+              </list-item>
             <list-item class="item" @click="toggleLastRead" type="item">
     <text class="itemtext" static>置顶上次阅读</text>
     <img src="{{lastReadOnTop ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
@@ -40,72 +41,64 @@
     <img src="{{showSearchBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
 </list-item>
 
-            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
-                <text class="section-title" static>首页展示方式</text>
-            </list-item>
+<list-item style="height: 64px;" class="center" type="title">
+    <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+        首页展示方式
+    </text>
+  </list-item>
             <list-item class="item {{displayMode === 'all' ? 'item2' : ''}}" @click="selectDisplayMode('all')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>展示全部书籍</text>
-                    <text class="itemtext2" static>显示所有书籍</text>
-                </div>
-                <img if="{{displayMode === 'all'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>展示全部书籍</text>
+                <img if="{{displayMode === 'all'}}" src="/common/images/check.png" style="width:40px;height: 40px;" class="check" static />
             </list-item>
             <list-item class="item {{displayMode === 'category' ? 'item2' : ''}}" @click="selectDisplayMode('category')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>展示分类列表</text>
-                    <text class="itemtext2" static>显示分类列表</text>
-                </div>
-                <img if="{{displayMode === 'category'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>展示分类列表</text>
+                <img if="{{displayMode === 'category'}}" src="/common/images/check.png" class="check" static />
             </list-item>
             
             <list-item class="item" @click="toggleCategoryPagination" type="item" if="{{displayMode === 'category'}}">
-    <text class="itemtext" static>分类分页</text>
-    <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-</list-item>
+            <text class="itemtext" static>分类分页</text>
+            <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
+        </list-item>
             
-            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
-                <text class="section-title" static>首页进度显示</text>
+        <list-item style="height: 64px;" class="center" type="title">
+            <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+                分页每页数量
+            </text>
+          </list-item>
+        <list-item style="height: 92px;" type="item">
+            <number style="left: 80px;" max.static="15" min.static="2" step.static="1" value="{{shelfPageSize}}" @change="changePageSize" name.static="每页数量"></number>
             </list-item>
+<list-item style="height: 64px;" class="center" type="title">
+    <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+        首页进度展示
+    </text>
+  </list-item>
             <list-item class="item {{progressMode === 'chapter' ? 'item2' : ''}}" @click="selectProgressMode('chapter')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>章节进度</text>
-                    <text class="itemtext2" static>仅显示当前章进度</text>
-                </div>
-                <img if="{{progressMode === 'chapter'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>显示当前章进度</text>
+                <img if="{{progressMode === 'chapter'}}" src="/common/images/check.png" class="check" static />
             </list-item>
             <list-item class="item {{progressMode === 'book' ? 'item2' : ''}}" @click="selectProgressMode('book')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>整本进度</text>
-                    <text class="itemtext2" static>结合章节进度显示</text>
-                </div>
-                <img if="{{progressMode === 'book'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>显示整本进度</text>
+                <img if="{{progressMode === 'book'}}" src="/common/images/check.png" class="check" static />
             </list-item>
             
-            <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
-                <text class="section-title" static>刷新设置</text>
-            </list-item>
+<list-item style="height: 64px;" class="center" type="title">
+    <text static class="page-title" style="font-size: 38px;color: #ffffff99;">
+        刷新设置
+    </text>
+  </list-item>
             <list-item class="item {{refreshMode === 'onEnter' ? 'item2' : ''}}" @click="selectRefreshMode('onEnter')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>重进小程序刷新</text>
-                    <text class="itemtext2" static>每次进入小程序时刷新书架</text>
-                </div>
-                <img if="{{refreshMode === 'onEnter'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>重进小程序刷新</text>
+                <img if="{{refreshMode === 'onEnter'}}" src="/common/images/check.png" class="check" static />
             </list-item>
             <list-item class="item {{refreshMode === 'onExit' ? 'item2' : ''}}" @click="selectRefreshMode('onExit')" type="item">
-                <div class="item-content">
-                    <text class="itemtext" static>退出阅读器刷新</text>
-                    <text class="itemtext2" static>退出阅读器时刷新书架</text>
-                </div>
-                <img if="{{refreshMode === 'onExit'}}" src="/common/images/check.png" style="width:40px;height: 40px;" static />
+                <text class="itemtext" static>退出阅读器刷新</text>
+                <img if="{{refreshMode === 'onExit'}}" src="/common/images/check.png" class="check" static />
             </list-item>
+
         </list>
 
-        <img src="/common/images/bt.png" style="position: absolute;left: 0px;top: 378px;width: 336px;height: 102px;" />
-        <number style="position: absolute;bottom:6px" max.static="15" min.static="2" step.static="1" value="{{shelfPageSize}}" @change="changePageSize" name.static="每页数量"></number>
-
-        
-        
-		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
+		<img static src="/common/images/set.png" @click="back()" class="header-more"/>
     </div>
 </template>
 
