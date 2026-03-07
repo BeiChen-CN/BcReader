@@ -72,7 +72,6 @@
 		  </list-item>
 	  </list>
   
-	  
 	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
 	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
 	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
@@ -82,14 +81,12 @@
 		  菜单
 	  </text>
 	</div>
-  </template>
+</template>
   
-  <script>
+<script>
   import router from '@system.router'
   import prompt from '@system.prompt'
-  import app from '@system.app'
   import bookStorage from '../../utils/bookStorage.js'
-  
   
   export default {
 	private: {
@@ -100,6 +97,7 @@
 	protected: {
 		name: ''
 	},
+    
 	updateTime() {
 	  const date = new Date();
 	  let hours = date.getHours();
@@ -110,23 +108,21 @@
   
 	  this.nowTime = `${hours}:${minutes}`;
 	},
+    
 	onInit() {
 	  this.updateTime();
 	  this.timer = setInterval(() => {
 		this.updateTime();
-	  }, 1000);
+	  }, 60000); 
 	},
+    
 	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+	  if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
 	},
-	onReady(){
-	},
-	resetList(){
-  
-	},
+    
 	onShow(){
 		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber || globalThis.justJumpedFromPercent) {
 			router.back();
@@ -136,8 +132,7 @@
 			this.isKeepScreenOn = globalThis.isKeepScreenOn;
 		}
 	},
-	onBackPress(){
-	},
+    
 	del(){
 		router.push({
             uri: '/pages/confirm',
@@ -150,22 +145,19 @@
             }
         });
 	},
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail',
-			params: { name: item.dirName }
-		})
-	},
+    
 	routerTo(url) {
 	  router.push({
 		uri: '/pages/' + url,
 		params: { name: this.name }
 	  })
 	},
+    
 	toggleKeepScreenOnClick() {
 		this.isKeepScreenOn = !this.isKeepScreenOn;
 		globalThis.isKeepScreenOn = this.isKeepScreenOn;
 	},
+    
 	async backToFirst(){
 		try {
 			let progress = await bookStorage.get(this.name);
@@ -177,7 +169,7 @@
 			progress.offsetInChapter = 0;
 			progress.scrollOffset = 0;
 			await bookStorage.set(this.name, progress);
-      progress = null;
+            progress = null;
 			
 			prompt.showToast({ message: '已跳转到第一段', duration: 1500 });
 			globalThis.justJumpedFromPageNumber = true;
@@ -187,15 +179,13 @@
 			prompt.showToast({ message: '跳转失败', duration: 2000 });
 		}
 	},
+    
 	back(){
 		router.back();
-	},
-	exit(){
-		app.terminate();
 	}
   }
-  </script>
+</script>
   
-  <style>
+<style>
   @import '../../common/style.css';
-              </style>
+</style>

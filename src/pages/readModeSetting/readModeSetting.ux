@@ -1,6 +1,5 @@
 <template>
 	<div class="page" style="flex-direction: column;">
-
 	  <list class="list">
 		<list-item class="item {{readMode === 'scroll' ? 'item2' : ''}}" @click="select('scroll')" type="item">
 			<div class="item-content">
@@ -41,7 +40,6 @@
 			  </div>
 			  <img src="/common/images/check.png" style="width:40px;height: 40px;" if="{{nostalgicPageTurnMode === 'topBottomClick'}}"/>
 		  </list-item>
-
 	  </list>
 	  
 	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
@@ -55,26 +53,73 @@
 			阅读模式
 		</text>
 	</div>
-  </template>
+</template>
 
-  <script>
+<script>
   import router from '@system.router'
   import storage from '../../utils/storage.js'
-  import app from '@system.app'
 
   export default {
 	private: {
 		readMode: 'scroll',
 		nostalgicPageTurnMode: 'topBottomClick',
-		txtNum:0,
+		txtNum: 0,
 		nowTime: "00:00",
 		timer: null,
 		timeFormat: '24h'
 	},
-	protected: {
-	  cPath: '',
-		name: ''
+
+	onInit() {
+		storage.get({
+			key: 'EBOOK_TIME_FORMAT',
+			success: (data) => {
+				if(data) this.timeFormat = data;
+				this.updateTime();
+			},
+			fail: () => {
+				this.updateTime();
+			}
+		});
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 1000);
 	},
+
+	onShow() {
+	  storage.get({
+		  key: 'EBOOK_READ_MODE',
+		  success: (data) => {
+			this.readMode = data || 'scroll';
+			if (this.readMode === 'nostalgic') {
+				storage.get({
+					key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
+					success: (modeData) => {
+						this.nostalgicPageTurnMode = modeData || 'topBottomClick';
+						this.updateScene();
+					},
+					fail: () => {
+						this.nostalgicPageTurnMode = 'topBottomClick';
+						this.updateScene();
+					}
+				});
+			} else {
+				this.updateScene();
+			}
+		  },
+		  fail: () => {
+			this.readMode = 'scroll';
+			this.updateScene();
+		  }
+	  });
+	},
+
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+	},
+
 	updateTime() {
 		const date = new Date();
 		let hours = date.getHours();
@@ -91,89 +136,21 @@
 			this.nowTime = `${hours}:${minutes}`;
 		}
 	},
-	onInit() {
-		storage.get({
-			key: 'EBOOK_TIME_FORMAT',
-			success: (data) => {
-				if(data) this.timeFormat = data;
-				this.updateTime();
-			},
-			fail: () => {
-				this.updateTime();
-			}
-		});
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
-	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
 
-	},
-	onShow(){
-	  var that = this;
-	  storage.get({
-		  key: 'EBOOK_READ_MODE',
-		  success: function(data) {
-			if (data) {
-				that.readMode = data;
-			} else {
-				that.readMode = 'scroll';
-			}
-			if (that.readMode === 'nostalgic') {
-				storage.get({
-					key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
-					success: function(modeData) {
-						if (modeData) {
-							that.nostalgicPageTurnMode = modeData;
-						} else {
-							that.nostalgicPageTurnMode = 'topBottomClick';
-						}
-						that.updateScene();
-					},
-					fail: function() {
-						that.nostalgicPageTurnMode = 'topBottomClick';
-						that.updateScene();
-					}
-				});
-			} else {
-				that.updateScene();
-			}
-		  },
-		  fail: function(data, code) {
-			that.readMode = 'scroll';
-			that.updateScene();
-		  }
-	  })
-	},
-	onBackPress(){
-	},
-
-	select(mode){
-	  if (this.readMode === mode) {
-		  return;
-	  }
+	select(mode) {
+	  if (this.readMode === mode) return;
+	  
 	  this.readMode = mode;
 	  storage.set({
 		  key: 'EBOOK_READ_MODE',
 		  value: mode,
 	  });
+
 	  if (mode === 'nostalgic') {
 		  storage.get({
 			  key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
 			  success: (modeData) => {
-				  if (modeData) {
-					  this.nostalgicPageTurnMode = modeData;
-				  } else {
-					  this.nostalgicPageTurnMode = 'topBottomClick';
-				  }
+				  this.nostalgicPageTurnMode = modeData || 'topBottomClick';
 				  this.updateScene();
 			  },
 			  fail: () => {
@@ -185,10 +162,10 @@
 		  this.updateScene();
 	  }
 	},
+
 	selectPageTurnMode(mode) {
-	  if (this.nostalgicPageTurnMode === mode) {
-		  return;
-	  }
+	  if (this.nostalgicPageTurnMode === mode) return;
+	  
 	  this.nostalgicPageTurnMode = mode;
 	  storage.set({
 		  key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
@@ -197,34 +174,22 @@
 	  this.updateScene();
 	},
 
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail'
-		})
-	},
-	routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url
-	  })
-	},
-	back(){
+	back() {
 		router.back();
 	},
-	exit(){
-		app.terminate();
-	},
-	updateScene(){
+
+	updateScene() {
 		this.txtNum += 1;
 	}
   }
-  </script>
+</script>
 
 <style>
   @import '../../common/style.css';
-.section-title {
-  font-size: 24px;
-  line-height: 36px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.5);
-}
+  .section-title {
+    font-size: 24px;
+    line-height: 36px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.5);
+  }
 </style>

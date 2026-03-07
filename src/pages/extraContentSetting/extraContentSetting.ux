@@ -56,99 +56,63 @@
             showName: false,
             showWordCount: false
         },
-        updateTime() {
-            const date = new Date();
-            let hours = date.getHours();
-            let minutes = date.getMinutes();
-
-            if (this.timeFormat === '12h') {
-                let ampm = hours >= 12 ? '下午' : '上午';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${ampm} ${hours}:${minutes}`;
-            } else {
-                hours = hours < 10 ? '0' + hours : hours;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${hours}:${minutes}`;
-            }
-        },
+        
         onInit() {
-            storage.get({
-                key: 'EBOOK_TIME_FORMAT',
-                success: (data) => {
-                    if (data) {
-                        this.timeFormat = data;
-                    }
-                    this.updateTime();
-                },
-                fail: () => {
-                    this.updateTime();
-                }
-            });
+            this.loadSettings();
+            this.updateTime();
             this.timer = setInterval(() => {
                 this.updateTime();
-            }, 1000);
-            
-            storage.get({
-                key: 'EBOOK_CHAPTER_START_EMPTY_LINES',
-                success: (data) => {
-                    this.emptyLines = data === 'true';
-                }
-            });
-            storage.get({
-                key: 'EBOOK_CHAPTER_START_NUMBER',
-                success: (data) => {
-                    this.showNumber = data === 'true';
-                }
-            });
-            storage.get({
-                key: 'EBOOK_CHAPTER_START_NAME',
-                success: (data) => {
-                    this.showName = data === 'true';
-                }
-            });
-            storage.get({
-                key: 'EBOOK_CHAPTER_START_WORD_COUNT',
-                success: (data) => {
-                    this.showWordCount = data === 'true';
-                }
-            });
+            }, 10000);
         },
+        
         onDestroy() {
             if (this.timer) {
                 clearInterval(this.timer);
                 this.timer = null;
             }
         },
+
+        loadSettings() {
+            storage.get({ key: 'EBOOK_TIME_FORMAT', success: (data) => { if (data) this.timeFormat = data; this.updateTime(); }, fail: () => this.updateTime() });
+            storage.get({ key: 'EBOOK_CHAPTER_START_EMPTY_LINES', success: (data) => this.emptyLines = data === 'true' });
+            storage.get({ key: 'EBOOK_CHAPTER_START_NUMBER', success: (data) => this.showNumber = data === 'true' });
+            storage.get({ key: 'EBOOK_CHAPTER_START_NAME', success: (data) => this.showName = data === 'true' });
+            storage.get({ key: 'EBOOK_CHAPTER_START_WORD_COUNT', success: (data) => this.showWordCount = data === 'true' });
+        },
+
+        updateTime() {
+            const date = new Date();
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+
+            if (this.timeFormat === '12h') {
+                const ampm = hours >= 12 ? '下午' : '上午';
+                hours = hours % 12 || 12;
+                this.nowTime = `${ampm} ${hours}:${minutes}`;
+            } else {
+                hours = hours < 10 ? '0' + hours : hours;
+                this.nowTime = `${hours}:${minutes}`;
+            }
+        },
+
         toggleEmptyLines() {
             this.emptyLines = !this.emptyLines;
-            storage.set({
-                key: 'EBOOK_CHAPTER_START_EMPTY_LINES',
-                value: this.emptyLines.toString()
-            });
+            storage.set({ key: 'EBOOK_CHAPTER_START_EMPTY_LINES', value: this.emptyLines.toString() });
         },
         toggleNumber() {
             this.showNumber = !this.showNumber;
-            storage.set({
-                key: 'EBOOK_CHAPTER_START_NUMBER',
-                value: this.showNumber.toString()
-            });
+            storage.set({ key: 'EBOOK_CHAPTER_START_NUMBER', value: this.showNumber.toString() });
         },
         toggleName() {
             this.showName = !this.showName;
-            storage.set({
-                key: 'EBOOK_CHAPTER_START_NAME',
-                value: this.showName.toString()
-            });
+            storage.set({ key: 'EBOOK_CHAPTER_START_NAME', value: this.showName.toString() });
         },
         toggleWordCount() {
             this.showWordCount = !this.showWordCount;
-            storage.set({
-                key: 'EBOOK_CHAPTER_START_WORD_COUNT',
-                value: this.showWordCount.toString()
-            });
+            storage.set({ key: 'EBOOK_CHAPTER_START_WORD_COUNT', value: this.showWordCount.toString() });
         },
+        
         back() {
             router.back();
         }
@@ -157,4 +121,4 @@
 
 <style>
   @import '../../common/style.css';
-    </style>
+</style>

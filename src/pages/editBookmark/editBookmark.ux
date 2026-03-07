@@ -53,48 +53,53 @@ export default {
         bookmarkIndex: -1,
         currentName: ''
     },
-    updateTime() {
-      const date = new Date();
-      let hours = date.getHours();
-      let minutes = date.getMinutes();
-  
-      hours = hours < 10 ? '0' + hours : hours;
-      minutes = minutes < 10 ? '0' + minutes : minutes;
-  
-      this.nowTime = `${hours}:${minutes}`;
-    },
+    
     onInit() {
         this.textValue = this.currentName || '';
         this.updateTime();
         this.timer = setInterval(() => {
             this.updateTime();
-        }, 1000);
+        }, 60000);
     },
-    onDestroy(){
+    
+    onDestroy() {
         if (this.timer) {
             clearInterval(this.timer);
             this.timer = null;
         }
     },
+    
+    updateTime() {
+        const date = new Date();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        this.nowTime = `${hours}:${minutes}`;
+    },
+    
     onInput(evt) {
         if (this.textValue.length < 20) {
             this.textValue += evt.detail.content;
         }
     },
+    
     onDelete() {
         this.textValue = this.textValue.slice(0, -1);
     },
+    
     onVisibilityChange(evt) {
         if (!evt.detail.visible) {
             this.hideKeyboard = true;
         }
     },
+    
     toggleKeyboard() {
         this.hideKeyboard = !this.hideKeyboard;
     },
+    
     back() {
         router.back();
     },
+    
     async save() {
         if (!this.textValue) {
             prompt.showToast({ message: '名称不能为空' });
@@ -102,17 +107,14 @@ export default {
         }
 
         try {
-            
-            let bookmarks = await bookStorage.getBookmarks(this.bookName);
+            const bookmarks = await bookStorage.getBookmarks(this.bookName);
             if (bookmarks && bookmarks[this.bookmarkIndex]) {
                 bookmarks[this.bookmarkIndex].name = this.textValue;
-                
                 await bookStorage.setBookmarks(this.bookName, bookmarks);
-                bookmarks = null;
+                
                 prompt.showToast({ message: '保存成功' });
                 router.back();
             } else {
-                bookmarks = null;
                 prompt.showToast({ message: '找不到书签' });
             }
         } catch (e) {
@@ -123,7 +125,7 @@ export default {
 </script>
 
 <style>
-  @import '../../common/style.css';
+@import '../../common/style.css';
 .input-container {
     position: absolute;
     top: 100px;

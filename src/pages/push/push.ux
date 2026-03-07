@@ -36,7 +36,6 @@
           </div>
       </div>
 
-
       <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
       <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
         {{nowTime}}
@@ -47,8 +46,6 @@
   </div>	
 </template>
 
-
-
 <script>
 import router from '@system.router'
 import brightness from "@system.brightness"
@@ -56,15 +53,14 @@ import storage from '../../utils/storage.js'
 
 export default {
   private: {
-      fileName: '',
       persent: 0,
       state: 'wait',
       state2: 'ing',
       nowTime: "00:00",
       timer: null,
-      connState: null,
       timeFormat: '24h'
   },
+  
   updateConnState() {
     if (this.state === "upload") return;
     const connected = !!(globalThis.conn && globalThis.conn.connected);
@@ -74,6 +70,7 @@ export default {
       this.state = "wait";
     }
   },
+  
   updateTime() {
     const date = new Date();
     let hours = date.getHours();
@@ -90,6 +87,7 @@ export default {
       this.nowTime = `${hours}:${minutes}`;
     }
   },
+  
   onInit() {
     storage.get({
       key: 'EBOOK_TIME_FORMAT',
@@ -101,23 +99,26 @@ export default {
         this.updateTime();
       }
     });
+    
     this.timer = setInterval(() => {
       this.updateTime();
       this.updateConnState();
     }, 1000);
+    
     this.updateConnState();
-    this.eventlistener=globalThis.conn.addEventListener((data)=>{
+    
+    this.eventlistener = globalThis.conn.addEventListener((data) => {
       if (data !== "open") {
         if (this.state !== "upload") this.state = "wait";
       }
-    })
+    });
+    
     globalThis.connfile.setCallback((data) => {
       switch (data.msg) {
         case "next":
-          this.state = "upload"
-          this.state2 = "ing"
-          this.fileName = data.fileName;
-          this.persent = (data.progress*100).toFixed(0);
+          this.state = "upload";
+          this.state2 = "ing";
+          this.persent = (data.progress * 100).toFixed(0);
           break;
         case "error":
           if (this.state === "upload") {
@@ -137,41 +138,32 @@ export default {
         default:
           break;
       }
-    })
+    });
   },
 
   onShow() {
-		brightness.setKeepScreenOn({
-			keepScreenOn: true,
-		});
-		this.updateConnState();
-	},
-
-	onHide() {
-		brightness.setKeepScreenOn({
-			keepScreenOn: false,
-		});
-	},
-
-  next(){
-    if (this.state=="wait"){
-      this.state="ready"
-    }else if (this.state=="ready"){
-      this.state="upload"
-    }else if (this.state=="upload"){
-      this.state="wait"
-    }
-
+    brightness.setKeepScreenOn({
+      keepScreenOn: true,
+    });
+    this.updateConnState();
   },
-  back(){
-  	router.back();
+
+  onHide() {
+    brightness.setKeepScreenOn({
+      keepScreenOn: false,
+    });
   },
+
+  back() {
+    router.back();
+  },
+  
   onDestroy() {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
-    globalThis.conn.removeEventListener(this.eventlistener)
+    globalThis.conn.removeEventListener(this.eventlistener);
   }
 }
 </script>

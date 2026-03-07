@@ -100,9 +100,7 @@ export default {
 	},
 	onInit() {
 		this.updateTime();
-		this.timer = setInterval(() => { this.updateTime(); }, 1000);
-		this.loadDeviceInfo();
-		this.calculateStorageOverview();
+		this.timer = setInterval(() => { this.updateTime(); }, 60000);
 	},
 	onShow() {
 		this.loadDeviceInfo();

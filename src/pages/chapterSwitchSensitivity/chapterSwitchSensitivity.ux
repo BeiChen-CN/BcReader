@@ -72,7 +72,7 @@ export default {
         });
 		this.timer = setInterval(() => {
 			this.updateTime();
-		}, 1000);
+		}, 60000);
 
 		storage.get({
 			key: SENSITIVITY_KEY,

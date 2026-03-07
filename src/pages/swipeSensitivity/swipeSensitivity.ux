@@ -28,9 +28,9 @@
 			滑动灵敏度
 		</text>
 	</div>
-  </template>
+</template>
   
-  <script>
+<script>
   import router from '@system.router'
   import storage from '../../utils/storage.js'
   
@@ -44,22 +44,7 @@
 		  timer: null,
 		  timeFormat: '24h'
 	  },
-	  updateTime() {
-		  const date = new Date();
-		  let hours = date.getHours();
-		  let minutes = date.getMinutes();
-		  if (this.timeFormat === '12h') {
-			  let ampm = hours >= 12 ? '下午' : '上午';
-			  hours = hours % 12;
-			  hours = hours ? hours : 12;
-			  minutes = minutes < 10 ? '0' + minutes : minutes;
-			  this.nowTime = `${ampm} ${hours}:${minutes}`;
-		  } else {
-			  hours = hours < 10 ? '0' + hours : hours;
-			  minutes = minutes < 10 ? '0' + minutes : minutes;
-			  this.nowTime = `${hours}:${minutes}`;
-		  }
-	  },
+
 	  onInit() {
 		  storage.get({
 			  key: 'EBOOK_TIME_FORMAT',
@@ -67,52 +52,70 @@
 				  if(data) this.timeFormat = data;
 				  this.updateTime();
 			  },
-			  fail: () => {
-				  this.updateTime();
-			  }
+			  fail: () => this.updateTime()
 		  });
+
 		  this.timer = setInterval(() => {
 			  this.updateTime();
-		  }, 1000);
+		  }, 60000);
   
 		  storage.get({
 			  key: SENSITIVITY_KEY,
 			  success: (data) => {
-				  if (data) {
-					  this.sensitivityValue = parseInt(data);
-				  }
+				  if (data) this.sensitivityValue = parseInt(data);
 			  },
 		  });
 	  },
-	  onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+
+	  onDestroy() {
+		  if (this.timer) {
+              clearInterval(this.timer);
+              this.timer = null;
+          }
 	  },
+
+	  updateTime() {
+		  const date = new Date();
+		  let hours = date.getHours();
+		  let minutes = date.getMinutes();
+          minutes = minutes < 10 ? '0' + minutes : minutes;
+
+		  if (this.timeFormat === '12h') {
+			  let ampm = hours >= 12 ? '下午' : '上午';
+			  hours = hours % 12 || 12;
+			  this.nowTime = `${ampm} ${hours}:${minutes}`;
+		  } else {
+			  hours = hours < 10 ? '0' + hours : hours;
+			  this.nowTime = `${hours}:${minutes}`;
+		  }
+	  },
+
 	  change(e) {
 		  this.sensitivityValue = e.detail.value;
-		  storage.set({
-			  key: SENSITIVITY_KEY,
-			  value: this.sensitivityValue.toString(),
-		  });
+		  this.saveSensitivity();
 	  },
+
 	  reset() {
 		  this.sensitivityValue = DEFAULT_SENSITIVITY;
-		  storage.set({
+		  this.saveSensitivity();
+	  },
+
+      saveSensitivity() {
+          storage.set({
 			  key: SENSITIVITY_KEY,
 			  value: this.sensitivityValue.toString(),
 		  });
-	  },
+      },
+
 	  back() {
 		  router.back();
-	  },
+	  }
   };
-  </script>
+</script>
   
-  <style>
+<style>
   @import '../../common/style.css';
-    .preview-container {
+  .preview-container {
 	  position: absolute;
 	  left: 6px;
 	  top: 86px;
@@ -183,4 +186,4 @@
 	  line-height: 30px;
 	  text-align: center;
   }
-  </style>
+</style>

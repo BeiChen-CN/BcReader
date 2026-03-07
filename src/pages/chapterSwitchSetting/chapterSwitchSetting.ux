@@ -42,8 +42,7 @@ export default {
 		buttonHeight: DEFAULT_HEIGHT,
 		scrollSensitivity: DEFAULT_SENSITIVITY,
         showChapterInfo: false,
-		nowTime: "00:00",
-		timer: null
+		nowTime: "00:00"
 	},
 	updateTime() {
 		const date = new Date();
@@ -57,21 +56,18 @@ export default {
 		this.updateTime();
 		this.timer = setInterval(() => {
 			this.updateTime();
-		}, 1000);
+		}, 60000);
+        
 		storage.get({
 			key: HEIGHT_STORAGE_KEY,
 			success: (data) => {
-				if (data) {
-					this.buttonHeight = parseInt(data);
-				}
+				if (data) this.buttonHeight = parseInt(data);
 			},
 		});
 		storage.get({
 			key: SENSITIVITY_STORAGE_KEY,
 			success: (data) => {
-				if (data) {
-					this.scrollSensitivity = parseInt(data);
-				}
+				if (data) this.scrollSensitivity = parseInt(data);
 			},
 		});
         storage.get({
@@ -85,10 +81,10 @@ export default {
         });
 	},
 	onDestroy(){
-	  if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+	    if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
 	},
 	onHeightChange(e) {
 		this.buttonHeight = e.detail.value;
@@ -135,13 +131,5 @@ export default {
 </script>
 
 <style>
-  @import '../../common/style.css';
-.description {
-	font-size: 24px;
-	color: white;
-	text-align: left;
-	width: 100%;
-}
-
-
-    </style>
+@import '../../common/style.css';
+</style>

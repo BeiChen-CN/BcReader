@@ -28,7 +28,6 @@
 		  <img static src="/common/images/num_pad/del.png" @click="onClick('del')"/>
 	  </div>
   
-  
 	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;"/>
 	  <img static src="/common/images/conform.png" @click="onClick('conform')" style="position: absolute;left: 258px;top: 6px;width: 72px;height: 72px;"/>
 	  <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
@@ -38,122 +37,112 @@
 		  跳转章节
 	  </text>
 	</div>
-  </template>
+</template>
   
-  <script>
-  import router from '@system.router'
-  import prompt from '@system.prompt'
-  import file from '@system.file'
-  import bookStorage from '../../utils/bookStorage.js'
-  import chapterManager from '../../utils/chapterManager.js'
-  
-  export default {
-	private: {
-	  inputPage: '0',
-	  nowTime: "00:00",
-	  timer: null,
-	  totalChapters: 1,
-	  syncedChapters: 1
-	},
-	protected: {
-		name: ''
-	},
-	updateTime() {
-	  const date = new Date();
-	  let hours = date.getHours();
-	  let minutes = date.getMinutes();
-  
-	  hours = hours < 10 ? '0' + hours : hours;
-	  minutes = minutes < 10 ? '0' + minutes : minutes;
-  
-	  this.nowTime = `${hours}:${minutes}`;
-	},
-	onInit() {
-	  this.updateTime();
-	  this.timer = setInterval(() => {
-		this.updateTime();
-	  }, 1000);
-	  this.loadData();
-	},
-	async loadData() {
-		this.totalChapters = await chapterManager.getTotalChapters(this.name);
-		this.syncedChapters = await chapterManager.getSyncedChapters(this.name);
-		let progress = await bookStorage.get(this.name);
-		if (progress.chapterIndex !== null) {
-			this.inputPage = (progress.chapterIndex + 1).toString();
-		} else {
-			this.inputPage = '1';
-		}
-	},
-	onDestroy(){
-		if (this.timer) {
-			clearInterval(this.timer);
-			this.timer = null;
-		}
-	},
-	async onClick(num){
-	  if (num === 'del') {
-		  if (this.inputPage.length > 1) {
-			  this.inputPage = this.inputPage.slice(0, -1);
-		  } else {
-			  this.inputPage = '0';
-		  }
-		  return;
-	  }
-  
-	  if (num === 'conform') {
-		  let targetChapterNum = parseInt(this.inputPage);
-		  if (isNaN(targetChapterNum) || targetChapterNum < 1) {
-			  targetChapterNum = 1;
-		  }
-		  if (this.syncedChapters > 0 && targetChapterNum > this.syncedChapters) {
-			  targetChapterNum = this.syncedChapters;
-		  }
-		  if (this.totalChapters === 0) return;
+<script>
+import router from '@system.router'
+import prompt from '@system.prompt'
+import bookStorage from '../../utils/bookStorage.js'
+import chapterManager from '../../utils/chapterManager.js'
 
-		  const targetChapterIndex = targetChapterNum - 1;
-		  
-		  try {
-			  let progress = await bookStorage.get(this.name);
-			  progress.chapterIndex = targetChapterIndex;
-			  progress.offsetInChapter = 0;
-			  progress.scrollOffset = 0;
-			  await bookStorage.set(this.name, progress);
-        progress = null;
-			  
-			  prompt.showToast({ message: '设置成功', duration: 1000 });
-			  globalThis.justJumpedFromPageNumber = true;
-			  globalThis.justJumpedChapterIndex = targetChapterIndex;
-			  router.back();
-		  } catch (e) {
-			  prompt.showToast({ message: '设置失败', duration: 2000 });
-		  }
-		  return;
-	  }
+export default {
+    private: {
+        inputPage: '0',
+        nowTime: "00:00",
+        timer: null,
+        totalChapters: 1,
+        syncedChapters: 1
+    },
+    protected: {
+        name: ''
+    },
+    onInit() {
+        this.updateTime();
+        this.timer = setInterval(() => {
+            this.updateTime();
+        }, 60000);
+        this.loadData();
+    },
+    onDestroy() {
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+    },
+    updateTime() {
+        const date = new Date();
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        this.nowTime = `${hours}:${minutes}`;
+    },
+    async loadData() {
+        this.totalChapters = await chapterManager.getTotalChapters(this.name);
+        this.syncedChapters = await chapterManager.getSyncedChapters(this.name);
+        const progress = await bookStorage.get(this.name);
+        
+        if (progress && progress.chapterIndex != null) {
+            this.inputPage = (progress.chapterIndex + 1).toString();
+        } else {
+            this.inputPage = '1';
+        }
+    },
+    async onClick(num) {
+        if (num === 'del') {
+            this.inputPage = this.inputPage.length > 1 ? this.inputPage.slice(0, -1) : '0';
+            return;
+        }
+
+        if (num === 'conform') {
+            if (this.totalChapters === 0) return;
+
+            let targetChapterNum = parseInt(this.inputPage);
+            targetChapterNum = isNaN(targetChapterNum) || targetChapterNum < 1 ? 1 : targetChapterNum;
+            
+            if (this.syncedChapters > 0 && targetChapterNum > this.syncedChapters) {
+                targetChapterNum = this.syncedChapters;
+            }
+
+            try {
+                const progress = await bookStorage.get(this.name) || {};
+                progress.chapterIndex = targetChapterNum - 1;
+                progress.offsetInChapter = 0;
+                progress.scrollOffset = 0;
+                await bookStorage.set(this.name, progress);
+                
+                prompt.showToast({ message: '设置成功', duration: 1000 });
+                
+                globalThis.justJumpedFromPageNumber = true;
+                globalThis.justJumpedChapterIndex = progress.chapterIndex;
+                
+                router.back();
+            } catch (e) {
+                prompt.showToast({ message: '设置失败', duration: 2000 });
+            }
+            return;
+        }
+
+        const currentVal = this.inputPage === '0' ? '' : this.inputPage;
+        const newValStr = currentVal + num;
+        
+        if (parseInt(newValStr) > this.syncedChapters) {
+            prompt.showToast({ message: `最大章节为 ${this.syncedChapters}`, duration: 1000 });
+        } else {
+            this.inputPage = newValStr;
+        }
+    },
+    back() {
+        router.back();
+    }
+}
+</script>
   
-	  const currentVal = this.inputPage === '0' ? '' : this.inputPage;
-	  const newValStr = currentVal + num;
-	  const newVal = parseInt(newValStr);
-  
-	  if (newVal > this.syncedChapters) {
-		  prompt.showToast({ message: `最大章节为 ${this.syncedChapters}`, duration: 1000 });
-	  } else {
-		  this.inputPage = newValStr;
-	  }
-	},
-	back(){
-		router.back();
-	}
-  }
-  </script>
-  
-  <style>
-  @import '../../common/style.css';
-      .row {
-	  position:absolute;
-	  width:336px;
-	  height:64px;
-	  padding:0px 6px;
-	  justify-content: space-between;
-  }
-  </style>
+<style>
+@import '../../common/style.css';
+.row {
+    position:absolute;
+    width:336px;
+    height:64px;
+    padding:0px 6px;
+    justify-content: space-between;
+}
+</style>

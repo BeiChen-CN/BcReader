@@ -41,7 +41,6 @@
             </list-item>
         </list>
 
-
         <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
         <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 6px;top: 6px;width: 72px;height: 72px;" />
         <text style="position: absolute;left: 78px;top: 7px;width: 180px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
@@ -65,46 +64,27 @@
             preventParagraphSplitting: false,
             readingTimeRecording: true
         },
-        updateTime() {
-            const date = new Date();
-            let hours = date.getHours();
-            let minutes = date.getMinutes();
-
-            if (this.timeFormat === '12h') {
-                let ampm = hours >= 12 ? '下午' : '上午';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${ampm} ${hours}:${minutes}`;
-            } else {
-                hours = hours < 10 ? '0' + hours : hours;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                this.nowTime = `${hours}:${minutes}`;
-            }
-        },
+        
         onInit() {
             storage.get({
                 key: 'EBOOK_TIME_FORMAT',
                 success: (data) => {
-                    if (data) {
-                        this.timeFormat = data;
-                    }
+                    if (data) this.timeFormat = data;
                     this.updateTime();
                 },
                 fail: () => {
                     this.updateTime();
                 }
             });
+            
             this.timer = setInterval(() => {
                 this.updateTime();
-            }, 1000);
+            }, 60000); 
             
             storage.get({
                 key: 'EBOOK_PREVENT_PARAGRAPH_SPLITTING',
                 success: (data) => {
-                    if (data) {
-                        this.preventParagraphSplitting = data === 'true';
-                    }
+                    if (data) this.preventParagraphSplitting = data === 'true';
                 },
                 fail: () => {
                     this.preventParagraphSplitting = false;
@@ -125,17 +105,38 @@
                 }
             });
         },
+        
         onDestroy() {
             if (this.timer) {
                 clearInterval(this.timer);
                 this.timer = null;
             }
         },
+        
+        updateTime() {
+            const date = new Date();
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+
+            if (this.timeFormat === '12h') {
+                let ampm = hours >= 12 ? '下午' : '上午';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                this.nowTime = `${ampm} ${hours}:${minutes}`;
+            } else {
+                hours = hours < 10 ? '0' + hours : hours;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                this.nowTime = `${hours}:${minutes}`;
+            }
+        },
+        
         routerTo(url) {
             router.push({
                 uri: '/pages/' + url
-            })
+            });
         },
+        
         togglePreventParagraphSplitting() {
             this.preventParagraphSplitting = !this.preventParagraphSplitting;
             storage.set({
@@ -143,6 +144,7 @@
                 value: this.preventParagraphSplitting.toString()
             });
         },
+        
         toggleReadingTimeRecording() {
             this.readingTimeRecording = !this.readingTimeRecording;
             storage.set({
@@ -150,6 +152,7 @@
                 value: this.readingTimeRecording.toString()
             });
         },
+        
         back() {
             router.back();
         }
@@ -158,4 +161,4 @@
 
 <style>
   @import '../../common/style.css';
-                        </style>
+</style>

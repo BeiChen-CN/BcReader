@@ -45,7 +45,6 @@ export default {
     visibleChapters: [],
     currentPage: 0,
     totalPages: 1,
-    totalChapters: 0,
     currentChapterIndex: -1,
     nowTime: "00:00",
     timer: null,
@@ -59,14 +58,64 @@ export default {
   protected: {
     name: ''
   },
+  
+  onInit() {
+    this.loadTimeFormat();
+    this.loadBookInfo();
+    this.timer = setInterval(() => { this.updateTime(); }, 1000);
+  },
+  
+  onShow() {
+    this.loadMarqueeSetting();
+    this.initChapterList();
+  },
+  
+  onDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+    if (this.longPressTimeout) {
+      clearTimeout(this.longPressTimeout);
+      this.longPressTimeout = null;
+    }
+    this.visibleChapters = null;
+
+    if (typeof global !== 'undefined' && typeof global.runGC === 'function') {
+      global.runGC();
+    }
+  },
+
+  loadTimeFormat() {
+    storage.get({
+        key: 'EBOOK_TIME_FORMAT',
+        success: (data) => {
+            if (data) this.timeFormat = data;
+            this.updateTime();
+        },
+        fail: () => this.updateTime()
+    });
+  },
+
+  loadMarqueeSetting() {
+    storage.get({
+        key: 'EBOOK_CHAPTER_LIST_MARQUEE_ENABLED',
+        success: (data) => {
+            this.chapterListMarqueeEnabled = data === 'true';
+        },
+        fail: () => {
+            this.chapterListMarqueeEnabled = false;
+        }
+    });
+  },
+
   updateTime() {
     const date = new Date();
     let hours = date.getHours();
     let minutes = date.getMinutes();
     if (this.timeFormat === '12h') {
         let ampm = hours >= 12 ? '下午' : '上午';
-        hours = hours % 12;
-        hours = hours ? hours : 12; 
+        hours = hours % 12 || 12; 
         minutes = minutes < 10 ? '0' + minutes : minutes;
         this.nowTime = `${ampm} ${hours}:${minutes}`;
     } else {
@@ -75,80 +124,25 @@ export default {
         this.nowTime = `${hours}:${minutes}`;
     }
   },
-  onInit() {
-    storage.get({
-        key: 'EBOOK_TIME_FORMAT',
-        success: (data) => {
-            if (data) {
-                this.timeFormat = data;
-            }
-            this.updateTime();
-        },
-        fail: () => {
-            this.updateTime();
-        }
-    });
-    storage.get({
-        key: 'EBOOK_CHAPTER_LIST_MARQUEE_ENABLED',
-        success: (data) => {
-            this.chapterListMarqueeEnabled = data === 'true';
-        },
-        fail: () => {
-            this.chapterListMarqueeEnabled = false;
-        }
-    });
-    this.timer = setInterval(() => { this.updateTime(); }, 1000);
-    this.loadBookInfo();
-    this.initChapterList();
-  },
-  onShow() {
-    storage.get({
-        key: 'EBOOK_CHAPTER_LIST_MARQUEE_ENABLED',
-        success: (data) => {
-            this.chapterListMarqueeEnabled = data === 'true';
-        },
-        fail: () => {
-            this.chapterListMarqueeEnabled = false;
-        }
-    });
-    
-    this.initChapterList();
-  },
-  onDestroy() {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-    
-    if (this.longPressTimeout) {
-      clearTimeout(this.longPressTimeout);
-      this.longPressTimeout = null;
-    }
-    
-    this.visibleChapters = null;
 
-    if (typeof global !== 'undefined' && typeof global.runGC === 'function') {
-      global.runGC();
-    }
-  },
   loadBookInfo() {
-    const that = this;
     const bookInfoUri = `internal://files/books/${this.name}/book_info.json`;
     file.readText({
       uri: bookInfoUri,
-      success: function(data) {
+      success: (data) => {
         try {
           const bookInfo = JSON.parse(data.text);
-          that.bookTitle = bookInfo.name;
+          this.bookTitle = bookInfo.name;
         } catch (e) {
-          that.bookTitle = that.name;
+          this.bookTitle = this.name;
         }
       },
-      fail: function() {
-        that.bookTitle = that.name;
+      fail: () => {
+        this.bookTitle = this.name;
       }
     });
   },
+
   async initChapterList() {
     if (this.loading) return;
     this.loading = true;
@@ -157,15 +151,13 @@ export default {
       const progress = await bookStorage.get(this.name);
       const chapterIndex = (progress && progress.chapterIndex !== null) ? progress.chapterIndex : -1;
       this.currentChapterIndex = chapterIndex;
-
       
       const allChapters = await chapterManager.getAllAvailableChapters(this.name);
-      this.totalChapters = allChapters.length;
-      this.totalPages = Math.ceil(this.totalChapters / PAGE_SIZE) || 1;
+      const totalChaptersCount = allChapters.length;
+      this.totalPages = Math.ceil(totalChaptersCount / PAGE_SIZE) || 1;
 
       let targetPage = 0;
       if (chapterIndex >= 0) {
-          
           const indexInAvailable = allChapters.findIndex(ch => ch.index === chapterIndex);
           if (indexInAvailable >= 0) {
               targetPage = Math.floor(indexInAvailable / PAGE_SIZE);
@@ -180,7 +172,6 @@ export default {
     } catch (error) {
       prompt.showToast({ message: `章节列表加载失败` });
       this.visibleChapters = [];
-      this.totalChapters = 0;
       this.totalPages = 1;
       this.currentPage = 0;
       this.currentChapterIndex = -1;
@@ -188,6 +179,7 @@ export default {
       this.loading = false;
     }
   },
+
   async loadPage(page) {
     if (this.loading) return;
     this.loading = true;
@@ -197,36 +189,34 @@ export default {
       this.visibleChapters = result.chapters;
       this.currentPage = result.currentPage;
       this.totalPages = result.totalPages;
-      this.totalChapters = result.totalChapters;
     } catch (error) {
       prompt.showToast({ message: '加载失败' });
     } finally {
       this.loading = false;
     }
   },
+
   prevPage() {
     if (this.currentPage > 0 && !this.loading) {
         this.loadPage(this.currentPage - 1);
     }
   },
+
   nextPage() {
     if (this.currentPage < this.totalPages - 1 && !this.loading) {
         this.loadPage(this.currentPage + 1);
     }
   },
+
   async selectChapter(chapter) {
-    if (this.longPressTriggered) {
-      return;
-    }
+    if (this.longPressTriggered) return;
     
     try {
-      
       let progress = await bookStorage.get(this.name);
       progress.chapterIndex = chapter.index;
       progress.offsetInChapter = 0;
       progress.scrollOffset = 0;
       await bookStorage.set(this.name, progress);
-      progress = null;
       
       globalThis.justJumpedFromChapter = true;
       globalThis.newChapterIndex = chapter.index;
@@ -236,6 +226,7 @@ export default {
       prompt.showToast({ message: '跳转失败', duration: 2000 });
     }
   },
+
   deleteChapter(chapter) {
     this.longPressTriggered = true;
     
@@ -261,6 +252,7 @@ export default {
       }
     });
   },
+
   back() {
     router.back();
   }
@@ -269,6 +261,7 @@ export default {
 
 <style>
   @import '../../common/style.css';
+  /* 样式部分保持不变 */
 .chapter-info {
   flex-direction: column;
   align-items: flex-start;

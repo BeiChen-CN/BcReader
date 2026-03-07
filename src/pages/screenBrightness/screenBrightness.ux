@@ -30,101 +30,96 @@ import brightness from '@system.brightness';
 
 const BRIGHTNESS_KEY = "EBOOK_BRIGHTNESS";
 const FOLLOW_SYSTEM_KEY = "EBOOK_BRIGHTNESS_FOLLOW_SYSTEM";
-const DEFAULT_BRIGHTNESS = 128;
 
 export default {
 	private: {
-		brightnessValue: DEFAULT_BRIGHTNESS,
+		brightnessValue: 128,
 		followSystem: true,
 		nowTime: "00:00",
 		timer: null,
 		timeFormat: '24h'
 	},
-	updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
-	},
+	
 	onInit() {
 		storage.get({
 			key: 'EBOOK_TIME_FORMAT',
 			success: (data) => {
-				if(data) this.timeFormat = data;
+				if (data) this.timeFormat = data;
 				this.updateTime();
 			},
-			fail: () => {
-				this.updateTime();
-			}
+			fail: () => this.updateTime()
 		});
+
 		this.timer = setInterval(() => {
 			this.updateTime();
-		}, 1000);
+		}, 60000);
 
 		storage.get({
             key: FOLLOW_SYSTEM_KEY,
             success: (data) => {
                 this.followSystem = data !== 'false';
-            },
-            fail: () => {
-                this.followSystem = true;
             }
         });
 
 		storage.get({
 			key: BRIGHTNESS_KEY,
 			success: (data) => {
-				if (data) {
-					this.brightnessValue = parseInt(data);
-				}
-			},
+				if (data) this.brightnessValue = parseInt(data);
+			}
 		});
 	},
-	onDestroy(){
-	  if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
 	},
+
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+
+		if (this.timeFormat === '12h') {
+			const ampm = hours >= 12 ? '下午' : '上午';
+			hours = hours % 12 || 12;
+			this.nowTime = `${ampm} ${hours}:${minutes}`;
+		} else {
+			hours = hours < 10 ? '0' + hours : hours;
+			this.nowTime = `${hours}:${minutes}`;
+		}
+	},
+
     toggleFollowSystem() {
         this.followSystem = !this.followSystem;
-        if (this.followSystem) {
-            brightness.setMode({ mode: 1 });
-            storage.set({
-                key: FOLLOW_SYSTEM_KEY,
-                value: 'true'
-            });
-        } else {
-            brightness.setMode({ mode: 0 });
+        brightness.setMode({ mode: this.followSystem ? 1 : 0 });
+        
+        if (!this.followSystem) {
             brightness.setValue({ value: this.brightnessValue });
-            storage.set({
-                key: FOLLOW_SYSTEM_KEY,
-                value: 'false'
-            });
         }
+        
+        storage.set({
+            key: FOLLOW_SYSTEM_KEY,
+            value: this.followSystem.toString()
+        });
     },
+
 	change(e) {
 		this.brightnessValue = e.detail.value;
         brightness.setMode({ mode: 0 });
         brightness.setValue({ value: this.brightnessValue });
+		
 		storage.set({
 			key: BRIGHTNESS_KEY,
 			value: this.brightnessValue.toString(),
 		});
 	},
+
 	back() {
 		router.back();
-	},
+	}
 };
 </script>
 

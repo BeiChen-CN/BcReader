@@ -36,22 +36,7 @@ export default {
 		timer: null,
 		timeFormat: '24h'
 	},
-	updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
-	},
+	
 	onInit() {
 		storage.get({
 			key: 'EBOOK_TIME_FORMAT',
@@ -63,9 +48,11 @@ export default {
 				this.updateTime();
 			}
 		});
+		
 		this.timer = setInterval(() => {
 			this.updateTime();
-		}, 1000);
+		}, 60000);
+		
 		storage.get({
 			key: STORAGE_KEY,
 			success: (data) => {
@@ -73,14 +60,34 @@ export default {
 					this.pageSize = parseInt(data);
 				}
 			},
-		})
+		});
 	},
-	onDestroy(){
-	  if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+	
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
 	},
+	
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		
+		if (this.timeFormat === '12h') {
+			let ampm = hours >= 12 ? '下午' : '上午';
+			hours = hours % 12;
+			hours = hours ? hours : 12;
+			this.nowTime = `${ampm} ${hours}:${minutes}`;
+		} else {
+			hours = hours < 10 ? '0' + hours : hours;
+			this.nowTime = `${hours}:${minutes}`;
+		}
+	},
+	
 	change(e) {
 		this.pageSize = e.detail.value;
 		storage.set({
@@ -88,6 +95,7 @@ export default {
 			value: this.pageSize.toString(),
 		});
 	},
+	
 	reset() {
 		this.pageSize = DEFAULT_SIZE;
 		storage.set({
@@ -95,13 +103,10 @@ export default {
 			value: this.pageSize.toString(),
 		});
 	},
+	
 	back() {
-		storage.set({
-			key: STORAGE_KEY,
-			value: this.pageSize.toString(),
-		});
 		router.back();
-	},
+	}
 };
 </script>
 

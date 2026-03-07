@@ -47,10 +47,10 @@
 
     <img if="{{allBooks.length == 0}}" static src="/common/images/push.png" style="position: absolute;left: 258px;top: 402px;width: 72px;height: 72px;" @click="routerTo('push')"/>
 		
-		<div if="{{showSearchBar && allBooks.length > 0}}" class="search-fab-container">
-			<img static src="/common/images/search_shadow.png" class="search-fab-shadow" />
-			<img static src="/common/images/search.png" class="search-fab" @click="openSearch" />
-		</div>
+    <div if="{{showSearchBar && allBooks.length > 0}}" class="search-fab-container">
+      <img static src="/common/images/search_shadow.png" class="search-fab-shadow" />
+      <img static src="/common/images/search.png" class="search-fab" @click="openSearch" />
+    </div>
   </div>
 </template>
 
@@ -67,7 +67,7 @@ export default {
   private: {
     nowTime: "00:00",
     timer: null,
-		timeFormat: '24h',
+    timeFormat: '24h',
     shelfStyle: 'list',
     isNavigating: false,
     allBooks: [],
@@ -80,7 +80,6 @@ export default {
     displayMode: 'all',
     categories: [],
     selectedCategory: null,
-    categoryBooks: [],
     lastReadBook: null,
     homeProgressMode: 'book',
     showStorageWarning: true,
@@ -88,38 +87,38 @@ export default {
     categoryPagination: false,
     currentModeList: [],
     refreshMode: 'onExit',
-		showSearchBar: true
+    showSearchBar: true
   },
   exit() {
     app.terminate();
   },
   updateTime() {
     const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    if (this.timeFormat === '12h') {
+      let ampm = hours >= 12 ? '下午' : '上午';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${ampm} ${hours}:${minutes}`;
+    } else {
+      hours = hours < 10 ? '0' + hours : hours;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${hours}:${minutes}`;
+    }
   },
   onInit() {
-		storage.get({
-			key: 'EBOOK_TIME_FORMAT',
-			success: (data) => {
-				if(data) this.timeFormat = data;
-				this.updateTime();
-			},
-			fail: () => {
-				this.updateTime();
-			}
-		});
+    storage.get({
+      key: 'EBOOK_TIME_FORMAT',
+      success: (data) => {
+        if(data) this.timeFormat = data;
+        this.updateTime();
+      },
+      fail: () => {
+        this.updateTime();
+      }
+    });
     this.timer = setInterval(() => { this.updateTime(); }, 1000);
     bookStorage.load();
   },
@@ -172,7 +171,7 @@ export default {
         this.loadDeviceInfo();
       };
 
-	  if (shouldRefresh || this.allBooks.length === 0) {
+      if (shouldRefresh || this.allBooks.length === 0) {
         this.loadFileList().then(postLoad);
       } else {
         postLoad();
@@ -190,16 +189,16 @@ export default {
   },
   async loadSettingsAndFiles() {
     const keys = [
-      { k: 'EBOOK_SHELF_PAGE_SIZE', d: '6', t: 'int' },
-      { k: 'EBOOK_SHELF_STYLE', d: 'list', t: 'str' },
-      { k: 'EBOOK_TOP_LAST_READ', d: 'true', t: 'bool' },
-      { k: 'EBOOK_SHELF_MARQUEE_ENABLED', d: 'false', t: 'bool' },
-      { k: 'EBOOK_HOME_DISPLAY_MODE', d: 'all', t: 'str' },
-      { k: 'EBOOK_HOME_PROGRESS_MODE', d: 'book', t: 'str' },
-      { k: 'EBOOK_SHOW_STORAGE_WARNING', d: 'true', t: 'bool' },
-      { k: 'EBOOK_CATEGORY_PAGINATION', d: 'false', t: 'bool' },
-      { k: 'EBOOK_SHELF_REFRESH_MODE', d: 'onExit', t: 'str' },
-			{ k: 'EBOOK_HOME_SEARCH_ENABLED', d: 'true', t: 'bool' }
+      { k: 'EBOOK_SHELF_PAGE_SIZE', d: '6' },
+      { k: 'EBOOK_SHELF_STYLE', d: 'list' },
+      { k: 'EBOOK_TOP_LAST_READ', d: 'true' },
+      { k: 'EBOOK_SHELF_MARQUEE_ENABLED', d: 'false' },
+      { k: 'EBOOK_HOME_DISPLAY_MODE', d: 'all' },
+      { k: 'EBOOK_HOME_PROGRESS_MODE', d: 'book' },
+      { k: 'EBOOK_SHOW_STORAGE_WARNING', d: 'true' },
+      { k: 'EBOOK_CATEGORY_PAGINATION', d: 'false' },
+      { k: 'EBOOK_SHELF_REFRESH_MODE', d: 'onExit' },
+      { k: 'EBOOK_HOME_SEARCH_ENABLED', d: 'true' }
     ];
 
     const promises = keys.map(i => this.getStorage(i.k, i.d));
@@ -214,7 +213,7 @@ export default {
     this.showStorageWarning = results[6] === 'true';
     this.categoryPagination = results[7] === 'true';
     this.refreshMode = results[8];
-		this.showSearchBar = results[9] === 'true';
+    this.showSearchBar = results[9] === 'true';
   },
   shouldRefreshShelf() {
     if (this.refreshMode === 'onEnter') return true;
@@ -294,10 +293,10 @@ export default {
   },
   updateCategoryView() {
     if (this.selectedCategory) {
-      this.categoryBooks = this.selectedCategory === '未分类'
+      const categoryBooks = this.selectedCategory === '未分类'
         ? this.allBooks.filter(book => !book.localCategory)
         : this.allBooks.filter(book => book.localCategory === this.selectedCategory);
-      this.currentModeList = this.categoryBooks;
+      this.currentModeList = categoryBooks;
     } else {
       const categoryItems = this.categories.map(cat => ({
         isCategory: true,
@@ -392,9 +391,9 @@ export default {
 
     router.push({ uri: '/pages/detail', params: { name: item.dirName } });
   },
-	openSearch() {
-		router.push({ uri: '/pages/search' });
-	},
+  openSearch() {
+    router.push({ uri: '/pages/search' });
+  },
   routerTo(page) {
     router.push({ uri: `/pages/${page}` });
   },
@@ -424,24 +423,18 @@ export default {
 <style>
   @import '../../common/style.css';
 .search-fab-container {
-	position: absolute;
-	right: 24px;
-	bottom: 24px;
-	width: 72px;
-	height: 72px;
-}
-.search-content {
-	flex-direction: row;
-	align-items: center;
-	justify-content: flex-start;
-	width: 100%;
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  width: 72px;
+  height: 72px;
 }
 .search-fab {
-	position: absolute;
-	width: 72px;
-	height: 72px;
-	top: 0px;
-	left: 0px;
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  top: 0px;
+  left: 0px;
 }
 
 .cover-item {

@@ -70,47 +70,40 @@
 		  设置
 	  </text>
 	</div>
-  </template>
+</template>
   
-  <script>
+<script>
   import router from '@system.router'
-  import prompt from '@system.prompt'
-  import app from '@system.app'
   import storage from '../../utils/storage.js'
-  
   
   export default {
 	private: {
 	  nowTime: "00:00",
 	  timer: null,
-	  showProgressBar: true,
-	  chapterSwitchStyle: 'button',
-    timeFormat: '24h'
+      timeFormat: '24h'
 	},
-	protected: {
-	  cPath: '',
-		name: '',
-  
-	},
-	updateTime() {
-	  const date = new Date();
-	  let hours = date.getHours();
-	  let minutes = date.getMinutes();
-  
-    if (this.timeFormat === '12h') {
-        let ampm = hours >= 12 ? '下午' : '上午';
-        hours = hours % 12;
-        hours = hours ? hours : 12; 
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${ampm} ${hours}:${minutes}`;
-    } else {
-        hours = hours < 10 ? '0' + hours : hours;
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        this.nowTime = `${hours}:${minutes}`;
-    }
-	},
+
 	onInit() {
-    storage.get({
+      this.loadSettings();
+      // 优化：因为界面只显示到分钟，定时器没必要1秒(1000)刷新一次，改成60秒(60000)更省电
+	  this.timer = setInterval(() => {
+		this.updateTime();
+	  }, 60000);
+	},
+
+	onShow() {
+	  this.loadSettings();
+	},
+
+	onDestroy() {
+	  if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+	},
+
+	loadSettings() {
+      storage.get({
         key: 'EBOOK_TIME_FORMAT',
         success: (data) => {
             if (data) {
@@ -121,70 +114,39 @@
         fail: () => {
             this.updateTime();
         }
-    });
-	  this.timer = setInterval(() => {
-		this.updateTime();
-	  }, 1000);
+      });
 	},
-	loadSettings() {
-    storage.get({ key: 'EBOOK_TIME_FORMAT', success: (data) => {
-        if (data) this.timeFormat = data;
-    }});
-	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
+
+	updateTime() {
+	  const date = new Date();
+	  let hours = date.getHours();
+	  let minutes = date.getMinutes();
   
+      if (this.timeFormat === '12h') {
+          let ampm = hours >= 12 ? '下午' : '上午';
+          hours = hours % 12;
+          hours = hours ? hours : 12; 
+          minutes = minutes < 10 ? '0' + minutes : minutes;
+          this.nowTime = `${ampm} ${hours}:${minutes}`;
+      } else {
+          hours = hours < 10 ? '0' + hours : hours;
+          minutes = minutes < 10 ? '0' + minutes : minutes;
+          this.nowTime = `${hours}:${minutes}`;
+      }
 	},
-	onShow(){
-		this.loadSettings();
-	},
-	clearBooks(){
-	  router.push({
-            uri: '/pages/help',
-            params: {
-                title: '清空数据',
-                content: '为防止卡死，请手动将小程序卸载后重新安装。'
-            }
-        });
-	},
-	onBackPress(){
-	},
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail'
-		})
-	},
+
 	routerTo(url) {
 	  router.push({
 		uri: '/pages/' + url
 	  })
 	},
-	back(){
-		router.back();
-	},
-	exit(){
-		app.terminate();
-	},
-	toggleProgressBar() {
-		this.showProgressBar = !this.showProgressBar;
-		storage.set({
-			key: 'EBOOK_SHOW_PROGRESS_BAR',
-			value: this.showProgressBar.toString(),
-			success: () => {
-				prompt.showToast({ message: this.showProgressBar ? '已开启章节进度条' : '已关闭章节进度条' });
-			}
-		});
+
+	back() {
+	  router.back();
 	}
   }
-  </script>
+</script>
   
-  <style>
+<style>
   @import '../../common/style.css';
-              </style>
+</style>

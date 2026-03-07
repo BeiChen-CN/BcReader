@@ -18,6 +18,10 @@
     import storage from '../../utils/storage.js';
 
     export default {
+        public: {
+            pageTitle: '',
+            pageContent: ''
+        },
         private: {
             title: '',
             content: '',
@@ -33,10 +37,10 @@
             this.title = this.pageTitle || '详情';
             this.content = this.pageContent || '无内容';
             this.updateTime();
+            
             this.timer = setInterval(() => {
                 this.updateTime();
-            }, 1000);
-            this.loadSettings();
+            }, 60000);
         },
         onShow() {
             this.loadSettings();
@@ -68,15 +72,13 @@
             storage.get({
                 key: 'EBOOK_OPACITY',
                 success: (data) => {
-                    if (data) this.opacity = parseInt(data)
+                    if (data) this.opacity = parseInt(data);
                 }
             });
             storage.get({
                 key: 'EBOOK_VERTICAL_MARGIN',
                 success: (data) => {
-                    if (data) {
-                        this.verticalMargin = parseInt(data);
-                    }
+                    if (data) this.verticalMargin = parseInt(data);
                 }
             });
             storage.get({
@@ -96,8 +98,8 @@
 </script>
 
 <style>
-  @import '../../common/style.css';
-        .content-container {
+    @import '../../common/style.css';
+    .content-container {
         position: absolute;
         width: 336px;
         top: 102px;

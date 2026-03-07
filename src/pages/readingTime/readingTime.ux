@@ -117,19 +117,13 @@ import readingTimeStorage from '../../utils/readingTimeStorage.js'
 import storage from '../../utils/storage.js'
 
 export default {
-		private: {
-		totalReadingTime: 0,
+	private: {
 		totalReadingTimeFormatted: '加载中...',
 		totalReadingDays: 0,
-		todayReadingTime: 0,
 		todayReadingTimeFormatted: '0分钟',
-		averageDailyTime: 0,
 		averageDailyTimeFormatted: '0分钟',
-		weekReadingTime: 0,
 		weekReadingTimeFormatted: '0分钟',
-		averageWeekTime: 0,
 		averageWeekTimeFormatted: '0分钟',
-		maxDailyTime: 0,
 		maxDailyTimeFormatted: '0分钟',
 		firstReadDate: '',
 		lastReadDate: '',
@@ -208,16 +202,11 @@ export default {
 			
 			const stats = readingTimeStorage.calculateBookStats(readingTimeData);
 			
-			this.totalReadingTime = stats.totalSeconds;
 			this.totalReadingTimeFormatted = readingTimeStorage.formatDuration(stats.totalSeconds);
 			this.totalReadingDays = stats.totalDays;
-			this.todayReadingTime = stats.todaySeconds;
 			this.todayReadingTimeFormatted = readingTimeStorage.formatDuration(stats.todaySeconds);
-			this.averageDailyTime = stats.averageDailySeconds;
 			this.averageDailyTimeFormatted = readingTimeStorage.formatDuration(stats.averageDailySeconds);
-			this.weekReadingTime = stats.weekSeconds;
 			this.weekReadingTimeFormatted = readingTimeStorage.formatDuration(stats.weekSeconds);
-			this.averageWeekTime = stats.averageWeekSeconds;
 			this.averageWeekTimeFormatted = readingTimeStorage.formatDuration(stats.averageWeekSeconds);
 			this.firstReadDate = stats.firstReadDate;
 			this.lastReadDate = stats.lastReadDate;
@@ -230,16 +219,11 @@ export default {
 		}
 	},
 	resetBookData() {
-		this.totalReadingTime = 0;
 		this.totalReadingTimeFormatted = '暂无记录';
 		this.totalReadingDays = 0;
-		this.todayReadingTime = 0;
 		this.todayReadingTimeFormatted = '0分钟';
-		this.averageDailyTime = 0;
 		this.averageDailyTimeFormatted = '0分钟';
-		this.weekReadingTime = 0;
 		this.weekReadingTimeFormatted = '0分钟';
-		this.averageWeekTime = 0;
 		this.averageWeekTimeFormatted = '0分钟';
 		this.firstReadDate = '';
 		this.lastReadDate = '';
@@ -252,18 +236,12 @@ export default {
 			
 			const stats = readingTimeStorage.calculateGlobalStats(allBooksData);
 			
-			this.totalReadingTime = stats.totalSeconds;
 			this.totalReadingTimeFormatted = readingTimeStorage.formatDuration(stats.totalSeconds);
 			this.totalReadingDays = stats.totalDays;
-			this.todayReadingTime = stats.todaySeconds;
 			this.todayReadingTimeFormatted = readingTimeStorage.formatDuration(stats.todaySeconds);
-			this.averageDailyTime = stats.averageDailySeconds;
 			this.averageDailyTimeFormatted = readingTimeStorage.formatDuration(stats.averageDailySeconds);
-			this.weekReadingTime = stats.weekSeconds;
 			this.weekReadingTimeFormatted = readingTimeStorage.formatDuration(stats.weekSeconds);
-			this.averageWeekTime = stats.averageWeekSeconds;
 			this.averageWeekTimeFormatted = readingTimeStorage.formatDuration(stats.averageWeekSeconds);
-			this.maxDailyTime = stats.maxDailySeconds;
 			this.maxDailyTimeFormatted = readingTimeStorage.formatDuration(stats.maxDailySeconds);
 			
 			const weekData = readingTimeStorage.getLast7DaysGlobalReadingTime(allBooksData);
@@ -273,18 +251,12 @@ export default {
 		}
 	},
 	resetGlobalData() {
-		this.totalReadingTime = 0;
 		this.totalReadingTimeFormatted = '暂无记录';
 		this.totalReadingDays = 0;
-		this.todayReadingTime = 0;
 		this.todayReadingTimeFormatted = '0分钟';
-		this.averageDailyTime = 0;
 		this.averageDailyTimeFormatted = '0分钟';
-		this.weekReadingTime = 0;
 		this.weekReadingTimeFormatted = '0分钟';
-		this.averageWeekTime = 0;
 		this.averageWeekTimeFormatted = '0分钟';
-		this.maxDailyTime = 0;
 		this.maxDailyTimeFormatted = '0分钟';
 		this.updateChart([0, 0, 0, 0, 0, 0, 0]);
 	},

@@ -72,6 +72,7 @@
             gesture: 'single',
             teacherScreenEnabled: false
         },
+        
         updateTime() {
             const date = new Date();
             let hours = date.getHours();
@@ -89,6 +90,7 @@
                 this.nowTime = `${hours}:${minutes}`;
             }
         },
+        
         onInit() {
             storage.get({
                 key: 'EBOOK_TIME_FORMAT',
@@ -128,12 +130,14 @@
                 }
             });
         },
+        
         onDestroy() {
             if (this.timer) {
                 clearInterval(this.timer);
                 this.timer = null;
             }
         },
+        
         selectTimeFormat(format) {
             if (this.timeFormat === format) {
                 return;
@@ -145,6 +149,7 @@
             });
             this.updateTime();
         },
+        
         selectGesture(gestureType) {
             if (this.gesture === gestureType) {
                 return;
@@ -155,6 +160,7 @@
                 value: gestureType
             });
         },
+        
         toggleTeacherScreen() {
             const targetState = !this.teacherScreenEnabled;
             if (targetState) {
@@ -178,15 +184,7 @@
                 });
             }
         },
-        reset() {
-            this.timeFormat = '24h';
-            this.gesture = 'single';
-            this.teacherScreenEnabled = false;
-            storage.set({ key: "EBOOK_TIME_FORMAT", value: '24h' });
-            storage.set({ key: "EBOOK_GESTURE", value: 'single' });
-            storage.set({ key: "EBOOK_TEACHER_SCREEN_ENABLED", value: 'false' });
-            this.updateTime();
-        },
+        
         back() {
             router.back();
         }
@@ -194,8 +192,8 @@
 </script>
 
 <style>
-  @import '../../common/style.css';
-                                .section-title {
+    @import '../../common/style.css';
+    .section-title {
         font-size: 24px;
         line-height: 36px;
         font-weight: bold;

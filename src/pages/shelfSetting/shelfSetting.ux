@@ -141,6 +141,36 @@
             refreshMode: 'onExit',
             showSearchBar: true
         },
+
+        onInit() {
+            this.loadTimeFormat();
+            this.loadSettings();
+            
+            this.timer = setInterval(() => {
+                this.updateTime();
+            }, 60000);
+        },
+
+        onDestroy() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+        },
+
+        loadTimeFormat() {
+            storage.get({
+                key: 'EBOOK_TIME_FORMAT',
+                success: (data) => {
+                    if (data) this.timeFormat = data;
+                    this.updateTime();
+                },
+                fail: () => {
+                    this.updateTime();
+                }
+            });
+        },
+
         updateTime() {
             const date = new Date();
             let hours = date.getHours();
@@ -158,87 +188,24 @@
                 this.nowTime = `${hours}:${minutes}`;
             }
         },
-        onInit() {
-            storage.get({
-                key: 'EBOOK_TIME_FORMAT',
-                success: (data) => {
-                    if (data) {
-                        this.timeFormat = data;
-                    }
-                    this.updateTime();
-                },
-                fail: () => {
-                    this.updateTime();
-                }
-            });
-            this.timer = setInterval(() => {
-                this.updateTime();
-            }, 1000);
-            
-            this.loadSettings();
-        },
+
         loadSettings() {
-            storage.get({
-                key: 'EBOOK_SHELF_STYLE',
-                success: (data) => { if (data) this.shelfStyle = data; },
-                fail: () => { this.shelfStyle = 'list'; }
-            });
-            storage.get({
-                key: 'EBOOK_SHELF_PAGE_SIZE',
-                success: (data) => { if (data) this.shelfPageSize = parseInt(data); },
-                fail: () => { this.shelfPageSize = 6; }
-            });
-            storage.get({
-                key: 'EBOOK_TOP_LAST_READ',
-                success: (data) => { this.lastReadOnTop = data === 'true'; },
-                fail: () => { this.lastReadOnTop = true; }
-            });
-            storage.get({
-                key: 'EBOOK_HOME_DISPLAY_MODE',
-                success: (data) => { if (data) this.displayMode = data; },
-                fail: () => { this.displayMode = 'all'; }
-            });
-            storage.get({
-                key: 'EBOOK_HOME_PROGRESS_MODE',
-                success: (data) => { if (data) this.progressMode = data; },
-                fail: () => { this.progressMode = 'book'; }
-            });
-            storage.get({
-                key: 'EBOOK_SHOW_STORAGE_WARNING',
-                success: (data) => { this.showStorageWarning = data !== 'false'; },
-                fail: () => { this.showStorageWarning = true; }
-            });
-            storage.get({
-                key: 'EBOOK_CATEGORY_PAGINATION',
-                success: (data) => { this.categoryPagination = data === 'true'; },
-                fail: () => { this.categoryPagination = false; }
-            });
-            storage.get({
-                key: 'EBOOK_SHELF_REFRESH_MODE',
-                success: (data) => { if (data) this.refreshMode = data; },
-                fail: () => { this.refreshMode = 'onExit'; }
-            });
-            storage.get({
-                key: 'EBOOK_HOME_SEARCH_ENABLED',
-                success: (data) => { this.showSearchBar = data !== 'false'; },
-                fail: () => { this.showSearchBar = true; }
-            });
+            storage.get({ key: 'EBOOK_SHELF_STYLE', success: (data) => { if (data) this.shelfStyle = data; }, fail: () => { this.shelfStyle = 'list'; } });
+            storage.get({ key: 'EBOOK_SHELF_PAGE_SIZE', success: (data) => { if (data) this.shelfPageSize = parseInt(data); }, fail: () => { this.shelfPageSize = 6; } });
+            storage.get({ key: 'EBOOK_TOP_LAST_READ', success: (data) => { this.lastReadOnTop = data === 'true'; }, fail: () => { this.lastReadOnTop = true; } });
+            storage.get({ key: 'EBOOK_HOME_DISPLAY_MODE', success: (data) => { if (data) this.displayMode = data; }, fail: () => { this.displayMode = 'all'; } });
+            storage.get({ key: 'EBOOK_HOME_PROGRESS_MODE', success: (data) => { if (data) this.progressMode = data; }, fail: () => { this.progressMode = 'book'; } });
+            storage.get({ key: 'EBOOK_SHOW_STORAGE_WARNING', success: (data) => { this.showStorageWarning = data !== 'false'; }, fail: () => { this.showStorageWarning = true; } });
+            storage.get({ key: 'EBOOK_CATEGORY_PAGINATION', success: (data) => { this.categoryPagination = data === 'true'; }, fail: () => { this.categoryPagination = false; } });
+            storage.get({ key: 'EBOOK_SHELF_REFRESH_MODE', success: (data) => { if (data) this.refreshMode = data; }, fail: () => { this.refreshMode = 'onExit'; } });
+            storage.get({ key: 'EBOOK_HOME_SEARCH_ENABLED', success: (data) => { this.showSearchBar = data !== 'false'; }, fail: () => { this.showSearchBar = true; } });
         },
-        onDestroy() {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
-        },
+
         selectShelfStyle(style) {
-            if (this.shelfStyle === style) {
-                return;
-            }
+            if (this.shelfStyle === style) return;
             this.shelfStyle = style;
-            storage.set({
-                key: 'EBOOK_SHELF_STYLE',
-                value: style
-            });
+            storage.set({ key: 'EBOOK_SHELF_STYLE', value: style });
+            
             if (style === 'cover') {
                 router.push({
                     uri: '/pages/help',
@@ -249,71 +216,50 @@
                 });
             }
         },
+
         changePageSize(e) {
             this.shelfPageSize = e.detail.value;
-            storage.set({
-                key: 'EBOOK_SHELF_PAGE_SIZE',
-                value: this.shelfPageSize.toString()
-            });
+            storage.set({ key: 'EBOOK_SHELF_PAGE_SIZE', value: this.shelfPageSize.toString() });
         },
+
         toggleLastRead() {
             this.lastReadOnTop = !this.lastReadOnTop;
-            storage.set({
-                key: 'EBOOK_TOP_LAST_READ',
-                value: this.lastReadOnTop.toString()
-            });
+            storage.set({ key: 'EBOOK_TOP_LAST_READ', value: this.lastReadOnTop.toString() });
         },
+
         toggleStorageWarning() {
             this.showStorageWarning = !this.showStorageWarning;
-            storage.set({
-                key: 'EBOOK_SHOW_STORAGE_WARNING',
-                value: this.showStorageWarning.toString()
-            });
+            storage.set({ key: 'EBOOK_SHOW_STORAGE_WARNING', value: this.showStorageWarning.toString() });
         },
+
         toggleSearchBar() {
             this.showSearchBar = !this.showSearchBar;
-            storage.set({
-                key: 'EBOOK_HOME_SEARCH_ENABLED',
-                value: this.showSearchBar.toString()
-            });
+            storage.set({ key: 'EBOOK_HOME_SEARCH_ENABLED', value: this.showSearchBar.toString() });
         },
+
         toggleCategoryPagination() {
             this.categoryPagination = !this.categoryPagination;
-            storage.set({
-                key: 'EBOOK_CATEGORY_PAGINATION',
-                value: this.categoryPagination.toString()
-            });
+            storage.set({ key: 'EBOOK_CATEGORY_PAGINATION', value: this.categoryPagination.toString() });
         },
+
         selectDisplayMode(mode) {
-            if (this.displayMode === mode) {
-                return;
-            }
+            if (this.displayMode === mode) return;
             this.displayMode = mode;
-            storage.set({
-                key: 'EBOOK_HOME_DISPLAY_MODE',
-                value: mode
-            });
+            storage.set({ key: 'EBOOK_HOME_DISPLAY_MODE', value: mode });
         },
+
         selectProgressMode(mode) {
-            if (this.progressMode === mode) {
-                return;
-            }
+            if (this.progressMode === mode) return;
             this.progressMode = mode;
-            storage.set({
-                key: 'EBOOK_HOME_PROGRESS_MODE',
-                value: mode
-            });
+            storage.set({ key: 'EBOOK_HOME_PROGRESS_MODE', value: mode });
         },
+
         selectRefreshMode(mode) {
-            if (this.refreshMode === mode) {
-                return;
-            }
+            if (this.refreshMode === mode) return;
             this.refreshMode = mode;
-            storage.set({
-                key: 'EBOOK_SHELF_REFRESH_MODE',
-                value: mode
-            });
+            storage.set({ key: 'EBOOK_SHELF_REFRESH_MODE', value: mode });
         },
+
         reset() {
             this.shelfStyle = 'list';
             this.shelfPageSize = 6;
@@ -322,8 +268,9 @@
             this.progressMode = 'book';
             this.showStorageWarning = true;
             this.categoryPagination = false;
-            this.refreshMode = 'onEnter';
+            this.refreshMode = 'onExit';
             this.showSearchBar = true;
+            
             storage.set({ key: "EBOOK_SHELF_STYLE", value: 'list' });
             storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '6' });
             storage.set({ key: "EBOOK_TOP_LAST_READ", value: 'true' });
@@ -334,6 +281,7 @@
             storage.set({ key: "EBOOK_SHELF_REFRESH_MODE", value: 'onExit' });
             storage.set({ key: "EBOOK_HOME_SEARCH_ENABLED", value: 'true' });
         },
+
         back() {
             router.back();
         }
@@ -342,10 +290,10 @@
 
 <style>
   @import '../../common/style.css';
-                                .section-title {
-        font-size: 24px;
-        line-height: 36px;
-        font-weight: bold;
-        color: rgba(255, 255, 255, 0.5);
-    }
+  .section-title {
+      font-size: 24px;
+      line-height: 36px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.5);
+  }
 </style>

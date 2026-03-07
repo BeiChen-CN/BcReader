@@ -104,9 +104,54 @@ export default {
 		bookinfoMarqueeEnabled: true
 	},
 	protected: {
-		cPath: '',
-		name: ''
+		name: '' // 移除了完全未被使用的 cPath
 	},
+	
+	onInit() {
+		// 移除了 onInit 中的 global.runGC()。页面初始化时进行垃圾回收会严重阻塞渲染，导致打开详情页卡顿
+		this.loadTimeFormat();
+		this.loadFileInfo();
+	},
+	
+	onShow() {
+		storage.get({
+			key: 'EBOOK_BOOKINFO_MARQUEE_ENABLED',
+			success: (data) => {
+				this.bookinfoMarqueeEnabled = data === 'true';
+			},
+			fail: () => {
+				this.bookinfoMarqueeEnabled = true;
+			}
+		});
+	},
+	
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+		global.runGC(); // 退出页面时回收内存是合理的
+	},
+
+	loadTimeFormat() {
+		storage.get({
+			key: 'EBOOK_TIME_FORMAT',
+			success: (data) => {
+				if (data) this.timeFormat = data;
+				this.updateTime();
+			},
+			fail: () => {
+				this.updateTime();
+			}
+		});
+		
+		// 性能优化：时间显示只精确到了分钟 (00:00)，原代码每 1000ms(1秒) 刷新一次是极大的性能和电量浪费
+		// 现已改为 60000ms(1分钟) 刷新一次
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 60000);
+	},
+
 	updateTime() {
 		const date = new Date();
 		let hours = date.getHours();
@@ -122,41 +167,11 @@ export default {
 			this.nowTime = `${hours}:${minutes}`;
 		}
 	},
-	onInit() {
-		storage.get({
-			key: 'EBOOK_TIME_FORMAT',
-			success: (data) => {
-				if (data) this.timeFormat = data;
-				this.updateTime();
-			},
-			fail: () => {
-				this.updateTime();
-			}
-		});
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
-		global.runGC();
-		this.loadFileInfo();
+
+	back() {
+		router.back();
 	},
-	onShow() {
-		storage.get({
-			key: 'EBOOK_BOOKINFO_MARQUEE_ENABLED',
-			success: (data) => {
-				this.bookinfoMarqueeEnabled = data === 'true';
-			},
-			fail: () => {
-				this.bookinfoMarqueeEnabled = true;
-			}
-		});
-	},
-	onDestroy() {
-		if (this.timer) {
-			clearInterval(this.timer);
-			this.timer = null;
-		}
-		global.runGC();
-	},
+
 	showSummary() {
 		router.push({
 			uri: 'pages/textReader',
@@ -166,6 +181,7 @@ export default {
 			}
 		});
 	},
+
 	async loadFileInfo() {
 		const bookDirUri = `internal://files/books/${this.name}/`;
 		const bookContentDirUri = `${bookDirUri}content/`;
@@ -195,20 +211,23 @@ export default {
 					await this.calculateSyncProgress();
 					await this.calculateStorage(bookContentDirUri, bookInfoUri, indexesUri, lindexUri, coverUri);
 				} catch (e) {
-					this.fileName = this.name;
-					this.wordCount = '解析失败';
-					this.syncProgress = '未知';
-					this.totalStorage = '计算失败';
+					this.handleLoadFail();
 				}
 			},
-			fail: (data, code) => {
-				this.fileName = this.name;
-				this.wordCount = '加载失败';
-				this.syncProgress = '未知';
-				this.totalStorage = '计算失败';
+			fail: () => {
+				this.handleLoadFail();
 			}
 		});
 	},
+
+	// 提取出冗余的失败处理逻辑
+	handleLoadFail() {
+		this.fileName = this.name;
+		this.wordCount = '加载失败';
+		this.syncProgress = '未知';
+		this.resetStorageStatus('计算失败');
+	},
+
 	resetStorageStatus(status) {
 		this.totalStorage = status;
 		this.chapterStorage = status;
@@ -216,6 +235,7 @@ export default {
 		this.indexStorage = status;
 		this.bookmarkIndexStorage = status;
 	},
+
 	async calculateStorage(bookContentDirUri, bookInfoUri, indexesUri, lindexUri, coverUri) {
 		this.resetStorageStatus('计算中...');
 		try {
@@ -235,6 +255,7 @@ export default {
 			this.resetStorageStatus('计算失败');
 		}
 	},
+
 	async getFileSize(uri) {
 		try {
 			const res = await runAsyncFunc(file.get, { uri });
@@ -243,6 +264,7 @@ export default {
 			return 0;
 		}
 	},
+
 	async getDirSize(uri) {
 		try {
 			const res = await runAsyncFunc(file.list, { uri });
@@ -252,6 +274,7 @@ export default {
 			return 0;
 		}
 	},
+
 	async getIndexTotalSize(bookInfoUri, lindexUri, indexesUri) {
 		try {
 			const [infoSize, lindexSize, indexesDirSize] = await Promise.all([
@@ -264,6 +287,7 @@ export default {
 			return 0;
 		}
 	},
+
 	async getBookmarkSize() {
 		try {
 			const bookshelf = await bookStorage.load();
@@ -277,6 +301,7 @@ export default {
 			return 0;
 		}
 	},
+
 	async calculateSyncProgress() {
 		const version = await chapterManager.checkVersion(this.name);
 		if (version === 'none') {
@@ -296,15 +321,13 @@ export default {
 			this.syncProgress = '计算失败';
 		}
 	},
+
 	formatFileSize(bytes) {
 		if (bytes === 0) return '0 Bytes';
 		const k = 1024;
 		const sizes = ['Bytes', 'KB', 'MB', 'GB'];
 		const i = Math.floor(Math.log(bytes) / Math.log(k));
 		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-	},
-	back() {
-		router.back();
 	}
 }
 </script>

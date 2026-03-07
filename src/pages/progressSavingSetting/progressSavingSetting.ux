@@ -35,117 +35,120 @@
 <script>
 import router from "@system.router";
 import storage from '../../utils/storage.js';
+
 const MODE_STORAGE_KEY = "EBOOK_PROGRESS_SAVE_MODE";
 const INTERVAL_STORAGE_KEY = "EBOOK_PROGRESS_SAVE_INTERVAL";
 const DEFAULT_MODE = "exit";
 const DEFAULT_INTERVAL = 10;
 
-
 export default {
-	  private: {
+    private: {
         saveMode: DEFAULT_MODE,
         saveInterval: DEFAULT_INTERVAL,
-		nowTime: "00:00",
-		timer: null,
-		timeFormat: '24h'
-	  },
-	  updateTime() {
-		  const date = new Date();
-		  let hours = date.getHours();
-		  let minutes = date.getMinutes();
-		  if (this.timeFormat === '12h') {
-			  let ampm = hours >= 12 ? '下午' : '上午';
-			  hours = hours % 12;
-			  hours = hours ? hours : 12;
-			  minutes = minutes < 10 ? '0' + minutes : minutes;
-			  this.nowTime = `${ampm} ${hours}:${minutes}`;
-		  } else {
-			  hours = hours < 10 ? '0' + hours : hours;
-			  minutes = minutes < 10 ? '0' + minutes : minutes;
-			  this.nowTime = `${hours}:${minutes}`;
-		  }
-	  },
-	  onInit() {
-		  storage.get({
-			  key: 'EBOOK_TIME_FORMAT',
-			  success: (data) => {
-				  if(data) this.timeFormat = data;
-				  this.updateTime();
-			  },
-			  fail: () => {
-				  this.updateTime();
-			  }
-		  });
-		  this.timer = setInterval(() => {
-			  this.updateTime();
-		  }, 1000);
-  
+        nowTime: "00:00",
+        timer: null,
+        timeFormat: '24h'
+    },
+
+    onInit() {
+        storage.get({
+            key: 'EBOOK_TIME_FORMAT',
+            success: (data) => {
+                if (data) this.timeFormat = data;
+                this.updateTime();
+            },
+            fail: () => this.updateTime()
+        });
+        
+        this.timer = setInterval(() => {
+            this.updateTime();
+        }, 60000);
+
         storage.get({
             key: MODE_STORAGE_KEY,
             success: (data) => {
-                if (data) {
-                    this.saveMode = data;
-                }
-            },
+                if (data) this.saveMode = data;
+            }
         });
         
         storage.get({
             key: INTERVAL_STORAGE_KEY,
             success: (data) => {
-                if (data) {
-                    this.saveInterval = parseInt(data);
-                }
-            },
+                if (data) this.saveInterval = parseInt(data);
+            }
         });
-	  },
-	  onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	  },
-	  change(e) {
-		  this.saveInterval = e.detail.value;
-		  storage.set({
-			  key: INTERVAL_STORAGE_KEY,
-			  value: this.saveInterval.toString(),
-		  });
-	  },
-	  changeMode(e) {
-		  this.saveMode = e;
-		  storage.set({
-			  key: MODE_STORAGE_KEY,
-			  value: this.saveMode,
-		  });
-	  },
-	  reset() {
+    },
+
+    onDestroy() {
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+    },
+
+    updateTime() {
+        const date = new Date();
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        
+        if (this.timeFormat === '12h') {
+            let ampm = hours >= 12 ? '下午' : '上午';
+            hours = (hours % 12) || 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            this.nowTime = `${ampm} ${hours}:${minutes}`;
+        } else {
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            this.nowTime = `${hours}:${minutes}`;
+        }
+    },
+
+    change(e) {
+        this.saveInterval = e.detail.value;
+        storage.set({
+            key: INTERVAL_STORAGE_KEY,
+            value: this.saveInterval.toString()
+        });
+    },
+
+    changeMode(mode) {
+        this.saveMode = mode;
+        storage.set({
+            key: MODE_STORAGE_KEY,
+            value: this.saveMode
+        });
+    },
+
+    reset() {
         this.saveInterval = DEFAULT_INTERVAL;
-		  storage.set({
-			  key: INTERVAL_STORAGE_KEY,
-			  value: this.saveInterval.toString(),
-		  });
-          this.saveMode = DEFAULT_MODE;
-		  storage.set({
-			  key: MODE_STORAGE_KEY,
-			  value: this.saveMode,
-		  });
-	  },
-	  back() {
-		  router.back();
-	  },
-  };
-  </script>
+        this.saveMode = DEFAULT_MODE;
+        
+        storage.set({
+            key: INTERVAL_STORAGE_KEY,
+            value: this.saveInterval.toString()
+        });
+        storage.set({
+            key: MODE_STORAGE_KEY,
+            value: this.saveMode
+        });
+    },
+
+    back() {
+        router.back();
+    }
+};
+</script>
 
 <style>
-  @import '../../common/style.css';
+@import '../../common/style.css';
 .setting-group {
     padding: 14px 20px;
     background-color: #262626;
-	border-radius: 36px;
+    border-radius: 36px;
     width: 100%;
     flex-direction: column;
     padding: 0 20px;
-	top: 230px;
+    top: 230px;
 }
 .setting-item {
     width: 100%;

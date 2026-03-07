@@ -36,7 +36,6 @@
 <script>
 import router from '@system.router'
 import storage from '../../utils/storage.js'
-import app from '@system.app'
 
 export default {
   private: {
@@ -73,9 +72,11 @@ export default {
 			this.updateTime();
 		}
 	});
+	
 	this.timer = setInterval(() => {
 		this.updateTime();
-	}, 1000);
+	}, 60000);
+	
     storage.get({
       key: 'EBOOK_VERTICAL_MARGIN',
       success:(data)=>{
@@ -83,22 +84,23 @@ export default {
           this.verticalMargin = parseInt(data)
         }
       }
-	})
+	});
+	
 	storage.get({
-			key: "EBOOK_OPACITY",
-			success: (data) => {
-				if (data) {
-					this.opacity = parseFloat(data);
-				}
-			},
-		})
+		key: "EBOOK_OPACITY",
+		success: (data) => {
+			if (data) {
+				this.opacity = parseFloat(data);
+			}
+		},
+	});
   },
   onDestroy(){
-	  if (this.timer) {
+	if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
-	},
+  },
   changeMargin(e){
 	  this.verticalMargin = e.detail.value
 	  storage.set({
@@ -123,14 +125,7 @@ export default {
     })
   },
   back(){
-	storage.set({
-	  		key: 'EBOOK_VERTICAL_MARGIN',
-	  		value: this.verticalMargin.toString(),
-	  	})
   	router.back();
-  },
-  exit(){
-	  app.terminate();
   }
 }
 </script>

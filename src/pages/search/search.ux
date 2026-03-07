@@ -64,22 +64,7 @@ export default {
 		allBooks: [],
 		filteredBooks: []
 	},
-	updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
-	},
+	
 	onInit() {
 		storage.get({
 			key: 'EBOOK_TIME_FORMAT',
@@ -87,13 +72,12 @@ export default {
 				if (data) this.timeFormat = data;
 				this.updateTime();
 			},
-			fail: () => {
-				this.updateTime();
-			}
+			fail: () => this.updateTime()
 		});
-		this.timer = setInterval(() => { this.updateTime(); }, 1000);
+		this.timer = setInterval(() => this.updateTime(), 60000);
 		this.loadBooks();
 	},
+	
 	onDestroy() {
 		if (this.timer) {
 			clearInterval(this.timer);
@@ -105,75 +89,88 @@ export default {
 			global.runGC();
 		}
 	},
+
+	updateTime() {
+		const date = new Date();
+		let h = date.getHours();
+		let m = date.getMinutes().toString().padStart(2, '0');
+		
+		if (this.timeFormat === '12h') {
+			const ampm = h >= 12 ? '下午' : '上午';
+			h = h % 12 || 12;
+			this.nowTime = `${ampm} ${h}:${m}`;
+		} else {
+			this.nowTime = `${h.toString().padStart(2, '0')}:${m}`;
+		}
+	},
+
 	async loadBooks() {
-		this.allBooks = await bookStorage.getBooks();
+		this.allBooks = await bookStorage.getBooks() || [];
 		this.updateFilteredBooks();
 	},
+
 	updateFilteredBooks() {
-		const q = (this.query || '').toLowerCase();
+		const q = this.query.toLowerCase();
 		if (!q) {
 			this.filteredBooks = [];
 			return;
 		}
-		const matched = (this.allBooks || []).filter(book => {
+		this.filteredBooks = this.allBooks.filter(book => {
 			const name = (book.name || '').toLowerCase();
 			const category = (book.localCategory || '').toLowerCase();
-			return name.indexOf(q) !== -1 || category.indexOf(q) !== -1;
-		});
-		this.filteredBooks = matched.slice(0, 5);
+			return name.includes(q) || category.includes(q);
+		}).slice(0, 5);
 	},
+
 	toggleKeyboard() {
 		this.hideKeyboard = !this.hideKeyboard;
 	},
+
 	onInput(evt) {
 		if (this.query.length < 20) {
 			this.query += evt.detail.content;
 			this.updateFilteredBooks();
 		}
 	},
+
 	onDelete() {
-		if (!this.query) return;
-		this.query = this.query.slice(0, -1);
-		this.updateFilteredBooks();
-	},
-	onVisibilityChange(evt) {
-		if (!evt.detail.visible) {
-			this.hideKeyboard = true;
+		if (this.query) {
+			this.query = this.query.slice(0, -1);
+			this.updateFilteredBooks();
 		}
 	},
-	roundToDecimal(num, decimalPlaces) {
-		const parsed = parseFloat(num);
-		return isNaN(parsed) ? (0).toFixed(decimalPlaces) : parsed.toFixed(decimalPlaces);
+
+	onVisibilityChange(evt) {
+		if (!evt.detail.visible) this.hideKeyboard = true;
 	},
-	getChapterProgressPercent(book) {
-		if (!book || !book.progress) return 0;
-		const percent = parseFloat(book.progress.chapterProgressPercent);
-		return isNaN(percent) ? 0 : Math.min(100, Math.max(0, percent));
-	},
-	getBookProgressPercent(book) {
-		if (!book || !book.progress) return 0;
-		const totalChapters = parseInt(book.chapterCount, 10) || 0;
-		if (totalChapters <= 0) return 0;
-		const chapterIndex = Math.max(0, book.progress.chapterIndex || 0);
-		const chapterFraction = this.getChapterProgressPercent(book) / 100;
-		return Math.min(100, Math.max(0, ((chapterIndex + chapterFraction) / totalChapters) * 100));
-	},
+
 	getProgressSubtitle(book) {
 		if (!book) return '暂无进度';
 		const progress = book.progress || {};
 		if (progress.chapterIndex == null || progress.chapterIndex < 0) return '尚未开始';
+		
 		const totalChapters = parseInt(book.chapterCount, 10) || 0;
-		const bookPercent = this.roundToDecimal(this.getBookProgressPercent(book), 2);
+		const chapterIndex = Math.max(0, progress.chapterIndex || 0);
+		const chapterFraction = Math.min(100, Math.max(0, parseFloat(progress.chapterProgressPercent) || 0)) / 100;
+		
+		let bookPercent = "0.00";
+		if (totalChapters > 0) {
+			bookPercent = (((chapterIndex + chapterFraction) / totalChapters) * 100).toFixed(2);
+		}
+		
 		if (totalChapters <= 0) return `${bookPercent}% · 章节信息缺失`;
-		const currentChapter = Math.min(totalChapters, (progress.chapterIndex || 0) + 1);
+		
+		const currentChapter = Math.min(totalChapters, chapterIndex + 1);
 		return `${bookPercent}% · 看到 ${currentChapter} / ${totalChapters} 章`;
 	},
+
 	openBook(item) {
 		router.push({
 			uri: '/pages/detail',
 			params: { name: item.dirName }
 		});
 	},
+
 	back() {
 		router.back();
 	}
@@ -247,4 +244,3 @@ export default {
 	width: 100%;
 }
 </style>
-
