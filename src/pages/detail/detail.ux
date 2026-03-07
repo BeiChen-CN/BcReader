@@ -91,8 +91,6 @@ export default {
 		timer: null,
 		savedScrollOffset: 0,
 		currentScrollTop: 0,
-		totalPages: 0,
-		currentPage: 0,
 		isKeepScreenOn: false,
 		currentChapterIndexInAll: 0,
 		currentChapterName: "",
@@ -100,7 +98,6 @@ export default {
 		isAtChapterStart: false,
 		scrollTopValue: 0,
 		wait: false,
-		longPressTriggered: false,
 		totalChapters: 0,
 		teacherScreenEnabled: false,
 		clickCount: 0,
@@ -123,7 +120,6 @@ export default {
 		nostalgicTouchEndY: 0,
 		nostalgicIsTouching: false,
 		isInitialized: false,
-		longPressTimeout: null,
 		isProcessingClick: false,
 		autoReadDistance: 100,
 		contentHeight: 0,
@@ -142,8 +138,6 @@ export default {
 		nostalgicCharsPerPage: 0,
 		nostalgicTotalPages: 0,
 		nostalgicPageTurnMode: 'topBottomClick',
-		textReaderMarqueeEnabled: false,
-		detailProgressMarqueeEnabled: false,
 		boldEnabled: true,
 		chapterStartEmptyLines: false,
 		chapterStartNumber: false,
@@ -185,11 +179,6 @@ export default {
 			minutes = minutes < 10 ? '0' + minutes : minutes;
 			this.nowTime = `${hours}:${minutes}`;
 		}
-	},
-
-	updatePageNumber() {
-		this.currentPage = this.currentChapterIndexInAll + 1;
-		this.totalPages = this.totalChapters;
 	},
 
 	onInit() {
@@ -250,8 +239,8 @@ export default {
 			'EBOOK_SWIPE_SENSITIVITY', 'EBOOK_CHAPTER_SWITCH_STYLE', 'EBOOK_AUTO_READ_DISTANCE', 'EBOOK_PREVENT_PARAGRAPH_SPLITTING',
 			'EBOOK_TIME_FORMAT', 'EBOOK_PROGRESS_SAVE_MODE', 'EBOOK_PROGRESS_SAVE_INTERVAL',
 			'EBOOK_ALWAYS_SHOW_TIME', 'EBOOK_ALWAYS_SHOW_TIME_SENSITIVITY', 'EBOOK_READ_MODE',
-			'EBOOK_TEXT_READER_MARQUEE_ENABLED', 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED', 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
-			'EBOOK_BOLD_ENABLED', 'EBOOK_CHAPTER_START_EMPTY_LINES', 'EBOOK_CHAPTER_START_NUMBER', 'EBOOK_CHAPTER_START_NAME',
+			'EBOOK_NOSTALGIC_PAGE_TURN_MODE', 'EBOOK_BOLD_ENABLED', 'EBOOK_CHAPTER_START_EMPTY_LINES', 
+            'EBOOK_CHAPTER_START_NUMBER', 'EBOOK_CHAPTER_START_NAME',
 			'EBOOK_CHAPTER_START_WORD_COUNT', 'EBOOK_CHAPTER_SWITCH_SHOW_INFO'
 		];
 		const defaults = {
@@ -260,8 +249,8 @@ export default {
 			'EBOOK_SWIPE_SENSITIVITY': 80, 'EBOOK_CHAPTER_SWITCH_STYLE': 'button', 'EBOOK_AUTO_READ_DISTANCE': 100, 'EBOOK_PREVENT_PARAGRAPH_SPLITTING': false,
 			'EBOOK_TIME_FORMAT': '24h', 'EBOOK_PROGRESS_SAVE_MODE': 'exit', 'EBOOK_PROGRESS_SAVE_INTERVAL': 10,
 			'EBOOK_ALWAYS_SHOW_TIME': false, 'EBOOK_ALWAYS_SHOW_TIME_SENSITIVITY': 200, 'EBOOK_READ_MODE': 'scroll',
-			'EBOOK_TEXT_READER_MARQUEE_ENABLED': false, 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED': false, 'EBOOK_NOSTALGIC_PAGE_TURN_MODE': 'topBottomClick',
-			'EBOOK_BOLD_ENABLED': true, 'EBOOK_CHAPTER_START_EMPTY_LINES': false, 'EBOOK_CHAPTER_START_NUMBER': false, 'EBOOK_CHAPTER_START_NAME': false,
+			'EBOOK_NOSTALGIC_PAGE_TURN_MODE': 'topBottomClick', 'EBOOK_BOLD_ENABLED': true, 'EBOOK_CHAPTER_START_EMPTY_LINES': false, 
+            'EBOOK_CHAPTER_START_NUMBER': false, 'EBOOK_CHAPTER_START_NAME': false,
 			'EBOOK_CHAPTER_START_WORD_COUNT': false, 'EBOOK_CHAPTER_SWITCH_SHOW_INFO': false
 		};
 		const mapping = {
@@ -271,8 +260,7 @@ export default {
 			'EBOOK_CHAPTER_SWITCH_STYLE': 'chapterSwitchStyle', 'EBOOK_AUTO_READ_DISTANCE': 'autoReadDistance', 'EBOOK_PREVENT_PARAGRAPH_SPLITTING': 'preventParagraphSplitting',
 			'EBOOK_TIME_FORMAT': 'timeFormat', 'EBOOK_PROGRESS_SAVE_MODE': 'saveMode', 'EBOOK_PROGRESS_SAVE_INTERVAL': 'saveIntervalValue',
 			'EBOOK_ALWAYS_SHOW_TIME': 'alwaysShowTime', 'EBOOK_ALWAYS_SHOW_TIME_SENSITIVITY': 'alwaysShowTimeSensitivity',
-			'EBOOK_READ_MODE': 'readMode', 'EBOOK_TEXT_READER_MARQUEE_ENABLED': 'textReaderMarqueeEnabled', 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED': 'detailProgressMarqueeEnabled',
-			'EBOOK_NOSTALGIC_PAGE_TURN_MODE': 'nostalgicPageTurnMode', 'EBOOK_BOLD_ENABLED': 'boldEnabled', 'EBOOK_CHAPTER_START_EMPTY_LINES': 'chapterStartEmptyLines',
+			'EBOOK_READ_MODE': 'readMode', 'EBOOK_NOSTALGIC_PAGE_TURN_MODE': 'nostalgicPageTurnMode', 'EBOOK_BOLD_ENABLED': 'boldEnabled', 'EBOOK_CHAPTER_START_EMPTY_LINES': 'chapterStartEmptyLines',
 			'EBOOK_CHAPTER_START_NUMBER': 'chapterStartNumber', 'EBOOK_CHAPTER_START_NAME': 'chapterStartName', 'EBOOK_CHAPTER_START_WORD_COUNT': 'chapterStartWordCount',
 			'EBOOK_CHAPTER_SWITCH_SHOW_INFO': 'chapterSwitchShowInfo'
 		};
@@ -551,7 +539,6 @@ export default {
 		this.currentChapterIndexInAll = chapterIdxInAll;
 		this.currentChapterName = chapter.name;
 		this.currentChapterWordCount = chapter.wordCount || 0;
-		this.updatePageNumber();
 		this.cPath = `internal://files/books/${this.name}/content/${chapter.index}.txt`;
 
 		if (this.chapterSwitchShowInfo) {
@@ -1066,7 +1053,6 @@ export default {
 		if (this.autoInterval) clearInterval(this.autoInterval);
 		if (this.clickTimeout) clearTimeout(this.clickTimeout);
 		if (this.gestureClickTimeout) clearTimeout(this.gestureClickTimeout);
-		if (this.longPressTimeout) clearTimeout(this.longPressTimeout);
 		await this._performSave();
 		if (this.name) try { await readingTimeStorage.recordReadingEnd(this.name); } catch (e) { }
 		brightness.setKeepScreenOn({ keepScreenOn: false });
@@ -1294,9 +1280,6 @@ export default {
 		});
 	},
 
-	nostalgicNextPage() { this.turnNostalgicPage(1); },
-	nostalgicPrevPage() { this.turnNostalgicPage(-1); },
-
 	onTxtClick(event) {
 		this.handleGeneralClick(event, (evt) => {
 			if (this.isChangingChapter) return;
@@ -1368,58 +1351,7 @@ export default {
 	},
 
 	lastPage() { this.$element("scrollId").scrollBy({ top: -(this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); },
-	nextPage() { this.$element("scrollId").scrollBy({ top: (this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); },
-
-	toggleKeepScreenOn() {
-		this.isKeepScreenOn = !this.isKeepScreenOn;
-		brightness.setKeepScreenOn({ keepScreenOn: this.isKeepScreenOn });
-		prompt.showToast({ message: this.isKeepScreenOn ? '已开启屏幕常亮' : '已关闭屏幕常亮' });
-	},
-
-	async addBookmark() {
-		if (this.isProcessingClick) return;
-		this.isProcessingClick = true;
-		if (this.longPressTriggered) { this.isProcessingClick = false; return; }
-		if (this.readMode === 'nostalgic') {
-			prompt.showToast({ message: '怀旧模式不支持' });
-			this.isProcessingClick = false;
-			return;
-		}
-
-		let bookmarks = await bookStorage.getBookmarks(this.name) || [];
-		const chapter = await chapterManager.getChapterByIndex(this.name, this.currentChapterIndexInAll);
-		if (!chapter || chapter.index === undefined) {
-			prompt.showToast({ message: '无法添加书签，章节信息错误' });
-			this.isProcessingClick = false;
-			return;
-		}
-
-		bookmarks.push({
-			chapterIndex: chapter.index,
-			chapterName: this.currentChapterName,
-			offsetInChapter: Math.max(0, Math.floor(this.currentFileOffset || 0)),
-			scrollOffset: Math.max(0, Math.floor(this.currentScrollTop || 0)),
-			time: new Date().getTime(),
-			name: `书签${bookmarks.length + 1}`
-		});
-		bookmarks.sort((a, b) => a.chapterIndex - b.chapterIndex || a.offsetInChapter - b.offsetInChapter);
-		try {
-			await bookStorage.setBookmarks(this.name, bookmarks);
-			prompt.showToast({ message: '添加书签成功' });
-		} catch (e) { prompt.showToast({ message: '添加书签失败' }); }
-		this.isProcessingClick = false;
-	},
-
-	gotoBookmarks() {
-		if (this.isProcessingClick) return;
-		this.isProcessingClick = true;
-		this.longPressTriggered = true;
-		if (this.longPressTimeout) clearTimeout(this.longPressTimeout);
-		this.longPressTimeout = setTimeout(() => { this.longPressTriggered = false; this.longPressTimeout = null; }, 300);
-		this.saveData(true);
-		router.push({ uri: '/pages/bookmarks', params: { name: this.name } });
-		setTimeout(() => { this.isProcessingClick = false; }, 500);
-	}
+	nextPage() { this.$element("scrollId").scrollBy({ top: (this.pageHeigh * (this.autoReadDistance / 100)), behavior: 'smooth' }); }
 }
 </script>
 

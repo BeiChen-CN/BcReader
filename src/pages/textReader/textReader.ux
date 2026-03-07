@@ -1,14 +1,15 @@
 <template>
     <div class="page">
-        <scroll scroll-y="{{true}}" style="position: absolute;width: 336px;height: {{480 - verticalMargin * 2}};top: {{verticalMargin}}px;">
+        <scroll scroll-y="{{true}}" style="position: absolute;width: 480px;height: 480px;top: 0px;">
             <div class="content-container">
                 <text class="content" style="font-size: {{fontSize}}px; color: rgba(255,255,255,{{opacity/100}}); line-height: {{lineHeight}}px;">{{content}}</text>
             </div>
         </scroll>
         
-        <marquee if="{{detailMarqueeEnabled}}" text-offset="25" scrollamount="40" style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">{{title}}</marquee>
-        <text else style="position: absolute;left: 78px;top: 35px;width: 180px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;lines: 1;">{{title}}</text>
+        <marquee if="{{detailMarqueeEnabled}}" text-offset="25" scrollamount="40" class="header-title">{{title}}</marquee>
+        <text else class="header-title">{{title}}</text>
 		
+		<img src="/common/images/more2.png" @click="gotoSetting()" class="header-more"/>
     </div>
 </template>
 
@@ -98,11 +99,11 @@
   @import '../../common/style.css';
     .content-container {
         position: absolute;
-        width: 336px;
-        top: 102px;
+        width: 480px;
+        padding: 120px 80px 160px 80px;
     }
     .content {
-        width: 336px;
+        width: 480px;
         text-align: left; 
         font-weight: bold;
     }

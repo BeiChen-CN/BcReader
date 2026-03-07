@@ -22,14 +22,6 @@
 			  <text class="itemtext" static>章节列表</text>
 			  <img src="{{chapterListMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
 		  </list-item>
-		  <list-item class="item" @click="toggleTextReaderMarquee" type="item">
-			  <text class="itemtext" static>书籍阅读器</text>
-			  <img src="{{textReaderMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-		  </list-item>
-		  <list-item class="item" @click="toggleDetailProgressMarquee" type="item">
-			  <text class="itemtext" static>书籍阅读器</text>
-			  <img src="{{detailProgressMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
-		  </list-item>
 		  <list-item class="item" @click="toggleDetailMarquee" type="item">
 			  <text class="itemtext" static>文本阅读页</text>
 			  <img src="{{detailMarqueeEnabled ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch" />
@@ -84,23 +76,9 @@
 		default: 'false'
 	  });
 	  storage.get({
-		key: 'EBOOK_TEXT_READER_MARQUEE_ENABLED',
-		success:(data)=>{
-		  this.textReaderMarqueeEnabled = data === 'true'
-		},
-		default: 'false'
-	  });
-	  storage.get({
 		key: 'EBOOK_DETAIL_MARQUEE_ENABLED',
 		success:(data)=>{
 		  this.detailMarqueeEnabled = data === 'true'
-		},
-		default: 'false'
-	  });
-	  storage.get({
-		key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED',
-		success:(data)=>{
-		  this.detailProgressMarqueeEnabled = data === 'true'
 		},
 		default: 'false'
 	  });
@@ -138,25 +116,11 @@
 		  value: this.chapterListMarqueeEnabled.toString()
 	  });
 	},
-	toggleTextReaderMarquee() {
-	  this.textReaderMarqueeEnabled = !this.textReaderMarqueeEnabled;
-	  storage.set({
-		  key: 'EBOOK_TEXT_READER_MARQUEE_ENABLED',
-		  value: this.textReaderMarqueeEnabled.toString()
-	  });
-	},
 	toggleDetailMarquee() {
 	  this.detailMarqueeEnabled = !this.detailMarqueeEnabled;
 	  storage.set({
 		  key: 'EBOOK_DETAIL_MARQUEE_ENABLED',
 		  value: this.detailMarqueeEnabled.toString()
-	  });
-	},
-	toggleDetailProgressMarquee() {
-	  this.detailProgressMarqueeEnabled = !this.detailProgressMarqueeEnabled;
-	  storage.set({
-		  key: 'EBOOK_DETAIL_PROGRESS_MARQUEE_ENABLED',
-		  value: this.detailProgressMarqueeEnabled.toString()
 	  });
 	}
   }
