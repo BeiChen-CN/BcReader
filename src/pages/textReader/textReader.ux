@@ -96,13 +96,8 @@
 </script>
 
 <style>
-    .page {
-        flex-direction: column;
-        background-color: #000000;
-        width: 336px;
-        height: 480px;
-    }
-    .content-container {
+  @import '../../common/style.css';
+        .content-container {
         position: absolute;
         width: 336px;
         top: 102px;

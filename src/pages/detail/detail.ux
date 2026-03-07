@@ -1388,11 +1388,7 @@ export default {
 </script>
 
 <style>
-.page {
-	width: 336px;
-	height: 480px;
-	background-color: #000000;
-}
+  @import '../../common/style.css';
 .progress-bar-container {
 	position: absolute;
 	bottom: 0px;

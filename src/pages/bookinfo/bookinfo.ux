@@ -5,17 +5,17 @@
 				<img src="{{coverPath}}" style="width: 160px;height: 213px;object-fit: cover;border-radius: 12px;" />
 			</list-item>
 
-			<list-item class="item" type="info">
+			<list-item class="item item3" type="info">
 				<text class="item-title" static>文件名</text>
 				<marquee if="{{bookinfoMarqueeEnabled}}" class="item-value" scrollamount="50" text-offset="25">{{fileName}}</marquee>
 				<text else class="item-value">{{fileName}}</text>
 			</list-item>
-			<list-item class="item" type="info" if="{{author}}">
+			<list-item class="item item3" type="info" if="{{author}}">
 				<text class="item-title" static>作者</text>
 				<marquee if="{{bookinfoMarqueeEnabled}}" class="item-value" scrollamount="50" text-offset="25">{{author}}</marquee>
 				<text else class="item-value">{{author}}</text>
 			</list-item>
-			<list-item class="item" type="info" style="height: 280px; flex-direction: column;">
+			<list-item class="item item3" type="info" style="height: 280px; flex-direction: column;">
 				<text class="item-title" static>占用空间</text>
 				<text class="item-value" style="width: auto;">{{totalStorage}}</text>
 				<div static style="width: 100%; height: 1px; background-color: rgba(255,255,255,0.2); margin: 8px 0px;"></div>
@@ -36,27 +36,27 @@
 					<text class="item-value" style="font-size: 24px; width: auto;">{{bookmarkIndexStorage}}</text>
 				</div>
 			</list-item>
-			<list-item class="item" type="info">
+			<list-item class="item item3" type="info">
 				<text class="item-title" static>同步进度</text>
 				<text class="item-value">{{syncProgress}}</text>
 			</list-item>
-			<list-item class="item" type="info">
+			<list-item class="item item3" type="info">
 				<text class="item-title" static>总字数</text>
 				<text class="item-value">{{wordCount}}</text>
 			</list-item>
-			<list-item class="item" type="info" if="{{bookStatus}}">
+			<list-item class="item item3" type="info" if="{{bookStatus}}">
 				<text class="item-title" static>状态</text>
 				<text class="item-value">{{bookStatus}}</text>
 			</list-item>
-			<list-item class="item" type="info" if="{{category}}">
+			<list-item class="item item3" type="info" if="{{category}}">
 				<text class="item-title" static>分类</text>
 				<text class="item-value">{{category}}</text>
 			</list-item>
-			<list-item class="item" type="info" if="{{localCategory}}">
+			<list-item class="item item3" type="info" if="{{localCategory}}">
 				<text class="item-title" static>本地分类</text>
 				<text class="item-value">{{localCategory}}</text>
 			</list-item>
-			<list-item class="item" type="summary" if="{{summary}}" @click="showSummary">
+			<list-item class="item item3" type="summary" if="{{summary}}" @click="showSummary">
 				<text class="item-title" static>书籍简介</text>
 				<text class="item-value" style="color: rgba(255,255,255,0.8);" static>点击查看 →</text>
 			</list-item>
@@ -310,29 +310,7 @@ export default {
 </script>
 
 <style>
-.page {
-	width: 336px;
-	height: 480px;
-	background-color: #000000;
-}
-.list {
-	width: 336px;
-	height: 480px;
-	position: absolute;
-	top: 0px;
-	left: 0px;
-}
-.item {
-	width: 100%;
-	height: 112px;
-	padding: 14px 20px;
-	margin-bottom: 8px;
-	background-color: #262626;
-	border-radius: 36px;
-	flex-direction: column;
-	align-items: flex-start;
-	justify-content: space-around;
-}
+  @import '../../common/style.css';
 .item-title {
 	font-size: 28px;
 	line-height: 37px;
@@ -346,5 +324,9 @@ export default {
 	font-weight: bold;
 	color: white;
 	lines: 1;
+}
+.item3 {
+	flex-direction: column;
+	align-items: flex-start;
 }
 </style>

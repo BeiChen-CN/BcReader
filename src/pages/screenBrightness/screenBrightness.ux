@@ -1,11 +1,11 @@
 <import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page" style="flex-direction: column;">
-		<div class="item">
-			<text static style="font-size: 24px;font-weight:bold;color: rgba(255, 255, 255, 0.6);text-align: center;margin-bottom:40px;top: 30px;">跟随系统亮度</text>
-			<img static src="/common/images/Switch_ON.png" style="width: 113px;height: 80px;" @click="toggleFollowSystem" if="{{followSystem}}"/>
-			<img static src="/common/images/Switch_OFF.png" style="width: 113px;height: 80px;" @click="toggleFollowSystem" else/>
-			<text style="font-size: 36px;font-weight:bold;color: white;width: 100%;text-align: center;">
+		<div class="preview-item">
+			<text static style="font-size: 31px;font-weight:bold;color: rgba(255, 255, 255, 0.6);text-align: center;margin-bottom:40px;top: 30px;">跟随系统亮度</text>
+			<img static src="/common/images/Switch_ON.png" class="switch2" @click="toggleFollowSystem" if="{{followSystem}}"/>
+			<img static src="/common/images/Switch_OFF.png" class="switch2" @click="toggleFollowSystem" else/>
+			<text style="font-size: 34px;font-weight:bold;color: white;width: 100%;text-align: center;">
 				{{followSystem ? 'ON' : 'OFF'}}
 			</text>
 		</div>
@@ -129,23 +129,5 @@ export default {
 </script>
 
 <style>
-.page {
-	width: 336px;
-	height: 480px;
-	background-color: #000000;
-}
-
-.item {
-	position: absolute;
-	left: 6px;
-	top: 86px;
-	width: 324px;
-	height: 308px;
-	border-radius: 36px;
-	flex-direction: column;
-	border: 3px solid #262626;
-	align-items: center;
-	justify-content: flex-start;
-	padding: 20px;
-}
+  @import '../../common/style.css';
 </style>

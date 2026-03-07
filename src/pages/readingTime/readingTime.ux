@@ -1,7 +1,7 @@
 <template>
 	<div class="page">
 		<list class="list" if="{{!name}}">
-			<list-item class="item" type="info">
+			<list-item class="item item3" type="info">
 				<div class="stat-item">
 					<text class="item-title" static>总阅读时长</text>
 					<text class="item-value">{{totalReadingTimeFormatted}}</text>
@@ -12,7 +12,7 @@
 				</div>
 			</list-item>
 			
-			<list-item class="item" type="info">
+			<list-item class="item item3" type="info">
 				<div class="stat-item">
 					<text class="item-title" static>今日阅读时长</text>
 					<text class="item-value">{{todayReadingTimeFormatted}}</text>
@@ -23,7 +23,7 @@
 				</div>
 			</list-item>
 			
-			<list-item class="item" type="info">
+			<list-item class="item item3" type="info">
 				<div class="stat-item">
 					<text class="item-title" static>本周阅读时长</text>
 					<text class="item-value">{{weekReadingTimeFormatted}}</text>
@@ -48,7 +48,7 @@
 		</list>
 
 		<list class="list" if="{{name}}">
-			<list-item class="item" type="info">
+			<list-item class="item item3" type="info">
 				<div class="stat-item">
 					<text class="item-title" static>本书总阅读时长</text>
 					<text class="item-value">{{totalReadingTimeFormatted}}</text>
@@ -59,7 +59,7 @@
 				</div>
 			</list-item>
 			
-			<list-item class="item" type="info">
+			<list-item class="item item3" type="info">
 				<div class="stat-item">
 					<text class="item-title" static>今日本书阅读时长</text>
 					<text class="item-value">{{todayReadingTimeFormatted}}</text>
@@ -70,7 +70,7 @@
 				</div>
 			</list-item>
 			
-			<list-item class="item" type="info">
+			<list-item class="item item3" type="info">
 				<div class="stat-item">
 					<text class="item-title" static>本书本周阅读时长</text>
 					<text class="item-value">{{weekReadingTimeFormatted}}</text>
@@ -81,7 +81,7 @@
 				</div>
 			</list-item>
 			
-			<list-item class="item" type="info" if="{{firstReadDate || lastReadDate}}">
+			<list-item class="item item3" type="info" if="{{firstReadDate || lastReadDate}}">
 				<div class="stat-item" if="{{firstReadDate}}">
 					<text class="item-title" static>首次阅读时间</text>
 					<text class="item-value">{{firstReadDate}}</text>
@@ -328,36 +328,18 @@ export default {
 </script>
 
 <style>
-.page {
-	width: 336px;
-	height: 480px;
-	background-color: #000000;
-}
-.list {
-	width: 336px;
-	height: 480px;
-	position: absolute;
-	top:0px;
-	left:0px;
-	padding: 86px 6px;
-}
-.item {
-	width: 100%;
-	height: 200px;
-	padding: 14px 20px;
-	margin-bottom: 8px;
-	background-color: #262626;
-	border-radius: 36px;
+  @import '../../common/style.css';
+  .item3{
 	flex-direction: column;
-	align-items: flex-start;
-	justify-content: space-around;
-}
+	height: 220px;
+  }
 .item-single {
 	height: 112px;
 }
 .item-chart {
-	height: 300px;
+	height: 280px;
 	padding: 20px;
+	flex-direction: column;
 }
 .chart-title {
 	font-size: 28px;

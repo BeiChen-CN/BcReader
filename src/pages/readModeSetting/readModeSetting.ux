@@ -220,64 +220,7 @@
   </script>
 
 <style>
-.page {
-	width: 336px;
-	height: 480px;
-	background-color: #000000;
-}
-
-
-.list {
-	width: 336px;
-	height: 480px;
-	position: absolute;
-	top:0px;
-	left:0px;
-    padding: 86px 6px;
-}
-
-.item {
-  width: 100%;
-  height: 112px;
-  padding: 14px 20px;
-  margin-bottom: 8px;
-  background-color: #262626;
-  border-radius: 36px;
-  align-items: center;
-justify-content: space-between;
-}
-
-.item2 {
-  background-color: #0D6EFF !important;
-}
-
-.itemtext {
-  font-size: 32px;
-  line-height:40px;
-  width: 100%;
-  font-weight: bold;
-  color: white;
-  text-overflow: ellipsis;
-  lines: 1;
-}
-
-.itemtext2 {
-  font-size: 28px;
-  line-height: 37px;
-  font-weight: bold;
-  color: rgba(255,255,255,0.6);
-  text-overflow: ellipsis;
-  lines: 1;
-}
-
-
-.item-content {
-  height: 100%;
-  flex:1;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
+  @import '../../common/style.css';
 .section-title {
   font-size: 24px;
   line-height: 36px;

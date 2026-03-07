@@ -1,7 +1,7 @@
 <import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page" style="flex-direction: column">
-		<div class="item">
+		<div class="preview-item" style="height: 140px;">
 			<text static style="font-size: 24px; color: white; text-align: left; padding: 20px; lines: 5;">
 				选择阅读器保存阅读进度的方式。
 			</text>
@@ -137,15 +137,7 @@ export default {
   </script>
 
 <style>
-.page {
-	width: 336px;
-	height: 480px;
-	background-color: #000000;
-}
-.item {
-    width: 100%;
-    margin-top: 102px;
-}
+  @import '../../common/style.css';
 .setting-group {
     padding: 14px 20px;
     background-color: #262626;
@@ -153,6 +145,7 @@ export default {
     width: 100%;
     flex-direction: column;
     padding: 0 20px;
+	top: 230px;
 }
 .setting-item {
     width: 100%;

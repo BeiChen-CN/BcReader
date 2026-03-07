@@ -1,6 +1,6 @@
 <template>
 	<div class="page" style="flex-direction: column;">
-	  <div class="item">
+	  <div class="preview-item" style="height: 115px;top: 86px;">
 		  <text style="font-size: 36px;font-weight:bold;color: white;width: 100%;text-align: center;">
 			  {{inputPercent}}%
 		  </text>
@@ -187,25 +187,8 @@
   </script>
   
   <style>
-  .page {
-	width: 336px;
-	height: 480px;
-	  background-color: #000000;
-  }
-  
-  .item {
-	  position: absolute;
-	  left: 6px;
-	  top: 86px;
-	  width: 324px;
-	  height: 115px;
-	  border-radius: 36px;
-	  flex-direction: column;
-	  border: 3px solid #262626;
-	  justify-content: center;
-  }
-
-  .row {
+  @import '../../common/style.css';
+      .row {
 	  position:absolute;
 	  width:336px;
 	  height:64px;

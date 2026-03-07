@@ -25,7 +25,7 @@
                     <text class="itemtext" static>置顶上次阅读</text>
                     <text class="itemtext2" static>显示上次阅读</text>
                 </div>
-                <img src="{{lastReadOnTop ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+                <img src="{{lastReadOnTop ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch"/>
             </list-item>
             
             <list-item class="item" @click="toggleStorageWarning" type="item">
@@ -33,7 +33,7 @@
                     <text class="itemtext" static>存储提示</text>
                     <text class="itemtext2" static>存储不足时提示</text>
                 </div>
-                <img src="{{showStorageWarning ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+                <img src="{{showStorageWarning ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch"/>
             </list-item>
 
             <list-item class="item" @click="toggleSearchBar" type="item">
@@ -41,7 +41,7 @@
                     <text class="itemtext" static>搜索按钮</text>
                     <text class="itemtext2" static>右下角搜索入口</text>
                 </div>
-                <img src="{{showSearchBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+                <img src="{{showSearchBar ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch"/>
             </list-item>
 
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
@@ -67,7 +67,7 @@
                     <text class="itemtext" static>分类分页</text>
                     <text class="itemtext2" static>分类列表开启分页</text>
                 </div>
-                <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" style="width:64px;height: 48px;"/>
+                <img src="{{categoryPagination ? '/common/images/Switch_ON.png' : '/common/images/Switch_OFF.png'}}" class="switch"/>
             </list-item>
             
             <list-item class="item" style="padding: 7px 16px; height: 50px;" type="tip">
@@ -341,63 +341,8 @@
 </script>
 
 <style>
-    .page {
-        width: 336px;
-        height: 480px;
-        background-color: #000000;
-    }
-
-    .list {
-        width: 336px;
-        height: 480px;
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        padding: 86px 6px;
-    }
-
-    .item {
-        width: 100%;
-        height: 112px;
-        padding: 14px 20px;
-        margin-bottom: 8px;
-        background-color: #262626;
-        border-radius: 36px;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .item2 {
-        background-color: #0D6EFF;
-    }
-
-    .itemtext {
-        font-size: 32px;
-        line-height: 40px;
-        width: 100%;
-        font-weight: bold;
-        color: white;
-        text-overflow: ellipsis;
-        lines: 1;
-    }
-
-    .itemtext2 {
-        font-size: 28px;
-        line-height: 37px;
-        font-weight: bold;
-        color: rgba(255, 255, 255, 0.6);
-        text-overflow: ellipsis;
-        lines: 1;
-    }
-
-    .item-content {
-        height: 100%;
-        flex: 1;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .section-title {
+  @import '../../common/style.css';
+                                .section-title {
         font-size: 24px;
         line-height: 36px;
         font-weight: bold;
