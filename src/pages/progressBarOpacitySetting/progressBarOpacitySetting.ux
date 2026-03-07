@@ -27,77 +27,81 @@ import storage from '../../utils/storage.js'
 
 export default {
   private: {
-	progressBarOpacity: 100,
-	nowTime: "00:00",
-	timer: null,
-	timeFormat: '24h'
+    progressBarOpacity: 100,
+    nowTime: "00:00",
+    timer: null,
+    timeFormat: '24h'
   },
-  updateTime() {
-	const date = new Date();
-	let hours = date.getHours();
-	let minutes = date.getMinutes();
-	if (this.timeFormat === '12h') {
-		let ampm = hours >= 12 ? '下午' : '上午';
-		hours = hours % 12;
-		hours = hours ? hours : 12;
-		minutes = minutes < 10 ? '0' + minutes : minutes;
-		this.nowTime = `${ampm} ${hours}:${minutes}`;
-	} else {
-		hours = hours < 10 ? '0' + hours : hours;
-		minutes = minutes < 10 ? '0' + minutes : minutes;
-		this.nowTime = `${hours}:${minutes}`;
-	}
-  },
+
   onInit() {
-	storage.get({
-		key: 'EBOOK_TIME_FORMAT',
-		success: (data) => {
-			if(data) this.timeFormat = data;
-			this.updateTime();
-		},
-		fail: () => {
-			this.updateTime();
-		}
-	});
-	this.timer = setInterval(() => {
-		this.updateTime();
-	}, 1000);
-	storage.get({
-	  key: 'EBOOK_PROGRESS_BAR_OPACITY',
-	  success:(data)=>{
-		if (data) {
-			this.progressBarOpacity = parseInt(data);
-		} else {
-			this.progressBarOpacity = 100;
-		}
-	  },
-	  fail: () => {
-		this.progressBarOpacity = 100;
-	  }
-	});
+    storage.get({
+      key: 'EBOOK_TIME_FORMAT',
+      success: (data) => {
+        if (data) this.timeFormat = data;
+        this.updateTime();
+      },
+      fail: () => {
+        this.updateTime();
+      }
+    });
+
+    this.timer = setInterval(() => {
+      this.updateTime();
+    }, 60000);
+
+    storage.get({
+      key: 'EBOOK_PROGRESS_BAR_OPACITY',
+      success: (data) => {
+        if (data) {
+          this.progressBarOpacity = parseInt(data);
+        }
+      }
+    });
   },
-  onDestroy(){
-	if (this.timer) {
+
+  onDestroy() {
+    if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
   },
-  changeOpacity(e){
-	this.progressBarOpacity = e.detail.value;
-	storage.set({
-		key: 'EBOOK_PROGRESS_BAR_OPACITY',
-		value: this.progressBarOpacity.toString()
-	});
+
+  updateTime() {
+    const date = new Date();
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    
+    if (this.timeFormat === '12h') {
+      let ampm = hours >= 12 ? '下午' : '上午';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${ampm} ${hours}:${minutes}`;
+    } else {
+      hours = hours < 10 ? '0' + hours : hours;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${hours}:${minutes}`;
+    }
   },
+
+  changeOpacity(e) {
+    this.progressBarOpacity = e.detail.value;
+    storage.set({
+      key: 'EBOOK_PROGRESS_BAR_OPACITY',
+      value: this.progressBarOpacity.toString()
+    });
+  },
+
   reset() {
-	this.progressBarOpacity = 100;
-	storage.set({ 
-		key: "EBOOK_PROGRESS_BAR_OPACITY", 
-		value: '100' 
-	});
+    this.progressBarOpacity = 100;
+    storage.set({ 
+      key: "EBOOK_PROGRESS_BAR_OPACITY", 
+      value: '100' 
+    });
   },
-  back(){
-	router.back();
+
+  back() {
+    router.back();
   }
 }
 </script>
@@ -137,4 +141,3 @@ export default {
 	margin-top: 20px;
 }
 </style>
-

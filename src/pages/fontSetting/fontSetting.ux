@@ -23,33 +23,16 @@
 <script>
 import router from '@system.router'
 import storage from '../../utils/storage.js'
-import app from '@system.app'
 
 export default {
   private: {
-	lineHeight:34,
-	fontSize:28,
+	fontSize: 28,
 	opacity: 100,
 	nowTime: "00:00",
 	timer: null,
 	timeFormat: '24h'
   },
-  updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
-	},
+  
   onInit() {
 	storage.get({
 		key: 'EBOOK_TIME_FORMAT',
@@ -61,73 +44,83 @@ export default {
 			this.updateTime();
 		}
 	});
+	
 	this.timer = setInterval(() => {
 		this.updateTime();
-	}, 1000);
+	}, 60000);
+	
     storage.get({
       key: 'EBOOK_FONT',
-      success:(data)=>{
-        if (data) {
-          this.fontSize = parseInt(data)
-		  this.lineHeight= parseInt( (-0.01)*(this.fontSize**2) + 1.62*this.fontSize - 3.23)
-        }
+      success: (data) => {
+        if (data) this.fontSize = parseInt(data);
       }
-	})
+	});
+	
 	storage.get({
-			key: "EBOOK_OPACITY",
-			success: (data) => {
-				if (data) {
-					this.opacity = parseFloat(data);
-				}
-			},
-		})
+		key: "EBOOK_OPACITY",
+		success: (data) => {
+			if (data) this.opacity = parseFloat(data);
+		},
+	});
   },
-  onDestroy(){
-	  if (this.timer) {
+  
+  onDestroy() {
+	if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
-	},
-  change(e){
-	  this.fontSize = e.detail.value,
-		this.lineHeight = parseInt((-0.01) * (this.fontSize ** 2) + 1.62 * this.fontSize - 3.23)
-	  storage.set({
-		  key: 'EBOOK_FONT',
-		  value: this.fontSize.toString()
-	  })
   },
-  	reset() {
-		this.fontSize = 28;
-		storage.set({
-			key: "EBOOK_FONT",
-			value: this.fontSize.toString(),
-		});
-	},
-  back(){
+  
+  updateTime() {
+	const date = new Date();
+	let hours = date.getHours();
+	let minutes = date.getMinutes();
+	
+	if (this.timeFormat === '12h') {
+		let ampm = hours >= 12 ? '下午' : '上午';
+		hours = hours % 12;
+		hours = hours ? hours : 12;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		this.nowTime = `${ampm} ${hours}:${minutes}`;
+	} else {
+		hours = hours < 10 ? '0' + hours : hours;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		this.nowTime = `${hours}:${minutes}`;
+	}
+  },
+  
+  change(e) {
+	this.fontSize = e.detail.value;
 	storage.set({
-	  		key: 'EBOOK_FONT',
-	  		value: this.fontSize.toString(),
-	  		success: function(data) {
-	  		  
-	  		},
-	  		fail: function(data, code) {
-	  		  
-	  		}
-	  	})
-  	router.back();
+		key: 'EBOOK_FONT',
+		value: this.fontSize.toString()
+	});
   },
-  exit(){
-	  app.terminate();
+  
+  reset() {
+	this.fontSize = 28;
+	storage.set({
+		key: "EBOOK_FONT",
+		value: this.fontSize.toString(),
+	});
+  },
+  
+  back() {
+	storage.set({
+		key: 'EBOOK_FONT',
+		value: this.fontSize.toString()
+	});
+  	router.back();
   }
 }
 </script>
 
 <style>
 .page {
-	  width: 432px;
-	  height: 514px;
-	  background-color: #000000;
-  }
+	width: 432px;
+	height: 514px;
+	background-color: #000000;
+}
 
 .item {
 	position: absolute;

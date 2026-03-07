@@ -141,6 +141,33 @@
             refreshMode: 'onExit',
             showSearchBar: true
         },
+        
+        onInit() {
+            storage.get({
+                key: 'EBOOK_TIME_FORMAT',
+                success: (data) => {
+                    if (data) this.timeFormat = data;
+                    this.updateTime();
+                },
+                fail: () => {
+                    this.updateTime();
+                }
+            });
+            
+            this.timer = setInterval(() => {
+                this.updateTime();
+            }, 60000);
+            
+            this.loadSettings();
+        },
+        
+        onDestroy() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+        },
+
         updateTime() {
             const date = new Date();
             let hours = date.getHours();
@@ -158,25 +185,7 @@
                 this.nowTime = `${hours}:${minutes}`;
             }
         },
-        onInit() {
-            storage.get({
-                key: 'EBOOK_TIME_FORMAT',
-                success: (data) => {
-                    if (data) {
-                        this.timeFormat = data;
-                    }
-                    this.updateTime();
-                },
-                fail: () => {
-                    this.updateTime();
-                }
-            });
-            this.timer = setInterval(() => {
-                this.updateTime();
-            }, 1000);
-            
-            this.loadSettings();
-        },
+        
         loadSettings() {
             storage.get({
                 key: 'EBOOK_SHELF_STYLE',
@@ -224,21 +233,12 @@
                 fail: () => { this.showSearchBar = true; }
             });
         },
-        onDestroy() {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
-        },
+        
         selectShelfStyle(style) {
-            if (this.shelfStyle === style) {
-                return;
-            }
+            if (this.shelfStyle === style) return;
             this.shelfStyle = style;
-            storage.set({
-                key: 'EBOOK_SHELF_STYLE',
-                value: style
-            });
+            storage.set({ key: 'EBOOK_SHELF_STYLE', value: style });
+            
             if (style === 'cover') {
                 router.push({
                     uri: '/pages/help',
@@ -249,71 +249,50 @@
                 });
             }
         },
+        
         changePageSize(e) {
             this.shelfPageSize = e.detail.value;
-            storage.set({
-                key: 'EBOOK_SHELF_PAGE_SIZE',
-                value: this.shelfPageSize.toString()
-            });
+            storage.set({ key: 'EBOOK_SHELF_PAGE_SIZE', value: this.shelfPageSize.toString() });
         },
+        
         toggleLastRead() {
             this.lastReadOnTop = !this.lastReadOnTop;
-            storage.set({
-                key: 'EBOOK_TOP_LAST_READ',
-                value: this.lastReadOnTop.toString()
-            });
+            storage.set({ key: 'EBOOK_TOP_LAST_READ', value: this.lastReadOnTop.toString() });
         },
+        
         toggleStorageWarning() {
             this.showStorageWarning = !this.showStorageWarning;
-            storage.set({
-                key: 'EBOOK_SHOW_STORAGE_WARNING',
-                value: this.showStorageWarning.toString()
-            });
+            storage.set({ key: 'EBOOK_SHOW_STORAGE_WARNING', value: this.showStorageWarning.toString() });
         },
+        
         toggleSearchBar() {
             this.showSearchBar = !this.showSearchBar;
-            storage.set({
-                key: 'EBOOK_HOME_SEARCH_ENABLED',
-                value: this.showSearchBar.toString()
-            });
+            storage.set({ key: 'EBOOK_HOME_SEARCH_ENABLED', value: this.showSearchBar.toString() });
         },
+        
         toggleCategoryPagination() {
             this.categoryPagination = !this.categoryPagination;
-            storage.set({
-                key: 'EBOOK_CATEGORY_PAGINATION',
-                value: this.categoryPagination.toString()
-            });
+            storage.set({ key: 'EBOOK_CATEGORY_PAGINATION', value: this.categoryPagination.toString() });
         },
+        
         selectDisplayMode(mode) {
-            if (this.displayMode === mode) {
-                return;
-            }
+            if (this.displayMode === mode) return;
             this.displayMode = mode;
-            storage.set({
-                key: 'EBOOK_HOME_DISPLAY_MODE',
-                value: mode
-            });
+            storage.set({ key: 'EBOOK_HOME_DISPLAY_MODE', value: mode });
         },
+        
         selectProgressMode(mode) {
-            if (this.progressMode === mode) {
-                return;
-            }
+            if (this.progressMode === mode) return;
             this.progressMode = mode;
-            storage.set({
-                key: 'EBOOK_HOME_PROGRESS_MODE',
-                value: mode
-            });
+            storage.set({ key: 'EBOOK_HOME_PROGRESS_MODE', value: mode });
         },
+        
         selectRefreshMode(mode) {
-            if (this.refreshMode === mode) {
-                return;
-            }
+            if (this.refreshMode === mode) return;
             this.refreshMode = mode;
-            storage.set({
-                key: 'EBOOK_SHELF_REFRESH_MODE',
-                value: mode
-            });
+            storage.set({ key: 'EBOOK_SHELF_REFRESH_MODE', value: mode });
         },
+        
         reset() {
             this.shelfStyle = 'list';
             this.shelfPageSize = 12;
@@ -322,8 +301,9 @@
             this.progressMode = 'book';
             this.showStorageWarning = true;
             this.categoryPagination = false;
-            this.refreshMode = 'onEnter';
+            this.refreshMode = 'onExit'; 
             this.showSearchBar = true;
+            
             storage.set({ key: "EBOOK_SHELF_STYLE", value: 'list' });
             storage.set({ key: "EBOOK_SHELF_PAGE_SIZE", value: '12' });
             storage.set({ key: "EBOOK_TOP_LAST_READ", value: 'true' });
@@ -334,6 +314,7 @@
             storage.set({ key: "EBOOK_SHELF_REFRESH_MODE", value: 'onExit' });
             storage.set({ key: "EBOOK_HOME_SEARCH_ENABLED", value: 'true' });
         },
+        
         back() {
             router.back();
         }
@@ -341,66 +322,12 @@
 </script>
 
 <style>
-    .page {
-        width: 432px;
-        height: 514px;
-        background-color: #000000;
-    }
-
-    .list {
-        width: 432px;
-        height: 514px;
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        padding: 116px 12px;
-    }
-
-    .item {
-        width: 100%;
-        height: 112px;
-        padding: 14px 20px;
-        margin-bottom: 8px;
-        background-color: #262626;
-        border-radius: 36px;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .item2 {
-        background-color: #0D6EFF;
-    }
-
-    .itemtext {
-        font-size: 32px;
-        line-height: 40px;
-        width: 100%;
-        font-weight: bold;
-        color: white;
-        text-overflow: ellipsis;
-        lines: 1;
-    }
-
-    .itemtext2 {
-        font-size: 28px;
-        line-height: 37px;
-        font-weight: bold;
-        color: rgba(255, 255, 255, 0.6);
-        text-overflow: ellipsis;
-        lines: 1;
-    }
-
-    .item-content {
-        height: 100%;
-        flex: 1;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .section-title {
-        font-size: 24px;
-        line-height: 36px;
-        font-weight: bold;
-        color: rgba(255, 255, 255, 0.5);
-    }
+    .page { width: 432px; height: 514px; background-color: #000000; }
+    .list { width: 432px; height: 514px; position: absolute; top: 0px; left: 0px; padding: 116px 12px; }
+    .item { width: 100%; height: 112px; padding: 14px 20px; margin-bottom: 8px; background-color: #262626; border-radius: 36px; align-items: center; justify-content: space-between; }
+    .item2 { background-color: #0D6EFF; }
+    .itemtext { font-size: 32px; line-height: 40px; width: 100%; font-weight: bold; color: white; text-overflow: ellipsis; lines: 1; }
+    .itemtext2 { font-size: 28px; line-height: 37px; font-weight: bold; color: rgba(255, 255, 255, 0.6); text-overflow: ellipsis; lines: 1; }
+    .item-content { height: 100%; flex: 1; flex-direction: column; justify-content: space-between; }
+    .section-title { font-size: 24px; line-height: 36px; font-weight: bold; color: rgba(255, 255, 255, 0.5); }
 </style>

@@ -13,7 +13,8 @@
 
 		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
 		<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+		
+        <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 		  {{nowTime}}
 		</text>
 		<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
@@ -36,6 +37,40 @@ export default {
 		timer: null,
 		timeFormat: '24h'
 	},
+    
+	onInit() {
+		storage.get({
+			key: 'EBOOK_TIME_FORMAT',
+			success: (data) => {
+				if(data) this.timeFormat = data;
+				this.updateTime();
+			},
+			fail: () => {
+				this.updateTime();
+			}
+		});
+        
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 60000); 
+        
+		storage.get({
+			key: STORAGE_KEY,
+			success: (data) => {
+				if (data) {
+					this.pageSize = parseInt(data);
+				}
+			},
+		});
+	},
+    
+	onDestroy(){
+	    if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+	},
+    
 	updateTime() {
 		const date = new Date();
 		let hours = date.getHours();
@@ -52,35 +87,7 @@ export default {
 			this.nowTime = `${hours}:${minutes}`;
 		}
 	},
-	onInit() {
-		storage.get({
-			key: 'EBOOK_TIME_FORMAT',
-			success: (data) => {
-				if(data) this.timeFormat = data;
-				this.updateTime();
-			},
-			fail: () => {
-				this.updateTime();
-			}
-		});
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
-		storage.get({
-			key: STORAGE_KEY,
-			success: (data) => {
-				if (data) {
-					this.pageSize = parseInt(data);
-				}
-			},
-		})
-	},
-	onDestroy(){
-	  if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
+    
 	change(e) {
 		this.pageSize = e.detail.value;
 		storage.set({
@@ -88,6 +95,7 @@ export default {
 			value: this.pageSize.toString(),
 		});
 	},
+    
 	reset() {
 		this.pageSize = DEFAULT_SIZE;
 		storage.set({
@@ -95,13 +103,10 @@ export default {
 			value: this.pageSize.toString(),
 		});
 	},
+    
 	back() {
-		storage.set({
-			key: STORAGE_KEY,
-			value: this.pageSize.toString(),
-		});
-		router.back();
-	},
+        router.back();
+	}
 };
 </script>
 

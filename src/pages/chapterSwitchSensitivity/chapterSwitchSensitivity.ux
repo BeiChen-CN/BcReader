@@ -43,10 +43,45 @@ export default {
 		chapterSwitchSensitivity: DEFAULT_SENSITIVITY,
         timeFormat: '24h'
 	},
+
+	onInit() {
+        storage.get({
+            key: 'EBOOK_TIME_FORMAT',
+            success: (data) => {
+                if(data) this.timeFormat = data;
+                this.updateTime();
+            },
+            fail: () => {
+                this.updateTime();
+            }
+        });
+		
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 60000); 
+
+		storage.get({
+			key: SENSITIVITY_KEY,
+			success: (data) => {
+				if (data) {
+					this.chapterSwitchSensitivity = parseInt(data);
+				}
+			},
+		});
+	},
+
+	onDestroy(){
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+	},
+
 	updateTime() {
 		const date = new Date();
 		let hours = date.getHours();
 		let minutes = date.getMinutes();
+		
         if (this.timeFormat === '12h') {
           let ampm = hours >= 12 ? '下午' : '上午';
           hours = hours % 12;
@@ -59,33 +94,7 @@ export default {
           this.nowTime = `${hours}:${minutes}`;
       }
 	},
-	onInit() {
-        storage.get({
-            key: 'EBOOK_TIME_FORMAT',
-            success: (data) => {
-                if(data) this.timeFormat = data;
-                this.updateTime();
-            },
-            fail: () => {
-                this.updateTime();
-            }
-        });
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
 
-		storage.get({
-			key: SENSITIVITY_KEY,
-			success: (data) => {
-				if (data) {
-					this.chapterSwitchSensitivity = parseInt(data);
-				}
-			},
-		});
-	},
-	onDestroy(){
-		clearInterval(this.timer);
-	},
 	change(e) {
 		this.chapterSwitchSensitivity = e.detail.value;
 		storage.set({
@@ -93,6 +102,7 @@ export default {
 			value: this.chapterSwitchSensitivity.toString(),
 		});
 	},
+
 	reset() {
 		this.chapterSwitchSensitivity = DEFAULT_SENSITIVITY;
 		storage.set({
@@ -100,9 +110,10 @@ export default {
 			value: this.chapterSwitchSensitivity.toString(),
 		});
 	},
+
 	back(){
 		router.back();
-	},
+	}
 }
 </script>
 

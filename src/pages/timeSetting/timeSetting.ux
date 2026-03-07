@@ -24,7 +24,8 @@
 	<img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
 	<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
 	<img static src="/common/images/reset.png" @click="reset" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
-	<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
+	
+    <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
 	  {{nowTime}}
 	</text>
 	<text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
@@ -47,13 +48,72 @@ export default {
     distanceValue: DEFAULT_DISTANCE,
     nowTime: "00:00",
     timer: null,
-	  readMode: 'scroll',
+	readMode: 'scroll',
     timeFormat: '24h'
   },
+  
+  onInit() {
+    storage.get({
+      key: 'EBOOK_TIME_FORMAT',
+      success: (data) => {
+        if(data) this.timeFormat = data;
+        this.updateTime();
+      },
+      fail: () => {
+        this.updateTime();
+      }
+    });
+    
+    this.timer = setInterval(() => {
+      this.updateTime();
+    }, 60000); 
+    
+    storage.get({
+      key: 'EBOOK_ALWAYS_SHOW_TIME',
+      success: (data) => {
+        if (data) this.alwaysShowTime = data === 'true';
+      }
+    });
+    
+    storage.get({
+      key: 'EBOOK_ALWAYS_SHOW_BATTERY',
+      success: (data) => {
+        if (data !== null && data !== '') {
+          this.alwaysShowBattery = data === 'true';
+        }
+      },
+      fail: () => {
+        this.alwaysShowBattery = true;
+      },
+    });
+    
+    storage.get({ 
+      key: 'EBOOK_READ_MODE', 
+      success: (data) => {
+        if (data) this.readMode = data;
+      }
+    });
+    
+    storage.get({
+      key: DISTANCE_KEY,
+      success: (data) => {
+        if (data) this.distanceValue = parseInt(data);
+      },
+    });
+  },
+  
+  onDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  },
+  
   updateTime() {
     const date = new Date();
     let hours = date.getHours();
     let minutes = date.getMinutes();
+    
     if (this.timeFormat === '12h') {
       let ampm = hours >= 12 ? '下午' : '上午';
       hours = hours % 12;
@@ -66,77 +126,31 @@ export default {
       this.nowTime = `${hours}:${minutes}`;
     }
   },
-  onInit() {
-    storage.get({
-      key: 'EBOOK_TIME_FORMAT',
-      success: (data) => {
-        if(data) this.timeFormat = data;
-        this.updateTime();
-      },
-      fail: () => {
-        this.updateTime();
-      }
-    });
-    this.timer = setInterval(() => {
-      this.updateTime();
-    }, 1000);
-    storage.get({
-      key: 'EBOOK_ALWAYS_SHOW_TIME',
-      success: (data) => {
-        if (data) {
-          this.alwaysShowTime = data === 'true';
-        }
-      }
-    });
-    storage.get({
-      key: 'EBOOK_ALWAYS_SHOW_BATTERY',
-      success: (data) => {
-        if (data !== null && data !== '') {
-          this.alwaysShowBattery = data === 'true';
-        }
-      },
-			fail: () => {
-				this.alwaysShowBattery = true;
-			},
-    });
-		storage.get({ key: 'EBOOK_READ_MODE', success: (data) => {
-			if (data) this.readMode = data;
-		}});
-    storage.get({
-      key: DISTANCE_KEY,
-      success: (data) => {
-        if (data) {
-          this.distanceValue = parseInt(data);
-        }
-      },
-    });
-  },
-  onDestroy(){
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-  },
-  back(){
+  
+  back() {
     router.back();
   },
-  save(){
+  
+  save() {
     storage.set({
       key: 'EBOOK_ALWAYS_SHOW_TIME',
       value: this.alwaysShowTime.toString()
-    })
+    });
   },
-  onClick(){
+  
+  onClick() {
     this.alwaysShowTime = !this.alwaysShowTime;
-    this.save()
+    this.save();
   },
-  onClickBattery(){
+  
+  onClickBattery() {
     this.alwaysShowBattery = !this.alwaysShowBattery;
     storage.set({
       key: 'EBOOK_ALWAYS_SHOW_BATTERY',
       value: this.alwaysShowBattery.toString()
-    })
+    });
   },
+  
   changeDistance(e) {
     this.distanceValue = e.detail.value;
     storage.set({
@@ -144,18 +158,15 @@ export default {
       value: this.distanceValue.toString(),
     });
   },
+  
   reset() {
     this.distanceValue = DEFAULT_DISTANCE;
     this.alwaysShowTime = false;
     this.alwaysShowBattery = true;
+    
     storage.set({ key: DISTANCE_KEY, value: this.distanceValue.toString() });
     storage.set({ key: "EBOOK_ALWAYS_SHOW_TIME", value: 'false' });
-    storage.set({ key: "EBOOK_ALWAYS_SHOW_BATTERY", value: 'false' });
-  },
-  routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url
-	  })
+    storage.set({ key: "EBOOK_ALWAYS_SHOW_BATTERY", value: 'true' }); 
   }
 }
 </script>

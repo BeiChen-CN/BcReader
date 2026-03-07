@@ -35,92 +35,93 @@
 <script>
 import router from '@system.router'
 import storage from '../../utils/storage.js'
-import app from '@system.app'
 
 export default {
   private: {
-	verticalMargin: 10,
-	opacity: 100,
-	nowTime: "00:00",
-	timer: null,
-	timeFormat: '24h'
+    verticalMargin: 10,
+    opacity: 100,
+    nowTime: "00:00",
+    timer: null,
+    timeFormat: '24h'
   },
-  updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
-	},
+  
   onInit() {
-	storage.get({
-		key: 'EBOOK_TIME_FORMAT',
-		success: (data) => {
-			if(data) this.timeFormat = data;
-			this.updateTime();
-		},
-		fail: () => {
-			this.updateTime();
-		}
-	});
-	this.timer = setInterval(() => {
-		this.updateTime();
-	}, 1000);
+    storage.get({
+      key: 'EBOOK_TIME_FORMAT',
+      success: (data) => {
+        if(data) this.timeFormat = data;
+        this.updateTime();
+      },
+      fail: () => {
+        this.updateTime();
+      }
+    });
+    
+    this.timer = setInterval(() => {
+      this.updateTime();
+    }, 60000);
+    
     storage.get({
       key: 'EBOOK_VERTICAL_MARGIN',
-      success:(data)=>{
+      success: (data) => {
         if (data) {
-          this.verticalMargin = parseInt(data)
+          this.verticalMargin = parseInt(data);
         }
       }
-	})
-	storage.get({
-			key: "EBOOK_OPACITY",
-			success: (data) => {
-				if (data) {
-					this.opacity = parseFloat(data);
-				}
-			},
-		})
+    });
+    
+    storage.get({
+      key: "EBOOK_OPACITY",
+      success: (data) => {
+        if (data) {
+          this.opacity = parseFloat(data);
+        }
+      },
+    });
   },
-  onDestroy(){
-	  if (this.timer) {
+  
+  onDestroy() {
+    if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
-	},
-  changeMargin(e){
-	  this.verticalMargin = e.detail.value
-	  storage.set({
-		  key: 'EBOOK_VERTICAL_MARGIN',
-		  value: this.verticalMargin.toString()
-	  })
   },
+  
+  updateTime() {
+    const date = new Date();
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    if (this.timeFormat === '12h') {
+      let ampm = hours >= 12 ? '下午' : '上午';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${ampm} ${hours}:${minutes}`;
+    } else {
+      hours = hours < 10 ? '0' + hours : hours;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${hours}:${minutes}`;
+    }
+  },
+  
+  changeMargin(e) {
+    this.verticalMargin = e.detail.value;
+    storage.set({
+      key: 'EBOOK_VERTICAL_MARGIN',
+      value: this.verticalMargin.toString()
+    });
+  },
+  
   reset() {
-	this.verticalMargin = 10;
-	storage.set({
-		key: "EBOOK_VERTICAL_MARGIN",
-		value: this.verticalMargin.toString(),
-	});
+    this.verticalMargin = 10;
+    storage.set({
+      key: "EBOOK_VERTICAL_MARGIN",
+      value: this.verticalMargin.toString(),
+    });
   },
-  back(){
-	storage.set({
-	  		key: 'EBOOK_VERTICAL_MARGIN',
-	  		value: this.verticalMargin.toString(),
-	  	})
-  	router.back();
-  },
-  exit(){
-	  app.terminate();
+  
+  back() {
+    router.back();
   }
 }
 </script>

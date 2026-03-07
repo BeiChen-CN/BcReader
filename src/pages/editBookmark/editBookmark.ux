@@ -4,6 +4,7 @@
         <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 336px;height: 102px;" />
         <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
         <img static src="/common/images/conform.png" @click="save" style="position: absolute;left: 322px;top: 24px;width: 82px;height: 82px;"/>
+        
         <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
             {{nowTime}}
         </text>
@@ -53,6 +54,23 @@ export default {
         bookmarkIndex: -1,
         currentName: ''
     },
+    
+    onInit() {
+        this.textValue = this.currentName || '';
+        this.updateTime();
+        
+        this.timer = setInterval(() => {
+            this.updateTime();
+        }, 60000);
+    },
+    
+    onDestroy() {
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+    },
+    
     updateTime() {
       const date = new Date();
       let hours = date.getHours();
@@ -63,38 +81,31 @@ export default {
   
       this.nowTime = `${hours}:${minutes}`;
     },
-    onInit() {
-        this.textValue = this.currentName || '';
-        this.updateTime();
-        this.timer = setInterval(() => {
-            this.updateTime();
-        }, 1000);
-    },
-    onDestroy(){
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-    },
+    
     onInput(evt) {
         if (this.textValue.length < 20) {
             this.textValue += evt.detail.content;
         }
     },
+    
     onDelete() {
         this.textValue = this.textValue.slice(0, -1);
     },
+    
     onVisibilityChange(evt) {
         if (!evt.detail.visible) {
             this.hideKeyboard = true;
         }
     },
+    
     toggleKeyboard() {
         this.hideKeyboard = !this.hideKeyboard;
     },
+    
     back() {
         router.back();
     },
+    
     async save() {
         if (!this.textValue) {
             prompt.showToast({ message: '名称不能为空' });
@@ -102,7 +113,6 @@ export default {
         }
 
         try {
-            
             let bookmarks = await bookStorage.getBookmarks(this.bookName);
             if (bookmarks && bookmarks[this.bookmarkIndex]) {
                 bookmarks[this.bookmarkIndex].name = this.textValue;

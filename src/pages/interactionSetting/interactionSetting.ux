@@ -73,6 +73,51 @@
             gesture: 'single',
             teacherScreenEnabled: false
         },
+        
+        onInit() {
+            storage.get({
+                key: 'EBOOK_TIME_FORMAT',
+                success: (data) => {
+                    if (data) this.timeFormat = data;
+                    this.updateTime();
+                },
+                fail: () => {
+                    this.updateTime();
+                }
+            });
+            
+            this.timer = setInterval(() => {
+                this.updateTime();
+            }, 60000); 
+            
+            storage.get({
+                key: 'EBOOK_GESTURE',
+                success: (data) => {
+                    if (data) this.gesture = data;
+                },
+                fail: () => {
+                    this.gesture = 'single';
+                }
+            });
+            
+            storage.get({
+                key: 'EBOOK_TEACHER_SCREEN_ENABLED',
+                success: (data) => {
+                    this.teacherScreenEnabled = data === 'true';
+                },
+                fail: () => {
+                    this.teacherScreenEnabled = false;
+                }
+            });
+        },
+        
+        onDestroy() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+        },
+        
         updateTime() {
             const date = new Date();
             let hours = date.getHours();
@@ -90,55 +135,9 @@
                 this.nowTime = `${hours}:${minutes}`;
             }
         },
-        onInit() {
-            storage.get({
-                key: 'EBOOK_TIME_FORMAT',
-                success: (data) => {
-                    if (data) {
-                        this.timeFormat = data;
-                    }
-                    this.updateTime();
-                },
-                fail: () => {
-                    this.updateTime();
-                }
-            });
-            this.timer = setInterval(() => {
-                this.updateTime();
-            }, 1000);
-            
-            storage.get({
-                key: 'EBOOK_GESTURE',
-                success: (data) => {
-                    if (data) {
-                        this.gesture = data;
-                    }
-                },
-                fail: () => {
-                    this.gesture = 'single';
-                }
-            });
-            
-            storage.get({
-                key: 'EBOOK_TEACHER_SCREEN_ENABLED',
-                success: (data) => {
-                    this.teacherScreenEnabled = data === 'true';
-                },
-                fail: () => {
-                    this.teacherScreenEnabled = false;
-                }
-            });
-        },
-        onDestroy() {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
-        },
+        
         selectTimeFormat(format) {
-            if (this.timeFormat === format) {
-                return;
-            }
+            if (this.timeFormat === format) return;
             this.timeFormat = format;
             storage.set({
                 key: 'EBOOK_TIME_FORMAT',
@@ -146,20 +145,20 @@
             });
             this.updateTime();
         },
+        
         selectGesture(gestureType) {
-            if (this.gesture === gestureType) {
-                return;
-            }
+            if (this.gesture === gestureType) return;
             this.gesture = gestureType;
             storage.set({
                 key: 'EBOOK_GESTURE',
                 value: gestureType
             });
         },
+        
         toggleTeacherScreen() {
-            const targetState = !this.teacherScreenEnabled;
-            if (targetState) {
-                this.teacherScreenEnabled = true;
+            this.teacherScreenEnabled = !this.teacherScreenEnabled;
+            
+            if (this.teacherScreenEnabled) {
                 storage.set({
                     key: 'EBOOK_TEACHER_SCREEN_ENABLED',
                     value: 'true'
@@ -172,22 +171,25 @@
                     }
                 });
             } else {
-                this.teacherScreenEnabled = false;
                 storage.set({
                     key: 'EBOOK_TEACHER_SCREEN_ENABLED',
                     value: 'false'
                 });
             }
         },
+        
         reset() {
             this.timeFormat = '24h';
             this.gesture = 'single';
             this.teacherScreenEnabled = false;
+            
             storage.set({ key: "EBOOK_TIME_FORMAT", value: '24h' });
             storage.set({ key: "EBOOK_GESTURE", value: 'single' });
             storage.set({ key: "EBOOK_TEACHER_SCREEN_ENABLED", value: 'false' });
+            
             this.updateTime();
         },
+        
         back() {
             router.back();
         }
@@ -195,6 +197,7 @@
 </script>
 
 <style>
+    /* 样式部分保持不变 */
     .page {
         width: 432px;
         height: 514px;
@@ -202,8 +205,8 @@
     }
 
     .list {
-	width: 432px;
-	height: 514px;
+	    width: 432px;
+	    height: 514px;
         position: absolute;
         top: 0px;
         left: 0px;
@@ -239,7 +242,6 @@
         text-overflow: ellipsis;
         lines: 1;
     }
-
 
     .item-content {
         height: 100%;

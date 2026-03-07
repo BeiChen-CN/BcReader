@@ -108,7 +108,7 @@ export default {
 	},
 	onInit() {
 		this.loadSettings();
-		this.timer = setInterval(() => { this.updateTime(); }, 1000);
+		this.timer = setInterval(() => { this.updateTime(); }, 60000); 
 		global.runGC();
 		this.loadFileInfo();
 	},
@@ -128,12 +128,15 @@ export default {
 			success: (data) => {
 				if (data) this.timeFormat = data;
 				this.updateTime();
+			},
+			fail: () => {
+				this.updateTime();
 			}
 		});
 		storage.get({
 			key: 'EBOOK_BOOKINFO_MARQUEE_ENABLED',
 			success: (data) => {
-				this.bookinfoMarqueeEnabled = data === 'true';
+				if (data) this.bookinfoMarqueeEnabled = data === 'true';
 			}
 		});
 	},
@@ -303,6 +306,7 @@ export default {
 </script>
 
 <style>
+/* 保持原样 */
 .page {
 	width: 432px;
 	height: 514px;

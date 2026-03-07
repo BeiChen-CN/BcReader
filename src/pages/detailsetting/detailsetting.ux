@@ -72,7 +72,6 @@
 		  </list-item>
 	  </list>
   
-	  
 	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
 	  <img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
 	  <text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
@@ -82,16 +81,14 @@
 		  菜单
 	  </text>
 	</div>
-  </template>
+</template>
   
-  <script>
-  import router from '@system.router'
-  import prompt from '@system.prompt'
-  import app from '@system.app'
-  import bookStorage from '../../utils/bookStorage.js'
-  
-  
-  export default {
+<script>
+import router from '@system.router'
+import prompt from '@system.prompt'
+import bookStorage from '../../utils/bookStorage.js'
+
+export default {
 	private: {
 		isKeepScreenOn: false,
 		nowTime: "00:00",
@@ -100,34 +97,15 @@
 	protected: {
 		name: ''
 	},
-	updateTime() {
-	  const date = new Date();
-	  let hours = date.getHours();
-	  let minutes = date.getMinutes();
-  
-	  hours = hours < 10 ? '0' + hours : hours;
-	  minutes = minutes < 10 ? '0' + minutes : minutes;
-  
-	  this.nowTime = `${hours}:${minutes}`;
-	},
+	
 	onInit() {
-	  this.updateTime();
-	  this.timer = setInterval(() => {
 		this.updateTime();
-	  }, 1000);
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 60000);
 	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
-  
-	},
-	onShow(){
+	
+	onShow() {
 		if (globalThis.justJumpedFromChapter || globalThis.justJumpedFromBookmark || globalThis.justJumpedFromPageNumber || globalThis.justJumpedFromPercent) {
 			router.back();
 			return;
@@ -136,37 +114,51 @@
 			this.isKeepScreenOn = globalThis.isKeepScreenOn;
 		}
 	},
-	onBackPress(){
+	
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
 	},
-	del(){
-		router.push({
-            uri: '/pages/confirm',
-            params: {
-                action: 'deleteBook',
-                title: '删除书籍',
-                confirmText: '确认删除吗？',
-                subText: '删除后不可恢复',
-                cPath: 'internal://files/books/' + this.name
-            }
-        });
+
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+
+		hours = hours < 10 ? '0' + hours : hours;
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+
+		this.nowTime = `${hours}:${minutes}`;
 	},
-	selectFile(item){
+	
+	del() {
 		router.push({
-		  uri: '/pages/detail',
-			params: { name: item.dirName }
+			uri: '/pages/confirm',
+			params: {
+				action: 'deleteBook',
+				title: '删除书籍',
+				confirmText: '确认删除吗？',
+				subText: '删除后不可恢复',
+				cPath: 'internal://files/books/' + this.name
+			}
+		});
+	},
+	
+	routerTo(url) {
+		router.push({
+			uri: '/pages/' + url,
+			params: { name: this.name }
 		})
 	},
-	routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url,
-		params: { name: this.name }
-	  })
-	},
+	
 	toggleKeepScreenOnClick() {
 		this.isKeepScreenOn = !this.isKeepScreenOn;
 		globalThis.isKeepScreenOn = this.isKeepScreenOn;
 	},
-	async backToFirst(){
+	
+	async backToFirst() {
 		try {
 			let progress = await bookStorage.get(this.name);
 			if (progress.chapterIndex === null || progress.chapterIndex === undefined) {
@@ -177,7 +169,7 @@
 			progress.offsetInChapter = 0;
 			progress.scrollOffset = 0;
 			await bookStorage.set(this.name, progress);
-      progress = null;
+			progress = null;
 			
 			prompt.showToast({ message: '已跳转到第一段', duration: 1500 });
 			globalThis.justJumpedFromPageNumber = true;
@@ -187,66 +179,18 @@
 			prompt.showToast({ message: '跳转失败', duration: 2000 });
 		}
 	},
-	back(){
+	
+	back() {
 		router.back();
-	},
-	exit(){
-		app.terminate();
 	}
-  }
-  </script>
+}
+</script>
   
-  <style>
-  .page {
-	  width: 432px;
-	  height: 514px;
-	  background-color: #000000;
-  }
-  
-  .list {
-	  width: 432px;
-	  height: 514px;
-	  position: absolute;
-	  top:0px;
-	  left:0px;
-	padding: 116px 12px;
-  }
-  
-  .item {
-	  width: 100%;
-	  height: 112px;
-	  padding: 14px 20px;
-	  margin-bottom: 8px;
-	  background-color: #262626;
-	  border-radius: 36px;
-	  align-items: center;
-	justify-content: space-between;
-  }
-  
-  .itemtext {
-	  font-size: 32px;
-	  line-height:40px;
-	  width: 100%;
-	  font-weight: bold;
-	  color: white;
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
-  
-  .itemtext2 {
-	  font-size: 28px;
-	  line-height: 37px;
-	  font-weight: bold;
-	  color: rgba(255,255,255,0.6);
-	  text-overflow: ellipsis;
-	  lines: 1;
-  }
-  
-  
-  .item-content {
-	  height: 100%;
-	  flex:1;
-	  flex-direction: column;
-	  justify-content: space-between;
-  }
-  </style>
+<style>
+.page { width: 432px; height: 514px; background-color: #000000; }
+.list { width: 432px; height: 514px; position: absolute; top:0px; left:0px; padding: 116px 12px; }
+.item { width: 100%; height: 112px; padding: 14px 20px; margin-bottom: 8px; background-color: #262626; border-radius: 36px; align-items: center; justify-content: space-between; }
+.itemtext { font-size: 32px; line-height:40px; width: 100%; font-weight: bold; color: white; text-overflow: ellipsis; lines: 1; }
+.itemtext2 { font-size: 28px; line-height: 37px; font-weight: bold; color: rgba(255,255,255,0.6); text-overflow: ellipsis; lines: 1; }
+.item-content { height: 100%; flex:1; flex-direction: column; justify-content: space-between; }
+</style>

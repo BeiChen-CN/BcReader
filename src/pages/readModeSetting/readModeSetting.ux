@@ -53,28 +53,75 @@
 	  </text>
 	  <text static style="position: absolute;left: 130px;top: 46px;width: 172px;line-height: 42px;font-weight:bold;font-size:32px;color:white;text-align:center;">
 			阅读模式
-		</text>
+	  </text>
 	</div>
-  </template>
+</template>
 
-  <script>
-  import router from '@system.router'
-  import storage from '../../utils/storage.js'
-  import app from '@system.app'
+<script>
+import router from '@system.router'
+import storage from '../../utils/storage.js'
 
-  export default {
+export default {
 	private: {
 		readMode: 'scroll',
 		nostalgicPageTurnMode: 'topBottomClick',
-		txtNum:0,
+		txtNum: 0,
 		nowTime: "00:00",
 		timer: null,
 		timeFormat: '24h'
 	},
-	protected: {
-	  cPath: '',
-		name: ''
+	
+	onInit() {
+		storage.get({
+			key: 'EBOOK_TIME_FORMAT',
+			success: (data) => {
+				if(data) this.timeFormat = data;
+				this.updateTime();
+			},
+			fail: () => {
+				this.updateTime();
+			}
+		});
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 60000);
 	},
+	
+	onShow() {
+		storage.get({
+			key: 'EBOOK_READ_MODE',
+			success: (data) => {
+				this.readMode = data || 'scroll';
+				if (this.readMode === 'nostalgic') {
+					storage.get({
+						key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
+						success: (modeData) => {
+							this.nostalgicPageTurnMode = modeData || 'topBottomClick';
+							this.updateScene();
+						},
+						fail: () => {
+							this.nostalgicPageTurnMode = 'topBottomClick';
+							this.updateScene();
+						}
+					});
+				} else {
+					this.updateScene();
+				}
+			},
+			fail: () => {
+				this.readMode = 'scroll';
+				this.updateScene();
+			}
+		});
+	},
+	
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+	},
+	
 	updateTime() {
 		const date = new Date();
 		let hours = date.getHours();
@@ -91,133 +138,51 @@
 			this.nowTime = `${hours}:${minutes}`;
 		}
 	},
-	onInit() {
-		storage.get({
-			key: 'EBOOK_TIME_FORMAT',
-			success: (data) => {
-				if(data) this.timeFormat = data;
-				this.updateTime();
-			},
-			fail: () => {
-				this.updateTime();
-			}
+
+	select(mode) {
+		if (this.readMode === mode) return;
+		this.readMode = mode;
+		storage.set({
+			key: 'EBOOK_READ_MODE',
+			value: mode,
 		});
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
+		
+		if (mode === 'nostalgic') {
+			storage.get({
+				key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
+				success: (modeData) => {
+					this.nostalgicPageTurnMode = modeData || 'topBottomClick';
+					this.updateScene();
+				},
+				fail: () => {
+					this.nostalgicPageTurnMode = 'topBottomClick';
+					this.updateScene();
+				}
+			});
+		} else {
+			this.updateScene();
+		}
 	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
-
-	},
-	onShow(){
-	  var that = this;
-	  storage.get({
-		  key: 'EBOOK_READ_MODE',
-		  success: function(data) {
-			if (data) {
-				that.readMode = data;
-			} else {
-				that.readMode = 'scroll';
-			}
-			if (that.readMode === 'nostalgic') {
-				storage.get({
-					key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
-					success: function(modeData) {
-						if (modeData) {
-							that.nostalgicPageTurnMode = modeData;
-						} else {
-							that.nostalgicPageTurnMode = 'topBottomClick';
-						}
-						that.updateScene();
-					},
-					fail: function() {
-						that.nostalgicPageTurnMode = 'topBottomClick';
-						that.updateScene();
-					}
-				});
-			} else {
-				that.updateScene();
-			}
-		  },
-		  fail: function(data, code) {
-			that.readMode = 'scroll';
-			that.updateScene();
-		  }
-	  })
-	},
-	onBackPress(){
-	},
-
-	select(mode){
-	  if (this.readMode === mode) {
-		  return;
-	  }
-	  this.readMode = mode;
-	  storage.set({
-		  key: 'EBOOK_READ_MODE',
-		  value: mode,
-	  });
-	  if (mode === 'nostalgic') {
-		  storage.get({
-			  key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
-			  success: (modeData) => {
-				  if (modeData) {
-					  this.nostalgicPageTurnMode = modeData;
-				  } else {
-					  this.nostalgicPageTurnMode = 'topBottomClick';
-				  }
-				  this.updateScene();
-			  },
-			  fail: () => {
-				  this.nostalgicPageTurnMode = 'topBottomClick';
-				  this.updateScene();
-			  }
-		  });
-	  } else {
-		  this.updateScene();
-	  }
-	},
+	
 	selectPageTurnMode(mode) {
-	  if (this.nostalgicPageTurnMode === mode) {
-		  return;
-	  }
-	  this.nostalgicPageTurnMode = mode;
-	  storage.set({
-		  key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
-		  value: mode,
-	  });
-	  this.updateScene();
+		if (this.nostalgicPageTurnMode === mode) return;
+		this.nostalgicPageTurnMode = mode;
+		storage.set({
+			key: 'EBOOK_NOSTALGIC_PAGE_TURN_MODE',
+			value: mode,
+		});
+		this.updateScene();
 	},
 
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail'
-		})
-	},
-	routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url
-	  })
-	},
-	back(){
+	back() {
 		router.back();
 	},
-	exit(){
-		app.terminate();
-	},
-	updateScene(){
+	
+	updateScene() {
 		this.txtNum += 1;
 	}
-  }
-  </script>
+}
+</script>
 
 <style>
 .page {
@@ -226,62 +191,60 @@
 	background-color: #000000;
 }
 
-
 .list {
-  width: 432px;
-  height: 514px;
-  position: absolute;
-  top:0px;
-  left:0px;
-padding: 116px 12px;
+	width: 432px;
+	height: 514px;
+	position: absolute;
+	top:0px;
+	left:0px;
+	padding: 116px 12px;
 }
 
 .item {
-  width: 100%;
-  height: 112px;
-  padding: 14px 20px;
-  margin-bottom: 8px;
-  background-color: #262626;
-  border-radius: 36px;
-  align-items: center;
-justify-content: space-between;
+	width: 100%;
+	height: 112px;
+	padding: 14px 20px;
+	margin-bottom: 8px;
+	background-color: #262626;
+	border-radius: 36px;
+	align-items: center;
+	justify-content: space-between;
 }
 
 .item2 {
-  background-color: #0D6EFF !important;
+	background-color: #0D6EFF !important;
 }
 
 .itemtext {
-  font-size: 32px;
-  line-height:40px;
-  width: 100%;
-  font-weight: bold;
-  color: white;
-  text-overflow: ellipsis;
-  lines: 1;
+	font-size: 32px;
+	line-height:40px;
+	width: 100%;
+	font-weight: bold;
+	color: white;
+	text-overflow: ellipsis;
+	lines: 1;
 }
 
 .itemtext2 {
-  font-size: 28px;
-  line-height: 37px;
-  font-weight: bold;
-  color: rgba(255,255,255,0.6);
-  text-overflow: ellipsis;
-  lines: 1;
+	font-size: 28px;
+	line-height: 37px;
+	font-weight: bold;
+	color: rgba(255,255,255,0.6);
+	text-overflow: ellipsis;
+	lines: 1;
 }
 
-
 .item-content {
-  height: 100%;
-  flex:1;
-  flex-direction: column;
-  justify-content: space-between;
+	height: 100%;
+	flex:1;
+	flex-direction: column;
+	justify-content: space-between;
 }
 
 .section-title {
-  font-size: 24px;
-  line-height: 36px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.5);
+	font-size: 24px;
+	line-height: 36px;
+	font-weight: bold;
+	color: rgba(255, 255, 255, 0.5);
 }
 </style>

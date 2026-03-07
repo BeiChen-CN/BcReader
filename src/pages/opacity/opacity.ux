@@ -1,4 +1,4 @@
-<import name="number"src="../../components/number_choose/number_choose"></import>
+<import name="number" src="../../components/number_choose/number_choose"></import>
 <template>
 	<div class="page" style="flex-direction: column">
 
@@ -24,17 +24,58 @@
 <script>
 import router from "@system.router";
 import storage from '../../utils/storage.js';
-import app from "@system.app";
 
 export default {
 	private: {
-		lineHeight: 34,
 		fontSize: 28,
 		opacity: 100,
 		nowTime: "00:00",
 		timer: null,
 		timeFormat: '24h'
 	},
+	
+	onInit() {
+		storage.get({
+			key: 'EBOOK_TIME_FORMAT',
+			success: (data) => {
+				if(data) this.timeFormat = data;
+				this.updateTime();
+			},
+			fail: () => {
+				this.updateTime();
+			}
+		});
+		
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 60000);
+		
+		storage.get({
+			key: "EBOOK_FONT",
+			success: (data) => {
+				if (data) {
+					this.fontSize = parseInt(data);
+				}
+			},
+		});
+		
+		storage.get({
+			key: "EBOOK_OPACITY",
+			success: (data) => {
+				if (data) {
+					this.opacity = parseFloat(data);
+				}
+			},
+		})
+	},
+	
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+	},
+	
 	updateTime() {
 		const date = new Date();
 		let hours = date.getHours();
@@ -51,46 +92,7 @@ export default {
 			this.nowTime = `${hours}:${minutes}`;
 		}
 	},
-	onInit() {
-		storage.get({
-			key: 'EBOOK_TIME_FORMAT',
-			success: (data) => {
-				if(data) this.timeFormat = data;
-				this.updateTime();
-			},
-			fail: () => {
-				this.updateTime();
-			}
-		});
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
-		storage.get({
-			key: "EBOOK_FONT",
-			success: (data) => {
-				if (data) {
-					this.fontSize = parseInt(data);
-					this.lineHeight = parseInt(
-						-0.01 * this.fontSize ** 2 + 1.62 * this.fontSize - 3.23
-					);
-				}
-			},
-		});
-		storage.get({
-			key: "EBOOK_OPACITY",
-			success: (data) => {
-				if (data) {
-					this.opacity = parseFloat(data);
-				}
-			},
-		})
-	},
-	onDestroy(){
-	  if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
+	
 	change(e) {
 		this.opacity = e.detail.value;
 		storage.set({
@@ -98,6 +100,7 @@ export default {
 			value: this.opacity.toString(),
 		});
 	},
+	
 	reset() {
 		this.opacity = 100;
 		storage.set({
@@ -105,16 +108,10 @@ export default {
 			value: this.opacity.toString(),
 		});
 	},
+	
 	back() {
-		storage.set({
-			key: "EBOOK_OPACITY",
-			value: this.opacity.toString(),
-		});
 		router.back();
-	},
-	exit() {
-		app.terminate();
-	},
+	}
 };
 </script>
 

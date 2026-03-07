@@ -45,6 +45,43 @@ export default {
 		nowTime: "00:00",
 		timer: null
 	},
+	
+	onInit() {
+		this.updateTime();
+		
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 60000);
+		
+		storage.get({
+			key: HEIGHT_STORAGE_KEY,
+			success: (data) => {
+				if (data) this.buttonHeight = parseInt(data);
+			},
+		});
+		
+		storage.get({
+			key: SENSITIVITY_STORAGE_KEY,
+			success: (data) => {
+				if (data) this.scrollSensitivity = parseInt(data);
+			},
+		});
+		
+        storage.get({
+            key: SHOW_INFO_STORAGE_KEY,
+            success: (data) => {
+                if (data) this.showChapterInfo = data === 'true';
+            }
+        });
+	},
+	
+	onDestroy() {
+	    if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+	},
+	
 	updateTime() {
 		const date = new Date();
 		let hours = date.getHours();
@@ -53,43 +90,7 @@ export default {
 		minutes = minutes < 10 ? '0' + minutes : minutes;
 		this.nowTime = `${hours}:${minutes}`;
 	},
-	onInit() {
-		this.updateTime();
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
-		storage.get({
-			key: HEIGHT_STORAGE_KEY,
-			success: (data) => {
-				if (data) {
-					this.buttonHeight = parseInt(data);
-				}
-			},
-		});
-		storage.get({
-			key: SENSITIVITY_STORAGE_KEY,
-			success: (data) => {
-				if (data) {
-					this.scrollSensitivity = parseInt(data);
-				}
-			},
-		});
-        storage.get({
-            key: SHOW_INFO_STORAGE_KEY,
-            success: (data) => {
-                this.showChapterInfo = data === 'true';
-            },
-            fail: () => {
-                this.showChapterInfo = false;
-            }
-        });
-	},
-	onDestroy(){
-	  if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
+	
 	onHeightChange(e) {
 		this.buttonHeight = e.detail.value;
 		storage.set({
@@ -97,6 +98,7 @@ export default {
 			value: this.buttonHeight.toString(),
 		});
 	},
+	
 	onSensitivityChange(e) {
 		this.scrollSensitivity = e.detail.value;
 		storage.set({
@@ -104,6 +106,7 @@ export default {
 			value: this.scrollSensitivity.toString(),
 		});
 	},
+	
     toggleShowInfo() {
         this.showChapterInfo = !this.showChapterInfo;
         storage.set({
@@ -111,26 +114,20 @@ export default {
             value: this.showChapterInfo.toString()
         });
     },
+    
 	reset() {
 		this.buttonHeight = DEFAULT_HEIGHT;
 		this.scrollSensitivity = DEFAULT_SENSITIVITY;
         this.showChapterInfo = false;
-		storage.set({
-			key: HEIGHT_STORAGE_KEY,
-			value: this.buttonHeight.toString(),
-		});
-		storage.set({
-			key: SENSITIVITY_STORAGE_KEY,
-			value: this.scrollSensitivity.toString(),
-		});
-        storage.set({
-            key: SHOW_INFO_STORAGE_KEY,
-            value: 'false'
-        });
+        
+		storage.set({ key: HEIGHT_STORAGE_KEY, value: this.buttonHeight.toString() });
+		storage.set({ key: SENSITIVITY_STORAGE_KEY, value: this.scrollSensitivity.toString() });
+        storage.set({ key: SHOW_INFO_STORAGE_KEY, value: 'false' });
 	},
+	
 	back() {
 		router.back();
-	},
+	}
 };
 </script>
 

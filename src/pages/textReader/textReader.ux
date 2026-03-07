@@ -29,24 +29,28 @@
             lineHeight: 30,
             detailMarqueeEnabled: false
         },
+        
         onInit() {
             this.title = this.pageTitle || '详情';
             this.content = this.pageContent || '无内容';
+            
             this.updateTime();
             this.timer = setInterval(() => {
                 this.updateTime();
-            }, 1000);
-            this.loadSettings();
+            }, 60000); 
         },
+        
         onShow() {
             this.loadSettings();
         },
+        
         onDestroy() {
             if (this.timer) {
                 clearInterval(this.timer);
                 this.timer = null;
             }
         },
+        
         updateTime() {
             const date = new Date();
             let hours = date.getHours();
@@ -55,6 +59,7 @@
             minutes = minutes < 10 ? '0' + minutes : minutes;
             this.nowTime = `${hours}:${minutes}`;
         },
+        
         loadSettings() {
             storage.get({
                 key: 'EBOOK_FONT',
@@ -89,6 +94,7 @@
                 }
             });
         },
+        
         back() {
             router.back();
         }

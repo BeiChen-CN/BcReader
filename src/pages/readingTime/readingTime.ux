@@ -119,19 +119,13 @@ import readingTimeStorage from '../../utils/readingTimeStorage.js'
 import storage from '../../utils/storage.js'
 
 export default {
-		private: {
-		totalReadingTime: 0,
+	private: {
 		totalReadingTimeFormatted: '加载中...',
 		totalReadingDays: 0,
-		todayReadingTime: 0,
 		todayReadingTimeFormatted: '0分钟',
-		averageDailyTime: 0,
 		averageDailyTimeFormatted: '0分钟',
-		weekReadingTime: 0,
 		weekReadingTimeFormatted: '0分钟',
-		averageWeekTime: 0,
 		averageWeekTimeFormatted: '0分钟',
-		maxDailyTime: 0,
 		maxDailyTimeFormatted: '0分钟',
 		firstReadDate: '',
 		lastReadDate: '',
@@ -146,43 +140,31 @@ export default {
 	protected: {
 		name: ''
 	},
-	updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-        if (this.timeFormat === '12h') {
-            let ampm = hours >= 12 ? '下午' : '上午';
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            this.nowTime = `${ampm} ${hours}:${minutes}`;
-        } else {
-            hours = hours < 10 ? '0' + hours : hours;
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            this.nowTime = `${hours}:${minutes}`;
-        }
-	},
+	
 	onInit() {
-        storage.get({
-            key: 'EBOOK_TIME_FORMAT',
-            success: (data) => {
-                if(data) this.timeFormat = data;
-                this.updateTime();
-            },
-            fail: () => {
-                this.updateTime();
-            }
-        });
+		storage.get({
+			key: 'EBOOK_TIME_FORMAT',
+			success: (data) => {
+				if(data) this.timeFormat = data;
+				this.updateTime();
+			},
+			fail: () => {
+				this.updateTime();
+			}
+		});
+		
 		this.timer = setInterval(() => {
 			this.updateTime();
-		}, 1000);
+		}, 60000); 
+		
 		global.runGC();
 		this.updateChart([0, 0, 0, 0, 0, 0, 0]);
-		this.loadReadingTime();
 	},
+	
 	onShow() {
 		this.loadReadingTime();
 	},
+	
 	onDestroy() {
 		if (this.timer) {
 			clearInterval(this.timer);
@@ -190,6 +172,24 @@ export default {
 		}
 		global.runGC();
 	},
+	
+	updateTime() {
+		const date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		if (this.timeFormat === '12h') {
+			let ampm = hours >= 12 ? '下午' : '上午';
+			hours = hours % 12;
+			hours = hours ? hours : 12; 
+			minutes = minutes < 10 ? '0' + minutes : minutes;
+			this.nowTime = `${ampm} ${hours}:${minutes}`;
+		} else {
+			hours = hours < 10 ? '0' + hours : hours;
+			minutes = minutes < 10 ? '0' + minutes : minutes;
+			this.nowTime = `${hours}:${minutes}`;
+		}
+	},
+	
 	async loadReadingTime() {
 		if (!this.name) {
 			this.pageTitle = '阅读时长';
@@ -199,6 +199,7 @@ export default {
 			await this.loadBookReadingTime();
 		}
 	},
+	
 	async loadBookReadingTime() {
 		try {
 			const readingTimeData = await readingTimeStorage.getReadingTime(this.name);
@@ -210,16 +211,11 @@ export default {
 			
 			const stats = readingTimeStorage.calculateBookStats(readingTimeData);
 			
-			this.totalReadingTime = stats.totalSeconds;
 			this.totalReadingTimeFormatted = readingTimeStorage.formatDuration(stats.totalSeconds);
 			this.totalReadingDays = stats.totalDays;
-			this.todayReadingTime = stats.todaySeconds;
 			this.todayReadingTimeFormatted = readingTimeStorage.formatDuration(stats.todaySeconds);
-			this.averageDailyTime = stats.averageDailySeconds;
 			this.averageDailyTimeFormatted = readingTimeStorage.formatDuration(stats.averageDailySeconds);
-			this.weekReadingTime = stats.weekSeconds;
 			this.weekReadingTimeFormatted = readingTimeStorage.formatDuration(stats.weekSeconds);
-			this.averageWeekTime = stats.averageWeekSeconds;
 			this.averageWeekTimeFormatted = readingTimeStorage.formatDuration(stats.averageWeekSeconds);
 			this.firstReadDate = stats.firstReadDate;
 			this.lastReadDate = stats.lastReadDate;
@@ -231,41 +227,31 @@ export default {
 			this.resetBookData();
 		}
 	},
+	
 	resetBookData() {
-		this.totalReadingTime = 0;
 		this.totalReadingTimeFormatted = '暂无记录';
 		this.totalReadingDays = 0;
-		this.todayReadingTime = 0;
 		this.todayReadingTimeFormatted = '0分钟';
-		this.averageDailyTime = 0;
 		this.averageDailyTimeFormatted = '0分钟';
-		this.weekReadingTime = 0;
 		this.weekReadingTimeFormatted = '0分钟';
-		this.averageWeekTime = 0;
 		this.averageWeekTimeFormatted = '0分钟';
 		this.firstReadDate = '';
 		this.lastReadDate = '';
 		this.sessionCount = 0;
 		this.updateChart([0, 0, 0, 0, 0, 0, 0]);
 	},
+	
 	async loadAllBooksReadingTime() {
 		try {
 			const allBooksData = await readingTimeStorage.getAllBooksReadingTime();
-			
 			const stats = readingTimeStorage.calculateGlobalStats(allBooksData);
 			
-			this.totalReadingTime = stats.totalSeconds;
 			this.totalReadingTimeFormatted = readingTimeStorage.formatDuration(stats.totalSeconds);
 			this.totalReadingDays = stats.totalDays;
-			this.todayReadingTime = stats.todaySeconds;
 			this.todayReadingTimeFormatted = readingTimeStorage.formatDuration(stats.todaySeconds);
-			this.averageDailyTime = stats.averageDailySeconds;
 			this.averageDailyTimeFormatted = readingTimeStorage.formatDuration(stats.averageDailySeconds);
-			this.weekReadingTime = stats.weekSeconds;
 			this.weekReadingTimeFormatted = readingTimeStorage.formatDuration(stats.weekSeconds);
-			this.averageWeekTime = stats.averageWeekSeconds;
 			this.averageWeekTimeFormatted = readingTimeStorage.formatDuration(stats.averageWeekSeconds);
-			this.maxDailyTime = stats.maxDailySeconds;
 			this.maxDailyTimeFormatted = readingTimeStorage.formatDuration(stats.maxDailySeconds);
 			
 			const weekData = readingTimeStorage.getLast7DaysGlobalReadingTime(allBooksData);
@@ -274,22 +260,18 @@ export default {
 			this.resetGlobalData();
 		}
 	},
+	
 	resetGlobalData() {
-		this.totalReadingTime = 0;
 		this.totalReadingTimeFormatted = '暂无记录';
 		this.totalReadingDays = 0;
-		this.todayReadingTime = 0;
 		this.todayReadingTimeFormatted = '0分钟';
-		this.averageDailyTime = 0;
 		this.averageDailyTimeFormatted = '0分钟';
-		this.weekReadingTime = 0;
 		this.weekReadingTimeFormatted = '0分钟';
-		this.averageWeekTime = 0;
 		this.averageWeekTimeFormatted = '0分钟';
-		this.maxDailyTime = 0;
 		this.maxDailyTimeFormatted = '0分钟';
 		this.updateChart([0, 0, 0, 0, 0, 0, 0]);
 	},
+	
 	updateChart(weekData) {
 		const maxValue = Math.max(...weekData);
 		const yMax = maxValue > 0 ? Math.ceil(maxValue * 1.2) : 10;
@@ -323,6 +305,7 @@ export default {
 			gradient: true
 		}];
 	},
+	
 	back() {
 		router.back();
 	}
@@ -330,6 +313,7 @@ export default {
 </script>
 
 <style>
+/* 保持原有样式不变 */
 .page {
 	width: 432px;
 	height: 514px;

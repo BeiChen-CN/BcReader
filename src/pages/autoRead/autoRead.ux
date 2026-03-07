@@ -30,73 +30,90 @@ import storage from '../../utils/storage.js'
 
 export default {
   private: {
-		speed: 10,
-		enable: false,
-		nowTime: "00:00",
-		timer: null,
-		timeFormat: '24h'
+    speed: 10,
+    enable: false,
+    nowTime: "00:00",
+    timer: null,
+    timeFormat: '24h'
   },
-  updateTime() {
-		const date = new Date();
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		if (this.timeFormat === '12h') {
-			let ampm = hours >= 12 ? '下午' : '上午';
-			hours = hours % 12;
-			hours = hours ? hours : 12;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${ampm} ${hours}:${minutes}`;
-		} else {
-			hours = hours < 10 ? '0' + hours : hours;
-			minutes = minutes < 10 ? '0' + minutes : minutes;
-			this.nowTime = `${hours}:${minutes}`;
-		}
-	},
+  
   onInit() {
-	storage.get({
-		key: 'EBOOK_TIME_FORMAT',
-		success: (data) => {
-			if(data) this.timeFormat = data;
-			this.updateTime();
-		},
-		fail: () => {
-			this.updateTime();
-		}
-	});
-	this.timer = setInterval(() => {
-		this.updateTime();
-	}, 1000);
+    storage.get({
+      key: 'EBOOK_TIME_FORMAT',
+      success: (data) => {
+        if(data) this.timeFormat = data;
+        this.updateTime();
+      },
+      fail: () => {
+        this.updateTime();
+      }
+    });
+    
+    this.timer = setInterval(() => {
+      this.updateTime();
+    }, 60000);
+    
     storage.get({
       key: 'EBOOK_AUTO',
       success: (data) => {
         if (data) {
-			({speed:this.speed,enable:this.enable}=JSON.parse(data))
+          try {
+            const parsed = JSON.parse(data);
+            this.speed = parsed.speed !== undefined ? parsed.speed : 10;
+            this.enable = parsed.enable !== undefined ? parsed.enable : false;
+          } catch (e) {
+            console.error("解析配置失败", e);
+          }
         }
       }
-    })
+    });
   },
-  onDestroy(){
-	  if (this.timer) {
-		  clearInterval(this.timer);
-		  this.timer = null;
-	  }
-	},
-  change(e){
-	  this.speed = e.detail.value;
-	  this.save()
+  
+  onDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
   },
-  back(){
-	  router.back();
-	this.save()
-  },save(){
-	  storage.set({
-		  key: 'EBOOK_AUTO',
-		  value: JSON.stringify({speed:this.speed,enable:this.enable})
-	  })
-	},
-  onClick(){
-	  this.enable = !this.enable;
-	  this.save()
+  
+  updateTime() {
+    const date = new Date();
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    
+    if (this.timeFormat === '12h') {
+      let ampm = hours >= 12 ? '下午' : '上午';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${ampm} ${hours}:${minutes}`;
+    } else {
+      hours = hours < 10 ? '0' + hours : hours;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      this.nowTime = `${hours}:${minutes}`;
+    }
+  },
+  
+  change(e) {
+    this.speed = e.detail.value;
+    this.save();
+  },
+  
+  onClick() {
+    this.enable = !this.enable;
+    this.save();
+  },
+  
+  save() {
+    storage.set({
+      key: 'EBOOK_AUTO',
+      value: JSON.stringify({ speed: this.speed, enable: this.enable })
+    });
+  },
+  
+  back() {
+    this.save();
+    router.back();
   }
 }
 </script>

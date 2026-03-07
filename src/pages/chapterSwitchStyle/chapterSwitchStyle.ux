@@ -28,7 +28,6 @@
 	  </list>
 	  
 	  <img static src="/common/images/hd.png" style="position: absolute;left: 0px;top: 0px;width: 432px;height: 102px;" />
-	  <text style="position: absolute;top:-100px;left:0px;">{{txtNum}}</text>
 
 		<img static src="/common/images/back.png" @click="back" style="position: absolute;left: 38px;top: 24px;width: 82px;height: 82px;"/>
 		<text style="position: absolute;left: 130px;top: 16px;width: 172px;line-height: 32px;font-weight:bold;font-size:24px;color:rgba(255,255,255,0.6);text-align:center;">
@@ -38,25 +37,61 @@
 			换章方式
 		</text>
 	</div>
-  </template>
+</template>
 
-  <script>
-  import router from '@system.router'
-  import storage from '../../utils/storage.js'
-  import app from '@system.app'
+<script>
+import router from '@system.router'
+import storage from '../../utils/storage.js'
 
-  export default {
+export default {
 	private: {
-		onSelect:2,
-		txtNum:0,
+		onSelect: 2,
 		nowTime: "00:00",
 		timer: null,
 		timeFormat: '24h'
 	},
-	protected: {
-	  cPath: '',
-		name: ''
+	
+	onInit() {
+		storage.get({
+			key: 'EBOOK_TIME_FORMAT',
+			success: (data) => {
+				if(data) this.timeFormat = data;
+				this.updateTime();
+			},
+			fail: () => {
+				this.updateTime();
+			}
+		});
+		this.timer = setInterval(() => {
+			this.updateTime();
+		}, 60000);
 	},
+	
+	onShow() {
+		storage.get({
+			key: 'EBOOK_CHAPTER_SWITCH_STYLE',
+			success: (data) => {
+				if (data === "boundary") {
+					this.onSelect = 3;
+				} else if (data === "swipe") {
+					this.onSelect = 1;
+				} else {
+					this.onSelect = 2;
+				}
+			},
+			fail: () => {
+				this.onSelect = 2;
+			}
+		});
+	},
+	
+	onDestroy() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+	},
+
 	updateTime() {
 		const date = new Date();
 		let hours = date.getHours();
@@ -73,118 +108,45 @@
 			this.nowTime = `${hours}:${minutes}`;
 		}
 	},
-	onInit() {
-		storage.get({
-			key: 'EBOOK_TIME_FORMAT',
-			success: (data) => {
-				if(data) this.timeFormat = data;
-				this.updateTime();
-			},
-			fail: () => {
-				this.updateTime();
-			}
+
+	select(fun) {
+		const num = parseInt(fun);
+		if (this.onSelect === num) return;
+
+		this.onSelect = num;
+		let styleValue = 'button';
+		
+		if (num === 1) {
+			styleValue = 'swipe';
+		} else if (num === 3) {
+			styleValue = 'boundary';
+		}
+
+		storage.set({
+			key: 'EBOOK_CHAPTER_SWITCH_STYLE',
+			value: styleValue,
 		});
-		this.timer = setInterval(() => {
-			this.updateTime();
-		}, 1000);
-	},
-	onDestroy(){
-		if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-	},
-	onReady(){
-	},
-	resetList(){
-
-	},
-	onShow(){
-	  var that = this;
-	  storage.get({
-		  key: 'EBOOK_CHAPTER_SWITCH_STYLE',
-		  success: function(data) {
-			if (data=="boundary") {
-				that.onSelect=3
-			} else if (data=="swipe") {
-				that.onSelect=1
-			} else {
-				that.onSelect=2
-			}
-			that.updateScene();
-		  },
-		  fail: function(data, code) {
-			that.onSelect=2
-		  }
-	  })
-	},
-	onBackPress(){
 	},
 
-	select(fun){
-	  if (fun=='2'){
-		  	if(this.onSelect!=2){
-				this.onSelect=2
-			  storage.set({
-	  			key: 'EBOOK_CHAPTER_SWITCH_STYLE',
-	  			value: 'button',
-	  		})
-			}
-	  }else if (fun=='1'){
-			if(this.onSelect!=1){
-				this.onSelect=1
-				storage.set({
-					key: 'EBOOK_CHAPTER_SWITCH_STYLE',
-					value: 'swipe',
-				})
-			}
-	  }else{
-			if(this.onSelect!=3){
-				this.onSelect=3
-			  storage.set({
-	  			key: 'EBOOK_CHAPTER_SWITCH_STYLE',
-	  			value: 'boundary',
-	  		})
-			}
-	  }
-	  this.updateScene();
-	},
-
-	selectFile(item){
-		router.push({
-		  uri: '/pages/detail'
-		})
-	},
-	routerTo(url) {
-	  router.push({
-		uri: '/pages/' + url
-	  })
-	},
-	back(){
+	back() {
 		router.back();
-	},
-	exit(){
-		app.terminate();
-	},
-	updateScene(){
-		this.txtNum += 1;
 	}
-  }
-  </script>
+}
+</script>
 
-  <style>
-  .page {
-	  width: 432px;
-	  height: 514px;
-	  background-color: #000000;
-  }
-  .list {
+<style>
+.page {
+	width: 432px;
+	height: 514px;
+	background-color: #000000;
+}
+.list {
 	width: 432px;
 	height: 514px;
 	position: absolute;
 	top:0px;
 	left:0px;
-  padding: 116px 12px;
+	padding: 116px 12px;
 }
 
 .item {
@@ -195,7 +157,7 @@
 	background-color: #262626;
 	border-radius: 36px;
 	align-items: center;
-  justify-content: space-between;
+	justify-content: space-between;
 }
 
 .itemtext {
@@ -217,7 +179,6 @@
 	lines: 1;
 }
 
-
 .item2 {
 	background-color: #0D6EFF;
 }
@@ -228,4 +189,4 @@
 	flex-direction: column;
 	justify-content: space-between;
 }
-  </style>
+</style>
